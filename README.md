@@ -1,4 +1,4 @@
-qt
-==
+QMQTT
+=====
 
-qt mqtt client
+mqtt client for Qt
