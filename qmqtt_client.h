@@ -125,8 +125,15 @@ public:
     /*
      * MQTT Command
      */
+public slots:
     void connect();
     quint16 publish(Message &message);
+    void puback(quint8 type, quint16 msgid);
+    /*
+    void pubrec(int msgid);
+    void pubrel(int msgid);
+    void pubcomp(int msgid);
+    */
     quint16 subscribe(const QString &topic, quint8 qos);
     void unsubscribe(const QString &topic);
     void ping();
@@ -150,14 +157,6 @@ signals:
     //receive PINGRESP
     void pong();
     void disconnected();
-
-public slots:
-    void puback(quint8 type, quint16 msgid);
-    /*
-    void pubrec(int msgid);
-    void pubrel(int msgid);
-    void pubcomp(int msgid);
-    */
 
 private slots:
     void onConnected();
