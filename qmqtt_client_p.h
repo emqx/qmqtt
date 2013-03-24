@@ -1,5 +1,5 @@
 /*
- * qmqtt_will.cpp - qmqtt will
+ * qmqtt_client_p.h - qmqtt client private heaer
  *
  * Copyright (c) 2013  Ery Lee <ery.lee at gmail dot com>
  * All rights reserved.
@@ -29,62 +29,61 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
+#ifndef QMQTT_CLIENT_P_H
+#define QMQTT_CLIENT_P_H
+
+#include <QObject>
+#include <QPointer>
+
+#include "qmqtt_global.h"
+#include "qmqtt_message.h"
 #include "qmqtt_will.h"
 
 namespace QMQTT {
 
-Will::Will(const QString & topic, const QString & msg, quint8 qos, bool retain, QObject * parent) :
-    QObject(parent),
-    _topic(topic),
-    _message(msg),
-    _qos(qos),
-    _retain(retain)
+class ClientPrivate
 {
-}
 
-Will::~Will()
-{
-    //NOTHING TODO;
-}
+    P_DECLARE_PUBLIC(QMQTT::Client)
 
-quint8 Will::qos()
-{
-    return _qos;
-}
+public:
+    explicit  ClientPrivate(Client * q);
+    ~ClientPrivate();
+    void init(QObject * parent = 0);
+    void init(const QString & host, int port, QObject *parent = 0);
 
-void Will::setQos(quint8 qos)
-{
-    _qos = qos;
-}
+    QString host;
+    quint32 port;
+    quint16 gmid;
 
-bool Will::retain()
-{
-    return _retain;
-}
+    QString clientId;
+    QString username;
+    QString password;
+    bool cleansess;
+    int keepalive;
+    State state;
 
-void Will::setRetain(bool retain)
-{
-    _retain = retain;
-}
+    QPointer<QMQTT::Will> will;
+    QPointer<QMQTT::Network> network;
 
-QString Will::topic() const
-{
-    return _topic;
-}
+    Client * const pq_ptr;
 
-void Will::setTopic(const QString & topic)
-{
-    _topic = topic;
-}
+public slots:
+    void sockConnect();
+    void sendConnect();
+    void sendPing();
+    quint16 sendUnsubscribe(const QString &topic);
+    quint16 sendSubscribe(const QString &topic, quint8 qos);
+    quint16 sendPublish(Message &msg);
+    void sendPuback(quint8 type, quint16 mid);
+    void sendDisconnect();
+    void disconnect();
 
-QString Will::message() const
-{
-    return _message;
-}
+private:
+    quint16 nextmid();
 
-void Will::setMessage(const QString & message)
-{
-    _message = message;
-}
+};
 
 } // namespace QMQTT
+
+#endif // QMQTT_CLIENT_P_H

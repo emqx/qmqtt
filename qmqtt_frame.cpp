@@ -1,5 +1,5 @@
 /*
- * qmqtt_will.cpp - qmqtt will
+ * qmqtt_frame.cpp - qmqtt frame
  *
  * Copyright (c) 2013  Ery Lee <ery.lee at gmail dot com>
  * All rights reserved.
@@ -29,62 +29,110 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#include "qmqtt_will.h"
+#include <QDataStream>
+#include "qmqtt_frame.h"
 
 namespace QMQTT {
 
-Will::Will(const QString & topic, const QString & msg, quint8 qos, bool retain, QObject * parent) :
+Frame::Frame(quint8 header, QObject *parent) :
     QObject(parent),
-    _topic(topic),
-    _message(msg),
-    _qos(qos),
-    _retain(retain)
+    _header(header),
+    _data(QByteArray())
 {
 }
 
-Will::~Will()
+Frame::Frame(quint8 header, QByteArray & data, QObject *parent) :
+    QObject(parent),
+    _header(header),
+    _data(data)
 {
-    //NOTHING TODO;
 }
 
-quint8 Will::qos()
+Frame::~Frame()
 {
-    return _qos;
+
 }
 
-void Will::setQos(quint8 qos)
+quint8 Frame::header()
 {
-    _qos = qos;
+    return _header;
 }
 
-bool Will::retain()
+QByteArray & Frame::data()
 {
-    return _retain;
+    return _data;
 }
 
-void Will::setRetain(bool retain)
+char Frame::readChar()
 {
-    _retain = retain;
+    char c = _data.at(0);
+    _data.remove(0, 1);
+    return c;
 }
 
-QString Will::topic() const
+int Frame::readInt()
 {
-    return _topic;
+    char msb = _data.at(0);
+    char lsb = _data.at(1);
+    _data.remove(0, 2);
+    return (msb << 8) + lsb;
 }
 
-void Will::setTopic(const QString & topic)
+QString Frame::readString()
 {
-    _topic = topic;
+    int len = readInt();
+    QString s(_data.left(len));
+    _data.remove(0, len);
+    return s;
 }
 
-QString Will::message() const
+void Frame::writeInt(int i)
 {
-    return _message;
+    _data.append(MSB(i));
+    _data.append(LSB(i));
 }
 
-void Will::setMessage(const QString & message)
+void Frame::writeString(const QString &string)
 {
-    _message = message;
+    writeInt(string.size());
+    _data.append(string);
+}
+
+void Frame::writeChar(char c)
+{
+    _data.append(c);
+}
+
+void Frame::writeRawData(const QByteArray &data)
+{
+    _data.append(data);
+}
+
+void Frame::write(QDataStream &stream)
+{
+    QByteArray lenbuf;
+    stream << (quint8)_header;
+    if(_data.size() == 0) {
+        stream << (QChar)0;
+        return;
+    }
+    qDebug("_data.size: %d", _data.size());
+    encodeLength(lenbuf, _data.size());
+    stream.writeRawData(lenbuf.data(), lenbuf.size());
+    stream.writeRawData(_data.data(), _data.size());
+}
+
+void Frame::encodeLength(QByteArray &lenbuf, int length)
+{
+    char d;
+    do {
+        d = length % 128;
+        length /= 128;
+        if (length > 0) {
+            d |= 0x80;
+        }
+        lenbuf.append(d);
+    } while (length > 0);
 }
 
 } // namespace QMQTT

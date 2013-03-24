@@ -1,5 +1,5 @@
 /*
- * qmqtt_will.cpp - qmqtt will
+ * qmqtt_network.h - qmqtt network header
  *
  * Copyright (c) 2013  Ery Lee <ery.lee at gmail dot com>
  * All rights reserved.
@@ -29,62 +29,71 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#include "qmqtt_will.h"
+#ifndef QMQTT_NETWORK_H
+#define QMQTT_NETWORK_H
+
+#include <QObject>
+#include <QTcpSocket>
+#include <QPointer>
+#include <QBuffer>
+#include <QByteArray>
+
+#include "qmqtt_frame.h"
 
 namespace QMQTT {
 
-Will::Will(const QString & topic, const QString & msg, quint8 qos, bool retain, QObject * parent) :
-    QObject(parent),
-    _topic(topic),
-    _message(msg),
-    _qos(qos),
-    _retain(retain)
+class Network : public QObject
 {
-}
+    Q_OBJECT
+    Q_DISABLE_COPY(Network)
+public:
+    explicit Network(QObject *parent = 0);
+    ~Network();
 
-Will::~Will()
-{
-    //NOTHING TODO;
-}
+    void disconnect();
+    void sendFrame(Frame & frame);
 
-quint8 Will::qos()
-{
-    return _qos;
-}
+    bool autoReconnect() const;
+    void setAutoReconnect(bool value);
 
-void Will::setQos(quint8 qos)
-{
-    _qos = qos;
-}
+    QAbstractSocket::SocketState state() const;
 
-bool Will::retain()
-{
-    return _retain;
-}
+signals:
+    void connected();
+    void disconnected();
+    void error(QAbstractSocket::SocketError);
+    void received(Frame &frame);
 
-void Will::setRetain(bool retain)
-{
-    _retain = retain;
-}
+public slots:
+    void connectTo(const QString & host, quint32 port);
+    //void error( QAbstractSocket::SocketError socketError );
 
-QString Will::topic() const
-{
-    return _topic;
-}
+private slots:
+    void sockReadReady();
+    void sockConnected();
+    //TODO: FIX LATER, add reconnect feature
+    //void sockError(QAbstractSocket::SocketError);
+    void sockDisconnected();
 
-void Will::setTopic(const QString & topic)
-{
-    _topic = topic;
-}
-
-QString Will::message() const
-{
-    return _message;
-}
-
-void Will::setMessage(const QString & message)
-{
-    _message = message;
-}
+private:
+    void initSocket();
+    int readRemaingLength(QDataStream &in);
+    //sock
+    quint32 _port;
+    QString _host;
+    QPointer<QTcpSocket> _socket;
+    //read data
+    QPointer<QBuffer> _buffer;
+    quint8 _header;
+    int _offsetBuf;
+    int _leftSize;
+    //autoconn
+    bool _autoreconn;
+    quint16 _timeout;
+    //state
+    bool _connected;
+};
 
 } // namespace QMQTT
+
+#endif // QMQTT_NETWORK_H
