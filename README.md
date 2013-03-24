@@ -6,61 +6,61 @@ mqtt client for Qt
 Usage
 =====
 
-#include "qmqtt.h"
+	#include "qmqtt.h"
 
-QMQTT::Client *client = new QMQTT::Client("localhost", 18883);
+	QMQTT::Client *client = new QMQTT::Client("localhost", 18883);
 
-client->setClientId("clientId");
+	client->setClientId("clientId");
 
-client->setUsername("user");
+	client->setUsername("user");
 
-client->setPassword("password");
+	client->setPassword("password");
 
-client->connect();
+	client->connect();
 
 
 Slots
 =====
 
-void connect();
+	void connect();
 
-quint16 publish(Message &message);
+	quint16 publish(Message &message);
 
-void puback(quint8 type, quint16 msgid);
+	void puback(quint8 type, quint16 msgid);
 
-quint16 subscribe(const QString &topic, quint8 qos);
+	quint16 subscribe(const QString &topic, quint8 qos);
 
-void unsubscribe(const QString &topic);
+	void unsubscribe(const QString &topic);
 
-void ping();
+	void ping();
 
-void disconnect();
+	void disconnect();
 
 Signals
 =======
 
-void connected();
+	void connected();
 
-void error(QAbstractSocket::SocketError);
+	void error(QAbstractSocket::SocketError);
 
-void connacked(quint8 ack);
+	void connacked(quint8 ack);
 
-void published(Message &message);
+	void published(Message &message);
 
-void pubacked(quint8 type, quint16 msgid);
+	void pubacked(quint8 type, quint16 msgid);
 
-void received(const Message &message);
+	void received(const Message &message);
 
-void subscribed(const QString &topic);
+	void subscribed(const QString &topic);
 
-void subacked(quint16 mid, quint8 qos);
+	void subacked(quint16 mid, quint8 qos);
 
-void unsubscribed(const QString &topic);
+	void unsubscribed(const QString &topic);
 
-void unsubacked(quint16 mid);
+	void unsubacked(quint16 mid);
 
-void pong();
+	void pong();
 
-void disconnected();
+	void disconnected();
 
 
