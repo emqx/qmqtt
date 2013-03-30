@@ -34,6 +34,9 @@
 
 #include <QObject>
 #include <QPointer>
+#include <QTimer>
+#include <QDateTime>
+#include <QHostInfo>
 
 #include "qmqtt_global.h"
 #include "qmqtt_message.h"
@@ -66,6 +69,7 @@ public:
 
     QPointer<QMQTT::Will> will;
     QPointer<QMQTT::Network> network;
+    QPointer<QTimer> timer;
 
     Client * const pq_ptr;
 
@@ -79,8 +83,11 @@ public slots:
     void sendPuback(quint8 type, quint16 mid);
     void sendDisconnect();
     void disconnect();
+    void startKeepalive();
+    void stopKeepalive();
 
 private:
+    QString randomClientId();
     quint16 nextmid();
 
 };

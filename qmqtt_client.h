@@ -114,6 +114,8 @@ public:
     void setPassword(const QString & password);
     int keepalive();
     void setKeepAlive(int keepalive);
+    bool cleansess();
+    void setCleansess(bool cleansess);
 
     bool isConnected();
     bool autoReconnect() const;
@@ -161,6 +163,7 @@ signals:
 
 private slots:
     void onConnected();
+    void onDisconnected();
     void onReceived(Frame & frame);
     void handlePublish(Message &message);
     void handleConnack(quint8 ack);

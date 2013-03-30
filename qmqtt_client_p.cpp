@@ -29,6 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
+
 #include "qmqtt_client.h"
 #include "qmqtt_client_p.h"
 
@@ -37,6 +38,7 @@ namespace QMQTT {
 ClientPrivate::ClientPrivate(Client *q) :
     host("localhost"),
     port(1883),
+    keepalive(300),
     pq_ptr(q)
 {
     gmid= 1;
@@ -50,13 +52,17 @@ ClientPrivate::~ClientPrivate()
 void ClientPrivate::init(QObject * parent)
 {
     pq_func()->setParent(parent);
+    if(!timer) {
+        timer = new QTimer(pq_func());
+    }
+    QObject::connect(timer, SIGNAL(timeout()), pq_func(), SLOT(ping()));
     if(!network){
         network = new Network(pq_func());
     }
     //TODO: FIXME LATER, how to handle socket error?
     QObject::connect(network, SIGNAL(connected()), pq_func(), SLOT(onConnected()));
     QObject::connect(network, SIGNAL(error(QAbstractSocket::SocketError)), pq_func(), SIGNAL(error(QAbstractSocket::SocketError)));
-    QObject::connect(network, SIGNAL(disconnected()), pq_func(), SIGNAL(disconnected()));
+    QObject::connect(network, SIGNAL(disconnected()), pq_func(), SLOT(onDisconnected()));
     QObject::connect(network, SIGNAL(received(Frame &)), pq_func(), SLOT(onReceived(Frame &)));
 }
 
@@ -103,9 +109,10 @@ void ClientPrivate::sendConnect()
     frame.writeChar(MQTT_PROTO_MAJOR);
     frame.writeChar(flags);
     frame.writeInt(keepalive);
-    if(!clientId.isEmpty()) {
-        frame.writeString(clientId);
+    if(clientId.isEmpty()) {
+        clientId = randomClientId();
     }
+    frame.writeString(clientId);
     if(will != NULL) {
         frame.writeString(will->topic());
         frame.writeString(will->message());
@@ -186,6 +193,22 @@ void ClientPrivate::sendDisconnect()
     network->sendFrame(frame);
 }
 
+//FIXME: ok???
+void ClientPrivate::startKeepalive()
+{
+    timer->setInterval(keepalive*1000);
+    timer->start();
+}
+
+void ClientPrivate::stopKeepalive()
+{
+    timer->stop();
+}
+
+QString ClientPrivate::randomClientId()
+{
+    return "QMQTT-" + QString::number(QDateTime::currentMSecsSinceEpoch() % 1000000);
+}
 
 quint16 ClientPrivate::nextmid()
 {

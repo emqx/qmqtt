@@ -109,6 +109,16 @@ void Client::setKeepAlive(int keepalive)
     pd_func()->keepalive = keepalive;
 }
 
+bool Client::cleansess()
+{
+    return pd_func()->cleansess;
+}
+
+void Client::setCleansess(bool cleansess)
+{
+    pd_func()->cleansess = cleansess;
+}
+
 bool Client::autoReconnect() const
 {
     return pd_func()->network->autoReconnect();
@@ -152,6 +162,7 @@ void Client::onConnected()
 {
     qDebug("Sock Connected....");
     pd_func()->sendConnect();
+    pd_func()->startKeepalive();
     emit connected();
 }
 
@@ -189,6 +200,12 @@ void Client::ping()
 void Client::disconnect()
 {
     pd_func()->disconnect();
+}
+
+void Client::onDisconnected()
+{
+    pd_func()->stopKeepalive();
+    emit disconnected();
 }
 
 //---------------------------------------------
