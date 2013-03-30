@@ -51,7 +51,7 @@ public:
     quint16 id();
     void setId(quint16 id);
 
-    quint8 qos();
+    quint8 qos() const;
     void setQos(quint8 qos);
 
     bool retain();

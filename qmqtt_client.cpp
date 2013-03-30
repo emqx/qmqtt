@@ -134,6 +134,12 @@ State Client::state() const
     return pd_func()->state;
 }
 
+bool Client::isConnected()
+{
+    return pd_func()->network->isConnected();
+}
+
+
 /*----------------------------------------------------------------
  * MQTT Command
  ----------------------------------------------------------------*/
@@ -151,22 +157,28 @@ void Client::onConnected()
 
 quint16 Client::publish(Message &message)
 {
-    return pd_func()->sendPublish(message);
+    quint16 msgid = pd_func()->sendPublish(message);
+    emit published(message);
+    return msgid;
 }
 
 void Client::puback(quint8 type, quint16 msgid)
 {
     pd_func()->sendPuback(type, msgid);
+    emit pubacked(type, msgid);
 }
 
 quint16 Client::subscribe(const QString &topic, quint8 qos)
 {
-    return pd_func()->sendSubscribe(topic, qos);
+    quint16 msgid = pd_func()->sendSubscribe(topic, qos);
+    emit subscribed(topic);
+    return msgid;
 }
 
 void Client::unsubscribe(const QString &topic)
 {
     pd_func()->sendUnsubscribe(topic);
+    emit unsubscribed(topic);
 }
 
 void Client::ping()

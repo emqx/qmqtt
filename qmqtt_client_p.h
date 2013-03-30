@@ -61,6 +61,7 @@ public:
     QString password;
     bool cleansess;
     int keepalive;
+
     State state;
 
     QPointer<QMQTT::Will> will;

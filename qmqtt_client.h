@@ -115,6 +115,7 @@ public:
     int keepalive();
     void setKeepAlive(int keepalive);
 
+    bool isConnected();
     bool autoReconnect() const;
     void setAutoReconnect(bool value);
     Will *will();
@@ -144,10 +145,10 @@ signals:
     void error(QAbstractSocket::SocketError);
     void connacked(quint8 ack);
     //send PUBLISH and receive PUBACK
-    void published(Message &message);
+    void published(QMQTT::Message &message);
     void pubacked(quint8 type, quint16 msgid);
     //receive PUBLISH
-    void received(const Message &message);
+    void received(const QMQTT::Message &message);
     //send SUBSCRIBE and receive SUBACKED
     void subscribed(const QString &topic);
     void subacked(quint16 mid, quint8 qos);

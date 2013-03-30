@@ -69,7 +69,7 @@ void Message::setId(quint16 id)
     _id = id;
 }
 
-quint8 Message::qos()
+quint8 Message::qos() const
 {
     return _qos;
 }

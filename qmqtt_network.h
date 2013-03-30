@@ -53,6 +53,8 @@ public:
     void disconnect();
     void sendFrame(Frame & frame);
 
+    bool isConnected();
+
     bool autoReconnect() const;
     void setAutoReconnect(bool value);
 

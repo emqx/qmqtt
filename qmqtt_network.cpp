@@ -67,6 +67,11 @@ Network::~Network()
     disconnect();
 }
 
+bool Network::isConnected()
+{
+    return _connected;
+}
+
 void Network::connectTo(const QString & host, const quint32 port)
 {
 
