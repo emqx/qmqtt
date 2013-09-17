@@ -113,7 +113,7 @@ void Frame::write(QDataStream &stream)
     QByteArray lenbuf;
     stream << (quint8)_header;
     if(_data.size() == 0) {
-        stream << (QChar)0;
+        stream << (quint8)0;
         return;
     }
     qDebug("_data.size: %d", _data.size());
