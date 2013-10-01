@@ -82,7 +82,7 @@ void Network::connectTo(const QString & host, const quint32 port)
     }
     _host = host;
     _port = port;
-    qDebug("Connect to localhost:1883");
+    qDebug() << "Connect to" << _host << _port;
     _socket->connectToHost(host, port);
 }
 
