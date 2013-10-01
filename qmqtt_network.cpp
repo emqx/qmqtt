@@ -154,6 +154,7 @@ void Network::sockReadReady()
         {
             _buffer->reset();
             Frame frame(_header, _buffer->buffer());
+            _buffer->buffer().clear();
             qDebug("network emit received(frame), header: %d", _header);
             emit received(frame);
         }
