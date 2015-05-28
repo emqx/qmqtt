@@ -160,7 +160,7 @@ void Client::connect()
 
 void Client::onConnected()
 {
-    qDebug("Sock Connected....");
+    qCDebug(client, "Sock Connected....");
     pd_func()->sendConnect();
     pd_func()->startKeepalive();
     emit connected();
@@ -219,7 +219,7 @@ void Client::onReceived(Frame &frame)
     quint8 header = frame.header();
     quint8 type = GETTYPE(header);
     Message message;
-    qDebug("handleFrame: type=%d", type);
+    qCDebug(client, "handleFrame: type=%d", type);
 
     switch(type) {
     case CONNACK:
@@ -268,7 +268,7 @@ void Client::onReceived(Frame &frame)
 
 void Client::handleConnack(quint8 ack)
 {
-    qDebug("connack: %d", ack);
+    qCDebug(client, "connack: %d", ack);
     emit connacked(ack);
 }
 

@@ -37,12 +37,15 @@
 #include <QTimer>
 #include <QDateTime>
 #include <QHostInfo>
+#include <QLoggingCategory>
 
 #include "qmqtt_global.h"
 #include "qmqtt_message.h"
 #include "qmqtt_will.h"
 
 namespace QMQTT {
+
+Q_DECLARE_LOGGING_CATEGORY(client)
 
 class ClientPrivate
 {

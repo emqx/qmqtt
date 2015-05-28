@@ -35,6 +35,8 @@
 
 namespace QMQTT {
 
+Q_LOGGING_CATEGORY(client, "qmqtt.client", QtDebugMsg)
+
 ClientPrivate::ClientPrivate(Client *q) :
     host("localhost"),
     port(1883),
@@ -84,11 +86,11 @@ void ClientPrivate::sendConnect()
     quint8 header = CONNECT;
     quint8 flags = 0;
 
-    qDebug("sendConnect....");
+    qCDebug(client, "sendConnect....");
     //header
     Frame frame(SETQOS(header, MQTT_QOS1));
 
-    qDebug("CONNECT header: %d", frame.header());
+    qCDebug(client, "CONNECT header: %d", frame.header());
 
     //flags
     flags = FLAG_CLEANSESS(flags, cleansess ? 1 : 0 );
