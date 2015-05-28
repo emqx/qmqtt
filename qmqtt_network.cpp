@@ -31,9 +31,12 @@
  */
 
 #include <QDataStream>
+#include <QLoggingCategory>
 #include "qmqtt_network.h"
 
 namespace QMQTT {
+
+Q_LOGGING_CATEGORY(network, "qmqtt.network", QtDebugMsg)
 
 Network::Network(QObject *parent) :
     QObject(parent)
@@ -77,12 +80,12 @@ void Network::connectTo(const QString & host, const quint32 port)
 
     if(!_socket)
     {
-        qWarning("AMQP: Socket didn't create.");
+        qCWarning(network, "AMQP: Socket didn't create.");
         return;
     }
     _host = host;
     _port = port;
-    qDebug() << "Connect to" << _host << _port;
+    qCDebug(network) << "Connect to" << _host << _port;
     _socket->connectToHost(host, port);
 }
 
@@ -125,14 +128,14 @@ void Network::setAutoReconnect(bool b)
 //PRIVATE SLOTS
 void Network::sockConnected()
 {
-    qDebug("Network connected...");
+    qCDebug(network, "Network connected...");
     _connected = true;
     emit connected();
 }
 
 void Network::sockReadReady()
 {
-    qDebug("sockReadReady...");
+    qCDebug(network, "sockReadReady...");
     QDataStream in(_socket);
     QDataStream out(_buffer);
     while(!_socket->atEnd())
@@ -155,7 +158,7 @@ void Network::sockReadReady()
             _buffer->reset();
             Frame frame(_header, _buffer->buffer());
             _buffer->buffer().clear();
-            qDebug("network emit received(frame), header: %d", _header);
+            qCDebug(network, "network emit received(frame), header: %d", _header);
             emit received(frame);
         }
     }
