@@ -1,7 +1,8 @@
 /*
- * qmqtt.h - qmqtt library heaer
+ * qmqtt_router.h - qmqtt router
  *
  * Copyright (c) 2013  Ery Lee <ery.lee at gmail dot com>
+ * Router added by Niklas Wulf <nwulf at geenen-it-systeme dot de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,12 +30,70 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#ifndef QMQTT_H
-#define QMQTT_H
+#ifndef QMQTT_ROUTER_H
+#define QMQTT_ROUTER_H
 
-#include "qmqtt_will.h"
+#include <QObject>
+#include <QRegularExpression>
+
 #include "qmqtt_message.h"
-#include "qmqtt_client.h"
-#include "qmqtt_router.h"
 
-#endif // QMQTT_H
+namespace QMQTT {
+
+class Client;
+class Message;
+class RoutedMessage;
+class RouteSubscription;
+
+class Router : public QObject
+{
+    Q_OBJECT
+public:
+    explicit Router(Client *parent = 0);
+
+    QMQTT::RouteSubscription *subscribe(const QString &route);
+
+private:
+    Client *_client;
+};
+
+class RouteSubscription : public QObject
+{
+    Q_OBJECT
+public:
+    QString route() const;
+
+signals:
+    void received(const RoutedMessage &message);
+
+private slots:
+    void routeMessage(const Message &message);
+
+private:
+    friend class Router;
+    explicit RouteSubscription(Router *parent = 0);
+    void setRoute(const QString &route);
+
+    QString _topic;
+    QRegularExpression _regularExpression;
+    QStringList _parameterNames;
+};
+
+class RoutedMessage
+{
+public:
+    explicit RoutedMessage(const Message &message);
+
+    const QMQTT::Message &message() const;
+    QHash<QString, QString> parameters() const;
+
+private:
+    friend class RouteSubscription;
+
+    Message _message;
+    QHash<QString, QString> _parameters;
+};
+
+} // namespace QMQTT
+
+#endif // QMQTT_ROUTER_H
