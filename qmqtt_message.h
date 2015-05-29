@@ -38,14 +38,12 @@
 
 namespace QMQTT {
 
-class Message : public QObject
+class Message
 {
-    Q_OBJECT
-
 public:
-    Message(QObject *parent = 0);
+    Message();
     Message(quint16 id, const QString &topic, const QByteArray &payload,
-            quint8 qos = 0, bool retain = false, bool dup = false, QObject *parent = 0);
+            quint8 qos = 0, bool retain = false, bool dup = false);
     ~Message();
 
     quint16 id();

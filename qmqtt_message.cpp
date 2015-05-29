@@ -33,8 +33,8 @@
 
 namespace QMQTT {
 
-Message::Message(QObject *parent) :
-    QObject(parent),
+Message::Message() :
+    _id(0),
     _qos(0),
     _retain(false),
     _dup(false)
@@ -42,8 +42,7 @@ Message::Message(QObject *parent) :
 }
 
 Message::Message(quint16 id, const QString &topic, const QByteArray &payload,
-            quint8 qos, bool retain, bool dup, QObject *parent) :
-    QObject(parent),
+            quint8 qos, bool retain, bool dup) :
     _id(id),
     _topic(topic),
     _payload(payload),
