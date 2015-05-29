@@ -64,3 +64,19 @@ Signals
 	void disconnected();
 
 
+License
+=======
+
+The MIT License (MIT)
+
+
+Contributors
+=============
+
+[@Kampfgnom](https://github.com/Kampfgnom)
+
+
+Author
+======
+Feng Lee <feng@emqtt.io>
+
