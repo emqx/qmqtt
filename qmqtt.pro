@@ -18,6 +18,7 @@ SOURCES += qmqtt_client.cpp \
     qmqtt_frame.cpp \
     qmqtt_client_p.cpp \
     qmqtt_message.cpp \
+    qmqtt_router.h \
     qmqtt_will.cpp
 
 HEADERS += qmqtt_client.h\
@@ -27,6 +28,7 @@ HEADERS += qmqtt_client.h\
     qmqtt_client_p.h \
     qmqtt_message.h \
     qmqtt_will.h \
+    qmqtt_router.h \
     qmqtt.h
 
 unix:!symbian {

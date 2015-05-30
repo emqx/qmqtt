@@ -1,7 +1,8 @@
 /*
- * qmqtt_message.cpp - qmqtt message
+ * qmqtt_router.h - qmqtt router
  *
  * Copyright (c) 2013  Ery Lee <ery.lee at gmail dot com>
+ * Router added by Niklas Wulf <nwulf at geenen-it-systeme dot de>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,92 +30,70 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
+#ifndef QMQTT_ROUTER_H
+#define QMQTT_ROUTER_H
+
+#include <QObject>
+#include <QRegularExpression>
+
 #include "qmqtt_message.h"
 
 namespace QMQTT {
 
-Message::Message() :
-    _id(0),
-    _qos(0),
-    _retain(false),
-    _dup(false)
-{
-}
+class Client;
+class Message;
+class RoutedMessage;
+class RouteSubscription;
 
-Message::Message(quint16 id, const QString &topic, const QByteArray &payload,
-            quint8 qos, bool retain, bool dup) :
-    _id(id),
-    _topic(topic),
-    _payload(payload),
-    _qos(qos),
-    _retain(retain),
-    _dup(dup)
+class Router : public QObject
 {
+    Q_OBJECT
+public:
+    explicit Router(Client *parent = 0);
 
-}
+    QMQTT::RouteSubscription *subscribe(const QString &route);
 
-Message::~Message()
-{
-    //NOTHING TODO
-}
+private:
+    Client *_client;
+};
 
-quint16 Message::id()
+class RouteSubscription : public QObject
 {
-    return _id;
-}
+    Q_OBJECT
+public:
+    QString route() const;
 
-void Message::setId(quint16 id)
-{
-    _id = id;
-}
+signals:
+    void received(const RoutedMessage &message);
 
-quint8 Message::qos() const
-{
-    return _qos;
-}
+private slots:
+    void routeMessage(const Message &message);
 
-void Message::setQos(quint8 qos)
-{
-    _qos = qos;
-}
+private:
+    friend class Router;
+    explicit RouteSubscription(Router *parent = 0);
+    void setRoute(const QString &route);
 
-bool Message::retain()
-{
-    return _retain;
-}
+    QString _topic;
+    QRegularExpression _regularExpression;
+    QStringList _parameterNames;
+};
 
-void Message::setRetain(bool retain)
+class RoutedMessage
 {
-    _retain = retain;
-}
+public:
+    explicit RoutedMessage(const Message &message);
 
-bool Message::dup()
-{
-    return _dup;
-}
-void Message::setDup(bool dup)
-{
-    _dup =dup;
-}
+    const QMQTT::Message &message() const;
+    QHash<QString, QString> parameters() const;
 
-QString Message::topic() const
-{
-    return _topic;
-}
+private:
+    friend class RouteSubscription;
 
-void Message::setTopic(const QString & topic)
-{
-    _topic = topic;
-}
-
-QByteArray Message::payload() const
-{
-    return _payload;
-}
-
-void Message::setPayload(const QByteArray &payload)
-{
-    _payload = payload;
-}
+    Message _message;
+    QHash<QString, QString> _parameters;
+};
 
 } // namespace QMQTT
+
+#endif // QMQTT_ROUTER_H

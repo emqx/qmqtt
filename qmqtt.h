@@ -35,5 +35,6 @@
 #include "qmqtt_will.h"
 #include "qmqtt_message.h"
 #include "qmqtt_client.h"
+#include "qmqtt_router.h"
 
 #endif // QMQTT_H
