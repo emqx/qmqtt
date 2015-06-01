@@ -1,5 +1,5 @@
 /*
- * qmqtt_router.h - qmqtt router
+ * qmqtt_router.cpp - qmqtt router
  *
  * Copyright (c) 2013  Ery Lee <ery.lee at gmail dot com>
  * Router added by Niklas Wulf <nwulf at geenen-it-systeme dot de>
@@ -30,28 +30,23 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#ifndef QMQTT_ROUTER_H
-#define QMQTT_ROUTER_H
-
-#include <QObject>
+#include "qmqtt_routedmessage.h"
 
 namespace QMQTT {
 
-class Client;
-class RouteSubscription;
-
-class Router : public QObject
+RoutedMessage::RoutedMessage(const Message &message) : _message(message)
 {
-    Q_OBJECT
-public:
-    explicit Router(Client *parent = 0);
+}
 
-    RouteSubscription *subscribe(const QString &route);
+const Message &RoutedMessage::message() const
+{
+    return _message;
+}
 
-private:
-    Client *_client;
-};
+QHash<QString, QString> RoutedMessage::parameters() const
+{
+    return _parameters;
+}
 
 } // namespace QMQTT
 
-#endif // QMQTT_ROUTER_H

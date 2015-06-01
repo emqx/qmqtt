@@ -30,28 +30,31 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#ifndef QMQTT_ROUTER_H
-#define QMQTT_ROUTER_H
+#ifndef QMQTT_ROUTEDMESSAGE_H
+#define QMQTT_ROUTEDMESSAGE_H
 
-#include <QObject>
+#include <QHash>
+#include "qmqtt_message.h"
 
 namespace QMQTT {
 
-class Client;
-class RouteSubscription;
+class Message;
 
-class Router : public QObject
+class RoutedMessage
 {
-    Q_OBJECT
 public:
-    explicit Router(Client *parent = 0);
+    explicit RoutedMessage(const Message &message);
 
-    RouteSubscription *subscribe(const QString &route);
+    const Message &message() const;
+    QHash<QString, QString> parameters() const;
 
 private:
-    Client *_client;
+    friend class RouteSubscription;
+
+    Message _message;
+    QHash<QString, QString> _parameters;
 };
 
 } // namespace QMQTT
 
-#endif // QMQTT_ROUTER_H
+#endif // QMQTT_ROUTEDMESSAGE_H

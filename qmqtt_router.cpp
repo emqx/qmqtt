@@ -33,6 +33,7 @@
 #include "qmqtt_router.h"
 
 #include "qmqtt_client.h"
+#include "qmqtt_routesubscription.h"
 #include <QLoggingCategory>
 
 namespace QMQTT {
@@ -50,88 +51,6 @@ RouteSubscription *Router::subscribe(const QString &route)
     _client->subscribe(subscription->_topic, 0);
     connect(_client, &Client::received, subscription, &RouteSubscription::routeMessage);
     return subscription;
-}
-
-RouteSubscription::RouteSubscription(Router *parent) : QObject(parent)
-{
-}
-
-QString RouteSubscription::route() const
-{
-    return _topic;
-}
-
-void RouteSubscription::setRoute(const QString &route)
-{
-    qCDebug(router) << "Parsing route:" << route;
-
-    QRegularExpression parameterNamesRegExp("\\:([a-zA-Z0-9]+)"); // note how names must not contain dashes or underscores
-
-    // Remove paramter names to get the actual topic "route"
-    QString topic = route;
-    topic.replace(parameterNamesRegExp, "");
-    qCDebug(router) << "Topic:" << topic;
-
-    // Remove the MQTT wildcards to get a regular expression, which matches the parameters
-    QString parameterRegExp = route;
-    parameterRegExp
-            .replace("+", "")
-            .replace(parameterNamesRegExp, "([a-zA-Z0-9_-]+)") // note how parameter values may contain dashes or underscores
-            .replace("#", "")
-            .replace("$", "\\$");
-    qCDebug(router) << "Parameter regexp:" << parameterRegExp;
-
-    // Extract the parameter names
-    QRegularExpressionMatchIterator it = parameterNamesRegExp.globalMatch(route);
-    QStringList names;
-    while(it.hasNext()) {
-        QRegularExpressionMatch match = it.next();
-        QString parameterName = match.captured(1);
-        names << parameterName;
-    }
-    qCDebug(router) << "Parameter names: " << names;
-
-    _topic = topic;
-    _parameterNames = names;
-    _regularExpression = QRegularExpression(parameterRegExp);
-}
-
-void RouteSubscription::routeMessage(const Message &message)
-{
-    QString topic = message.topic();
-    qCDebug(router) << "Routing topic" << topic;
-    QRegularExpressionMatch match = _regularExpression.match(topic);
-    if(!match.hasMatch()) {
-        qCDebug(router) << "No match";
-        return;
-    }
-
-    RoutedMessage routedMessage(message);
-    qCDebug(router) << "Matching paramters:";
-
-    for(int i = 0, c = _parameterNames.size(); i < c; ++i) {
-        QString name = _parameterNames.at(i);
-        QString value = match.captured(i + 1);
-        qCDebug(router) << name << "=" << value;
-
-        routedMessage._parameters.insert(name, value);
-    }
-
-    emit received(routedMessage);
-}
-
-RoutedMessage::RoutedMessage(const Message &message) : _message(message)
-{
-}
-
-const Message &RoutedMessage::message() const
-{
-    return _message;
-}
-
-QHash<QString, QString> RoutedMessage::parameters() const
-{
-    return _parameters;
 }
 
 } // namespace QMQTT
