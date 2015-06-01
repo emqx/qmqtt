@@ -18,7 +18,7 @@ SOURCES += qmqtt_client.cpp \
     qmqtt_frame.cpp \
     qmqtt_client_p.cpp \
     qmqtt_message.cpp \
-    qmqtt_router.h \
+    qmqtt_router.cpp \
     qmqtt_will.cpp
 
 HEADERS += qmqtt_client.h\
