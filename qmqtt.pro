@@ -18,18 +18,22 @@ SOURCES += qmqtt_client.cpp \
     qmqtt_frame.cpp \
     qmqtt_client_p.cpp \
     qmqtt_message.cpp \
-    qmqtt_router.h \
-    qmqtt_will.cpp
+    qmqtt_router.cpp \
+    qmqtt_will.cpp \
+    qmqtt_routesubscription.cpp \
+    qmqtt_routedmessage.cpp
 
 HEADERS += qmqtt_client.h\
-        qmqtt_global.h \
+    qmqtt_global.h \
     qmqtt_network.h \
     qmqtt_frame.h \
     qmqtt_client_p.h \
     qmqtt_message.h \
     qmqtt_will.h \
     qmqtt_router.h \
-    qmqtt.h
+    qmqtt.h \
+    qmqtt_routesubscription.h \
+    qmqtt_routedmessage.h
 
 unix:!symbian {
     maemo5 {
