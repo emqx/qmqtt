@@ -80,13 +80,13 @@ class QMQTTSHARED_EXPORT Client : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(quint32 port READ port WRITE setPort);
-    Q_PROPERTY(QString host READ host WRITE setHost);
-    Q_PROPERTY(QString clientId READ clientId WRITE setClientId);
-    Q_PROPERTY(QString username READ username WRITE setUsername);
-    Q_PROPERTY(QString password READ password WRITE setPassword);
-    Q_PROPERTY(int keepalive READ keepalive WRITE setKeepAlive);
-    Q_PROPERTY(bool autoReconnect READ autoReconnect WRITE setAutoReconnect);
+    Q_PROPERTY(quint32 port READ port WRITE setPort)
+    Q_PROPERTY(QString host READ host WRITE setHost)
+    Q_PROPERTY(QString clientId READ clientId WRITE setClientId)
+    Q_PROPERTY(QString username READ username WRITE setUsername)
+    Q_PROPERTY(QString password READ password WRITE setPassword)
+    Q_PROPERTY(int keepalive READ keepalive WRITE setKeepAlive)
+    Q_PROPERTY(bool autoReconnect READ autoReconnect WRITE setAutoReconnect)
 
     Q_DISABLE_COPY(Client)
 
