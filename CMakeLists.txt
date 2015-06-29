@@ -20,3 +20,5 @@ file(GLOB_RECURSE headerfiles "*.h")
 add_library(qmqtt STATIC ${headerfiles} ${srcfiles})
 
 qt5_use_modules(qmqtt Core Network)
+
+add_subdirectory( examples )
