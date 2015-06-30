@@ -8,7 +8,7 @@ Usage
 
 	#include "qmqtt.h"
 
-	QMQTT::Client *client = new QMQTT::Client("localhost", 18883);
+	QMQTT::Client *client = new QMQTT::Client("localhost", 1883);
 
 	client->setClientId("clientId");
 
