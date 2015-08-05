@@ -13,11 +13,11 @@ using QMQTT::Message;
 using namespace std;
 
 
-class Subscriber : public QObject {
+class Logger : public QObject {
     public:
-        Subscriber() : QObject(0) {
+        Logger() : QObject(0) {
         }
-        ~Subscriber() {
+        ~Logger() {
         }
     public slots:
         void showMqttData(const QMQTT::Message &message) {
@@ -35,35 +35,63 @@ class Subscriber : public QObject {
         }
 };
 
+
+class MyClient : public Client {
+    public:
+    MyClient(const QString & host, quint32 port) : Client(host, port) {
+    }
+    void setTopic(const QString & topic) {
+        subTopic = topic;
+    }
+    void setQos(const QString & qos) {
+        subQos = qos.toUInt();
+    }
+    public slots:
+    void subscribeTo() {
+        subscribe(subTopic, subQos);
+    }
+
+    private:
+    QString subTopic;
+    quint8 subQos;
+};
+
+
 int main(int argc, char ** argv)
 {
-    QString host = "127.0.0.1";
-    QString clientId = "QtClient";
-    QString topic = "farm/gw/+/data";
-    quint32 port = 1883;
-    quint8 qos = 0;
-
     QCoreApplication a(argc, argv);
-   // QCommandLineParser parser;
-   // parser.addPositionalArgument("topic", QCoreApplication::translate("main", "Topic to subscribe"));
-   // parser.addPositionalArgument("qos", QCoreApplication::translate("main", "QoS"));
+    QCommandLineParser parser;
+    parser.addPositionalArgument("topic", QCoreApplication::translate("main", "Topic to subscribe"));
 
-   // QCommandLineOption idOption(QStringList() << "i" << "Client Id");
-   // parser.addOption(idOption);
-   // parser.parse(a);
-   // QStringList args = parser.positionalArguments();
-   // topic = args.at(0);
-   // qos = args.at(1).toInt();
+    QCommandLineOption hostOption("host",
+            QCoreApplication::translate("host", "The MQTT host to connect, localhost used if not defined."),
+            "hostOption", "localhost");
+    QCommandLineOption qosOption("qos",
+            QCoreApplication::translate("qos", "Quality of Service level, 0 used if not defined."),
+            "qosOption", "0");
+    QCommandLineOption portOption("port",
+            QCoreApplication::translate("port", "The MQTT port to connect, 1883 used if not defined."),
+            "portOption", "1883");
+    parser.process(a);
+    QStringList args = parser.positionalArguments();
+    if (args.size() < 2) {
+        parser.showHelp(0);
+        return 0;
+    }
+    QString host = parser.value("host");
+    quint32 port = parser.value("port").toUInt();
+    QString qos = parser.value("qos");
+    QString topic = args.at(0);
 
-    Subscriber s;
-    Client c(host, port);
-    QObject::connect(&c, &Client::connected, [&] () {
-        s.showConnected();
-        c.subscribe(topic, qos);
-    });
-    QObject::connect(&c, &Client::disconnected, &s, &Subscriber::showDisConnected);
-    QObject::connect(&c, &Client::subscribed, &s, &Subscriber::showSubscribed);
-    QObject::connect(&c, &Client::received, &s, &Subscriber::showMqttData);
+    Logger s;
+    MyClient c(host, port);
+    c.setTopic(topic);
+    c.setQos(qos);
+    QObject::connect(&c, &MyClient::connected, &s, &Logger::showConnected);
+    QObject::connect(&c, &MyClient::connected, &c, &MyClient::subscribeTo);
+    QObject::connect(&c, &MyClient::disconnected, &s, &Logger::showDisConnected);
+    QObject::connect(&c, &MyClient::subscribed, &s, &Logger::showSubscribed);
+    QObject::connect(&c, &MyClient::received, &s, &Logger::showMqttData);
     
     c.connect();
 
