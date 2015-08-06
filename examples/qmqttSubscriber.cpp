@@ -65,16 +65,21 @@ int main(int argc, char ** argv)
 
     QCommandLineOption hostOption("host",
             QCoreApplication::translate("host", "The MQTT host to connect, localhost used if not defined."),
-            "hostOption", "localhost");
+            "host", "localhost");
     QCommandLineOption qosOption("qos",
             QCoreApplication::translate("qos", "Quality of Service level, 0 used if not defined."),
-            "qosOption", "0");
+            "qos", "0");
     QCommandLineOption portOption("port",
             QCoreApplication::translate("port", "The MQTT port to connect, 1883 used if not defined."),
-            "portOption", "1883");
+            "port", "1883");
+
+    parser.addOption(hostOption);
+    parser.addOption(qosOption);
+    parser.addOption(portOption);
+
     parser.process(a);
     QStringList args = parser.positionalArguments();
-    if (args.size() < 2) {
+    if (args.size() < 1) {
         parser.showHelp(0);
         return 0;
     }

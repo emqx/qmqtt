@@ -4,6 +4,7 @@
 #include <QThread>
 #include <QCoreApplication>
 #include <QCommandLineParser>
+#include <QTimer>
 
 using QMQTT::Client;
 using QMQTT::Message;
@@ -60,16 +61,20 @@ int main(int argc, char ** argv)
 
     QCommandLineOption hostOption("host",
             QCoreApplication::translate("host", "The MQTT host to connect, localhost used if not defined."),
-            "hostOption", "localhost");
+            "host", "localhost");
     QCommandLineOption qosOption("qos",
             QCoreApplication::translate("qos", "Quality of Service level, 0 used if not defined."),
-            "qosOption", "0");
+            "qos", "0");
     QCommandLineOption portOption("port",
             QCoreApplication::translate("port", "The MQTT port to connect, 1883 used if not defined."),
-            "portOption", "1883");
+            "port", "1883");
+
+    parser.addOption(hostOption);
+    parser.addOption(qosOption);
+    parser.addOption(portOption);
     parser.process(a);
     QStringList args = parser.positionalArguments();
-    if (args.size() < 2) {
+    if (args.size() < 1) {
         parser.showHelp(0);
         return 0;
     }
@@ -77,18 +82,36 @@ int main(int argc, char ** argv)
     quint32 port = parser.value("port").toUInt();
     QString qos = parser.value("qos");
     QString topic = args.at(0);
+
+    cout << "using: host[" << host.toStdString() << "] port[" << port << "] qos[" << qos.toStdString() << "]" << endl;
     
     QString message = QString("message from %1").arg(id);
     Message msg(id, topic, message.toUtf8());
     MyClient c(host, port);
     c.setMessage(msg);
     Logger p;
+    QTimer t;
+    cout << "publish on topic[" << topic.toStdString() << "]" << " with message[" << message.toStdString() << "]" << endl;
 
-    QObject::connect(&c, &MyClient::connected, &p , &Logger::showConnected);
-    QObject::connect(&c, &MyClient::connected, &c , &MyClient::sendMessage);
-    QObject::connect(&c, &MyClient::published, &p, &Logger::showPublished);
-    QObject::connect(&c, &MyClient::disconnected, &p, &Logger::showDisconnected);
-    QObject::connect(&c, &MyClient::error, &p, &Logger::showError);
+    t.setInterval(1000);
+
+    //QObject::connect(&t, &QTimer::timeout, &c, &MyClient::sendMessage);
+    //QObject::connect(&c, &MyClient::connected, &p, &Logger::showConnected);
+    //QObject::connect(&c, &MyClient::connected, &t, &QTimer::start);
+    //QObject::connect(&c, &MyClient::disconnected, &t , &QTimer::stop);
+    //QObject::connect(&c, &MyClient::published, &p, &Logger::showPublished);
+    //QObject::connect(&c, &MyClient::disconnected, &p, &Logger::showDisconnected);
+    //QObject::connect(&c, &MyClient::error, &p, &Logger::showError);
+    
+    QObject::connect(&t, SIGNAL(timeout()), &c, SLOT(sendMessage()));
+    QObject::connect(&c, SIGNAL(connected()), &p, SLOT(showConnected()));
+    QObject::connect(&c, SIGNAL(connected()), &t, SLOT(start()));
+    QObject::connect(&c, SIGNAL(disconnected()), &t , SLOT(stop()));
+    QObject::connect(&c, SIGNAL(published()), &p, SLOT(showPublished()));
+    QObject::connect(&c, SIGNAL(disconnected()), &p, SLOT(showDisconnected()));
+    QObject::connect(&c, SIGNAL(error(QAbstractSocket::SocketError)), &p, SLOT(Logger::showError(QAbstractSocket::SocketError)));
+
+    c.connect();
 
     return a.exec();
 }
