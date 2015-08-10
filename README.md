@@ -74,7 +74,7 @@ Contributors
 =============
 
 [@Kampfgnom](https://github.com/Kampfgnom)
-
+[@rafaeldelucena](https://github.com/rafaeldelucena)
 
 Author
 ======
