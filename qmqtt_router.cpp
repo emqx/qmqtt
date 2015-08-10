@@ -38,7 +38,7 @@
 
 namespace QMQTT {
 
-Q_LOGGING_CATEGORY(router, "qmqtt.router", QtDebugMsg)
+Q_LOGGING_CATEGORY(router, "qmqtt.router")
 
 Router::Router(Client *parent) : QObject(parent), _client(parent)
 {

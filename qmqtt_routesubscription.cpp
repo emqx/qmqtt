@@ -39,7 +39,7 @@
 
 namespace QMQTT {
 
-Q_LOGGING_CATEGORY(routerSubscription, "qmqtt.routersubscription", QtDebugMsg)
+Q_LOGGING_CATEGORY(routerSubscription, "qmqtt.routersubscription")
 
 RouteSubscription::RouteSubscription(Router *parent) : QObject(parent)
 {

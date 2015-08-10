@@ -35,7 +35,7 @@
 
 namespace QMQTT {
 
-Q_LOGGING_CATEGORY(frame, "qmqtt.frame", QtDebugMsg)
+Q_LOGGING_CATEGORY(frame, "qmqtt.frame")
 
 Frame::Frame(quint8 header, QObject *parent) :
     QObject(parent),
@@ -119,7 +119,7 @@ void Frame::write(QDataStream &stream)
         stream << (quint8)0;
         return;
     }
-    qCDebug(frame, "_data.size: %d", _data.size());
+    qCDebug(frame) << "_data.size: %d" << _data.size();
     encodeLength(lenbuf, _data.size());
     stream.writeRawData(lenbuf.data(), lenbuf.size());
     stream.writeRawData(_data.data(), _data.size());
