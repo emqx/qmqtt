@@ -54,7 +54,7 @@ class MyClient : public Client {
 
 int main(int argc, char ** argv)
 {
-    int id = 140;
+    int id = qrand();
     QCoreApplication a(argc, argv);
     QCommandLineParser parser;
     parser.addPositionalArgument("topic", QCoreApplication::translate("main", "Topic to subscribe"));
@@ -95,21 +95,15 @@ int main(int argc, char ** argv)
 
     t.setInterval(1000);
 
-    //QObject::connect(&t, &QTimer::timeout, &c, &MyClient::sendMessage);
-    //QObject::connect(&c, &MyClient::connected, &p, &Logger::showConnected);
-    //QObject::connect(&c, &MyClient::connected, &t, &QTimer::start);
-    //QObject::connect(&c, &MyClient::disconnected, &t , &QTimer::stop);
-    //QObject::connect(&c, &MyClient::published, &p, &Logger::showPublished);
-    //QObject::connect(&c, &MyClient::disconnected, &p, &Logger::showDisconnected);
-    //QObject::connect(&c, &MyClient::error, &p, &Logger::showError);
+    QObject::connect(&c, &MyClient::connected, &p, &Logger::showConnected);
+    QObject::connect(&c, &MyClient::published, &p, &Logger::showPublished);
+    QObject::connect(&c, &MyClient::disconnected, &p, &Logger::showDisconnected);
+    QObject::connect(&c, &MyClient::error, &p, &Logger::showError);
+    QObject::connect(&t, &QTimer::timeout, &c, &MyClient::sendMessage);
     
-    QObject::connect(&t, SIGNAL(timeout()), &c, SLOT(sendMessage()));
-    QObject::connect(&c, SIGNAL(connected()), &p, SLOT(showConnected()));
     QObject::connect(&c, SIGNAL(connected()), &t, SLOT(start()));
     QObject::connect(&c, SIGNAL(disconnected()), &t , SLOT(stop()));
-    QObject::connect(&c, SIGNAL(published()), &p, SLOT(showPublished()));
-    QObject::connect(&c, SIGNAL(disconnected()), &p, SLOT(showDisconnected()));
-    QObject::connect(&c, SIGNAL(error(QAbstractSocket::SocketError)), &p, SLOT(Logger::showError(QAbstractSocket::SocketError)));
+    QObject::connect(&a, SIGNAL(aboutToQuit()), &c, SLOT(disconnect()));
 
     c.connect();
 

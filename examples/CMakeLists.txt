@@ -17,8 +17,6 @@ link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../)
 
 add_executable(qmqttPublisher qmqttPublisher.cpp)
 target_link_libraries(qmqttPublisher qmqtt)
-target_compile_features(qmqttPublisher PRIVATE cxx_range_for)
 
 add_executable(qmqttSubscriber qmqttSubscriber.cpp)
 target_link_libraries(qmqttSubscriber qmqtt)
-target_compile_features(qmqttSubscriber PRIVATE cxx_range_for)

@@ -88,6 +88,9 @@ int main(int argc, char ** argv)
     QString qos = parser.value("qos");
     QString topic = args.at(0);
 
+    cout << "using: host[" << host.toStdString() << "] port[" << port << "] qos[" << qos.toStdString() << "]" << endl;
+    cout << "subscribe on topic[" << topic.toStdString() << "]" << endl;
+
     Logger s;
     MyClient c(host, port);
     c.setTopic(topic);
