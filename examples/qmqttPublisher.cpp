@@ -1,7 +1,6 @@
 #include <qmqtt_client.h>
 #include <iostream>
 #include <QObject>
-#include <QThread>
 #include <QCoreApplication>
 #include <QCommandLineParser>
 #include <QTimer>
@@ -29,12 +28,6 @@ class Logger : public QObject {
         void showConnected() {
             cout << "connected" << endl;
         }
-        void publish() {
-        }
-    private:
-        QString topic, message, willTopic;
-        Will * lwt;
-    
 };
 
 class MyClient : public Client {
@@ -57,8 +50,6 @@ int main(int argc, char ** argv)
     int id = qrand();
     QCoreApplication a(argc, argv);
     QCommandLineParser parser;
-    parser.addPositionalArgument("topic", QCoreApplication::translate("main", "Topic to subscribe"));
-
     QCommandLineOption hostOption("host",
             QCoreApplication::translate("host", "The MQTT host to connect, localhost used if not defined."),
             "host", "localhost");
@@ -69,15 +60,18 @@ int main(int argc, char ** argv)
             QCoreApplication::translate("port", "The MQTT port to connect, 1883 used if not defined."),
             "port", "1883");
 
+    parser.addPositionalArgument("topic", QCoreApplication::translate("main", "Topic to subscribe"));
     parser.addOption(hostOption);
     parser.addOption(qosOption);
     parser.addOption(portOption);
     parser.process(a);
     QStringList args = parser.positionalArguments();
+
     if (args.size() < 1) {
         parser.showHelp(0);
         return 0;
     }
+
     QString host = parser.value("host");
     quint32 port = parser.value("port").toUInt();
     QString qos = parser.value("qos");
@@ -100,7 +94,7 @@ int main(int argc, char ** argv)
     QObject::connect(&c, &MyClient::disconnected, &p, &Logger::showDisconnected);
     QObject::connect(&c, &MyClient::error, &p, &Logger::showError);
     QObject::connect(&t, &QTimer::timeout, &c, &MyClient::sendMessage);
-    
+
     QObject::connect(&c, SIGNAL(connected()), &t, SLOT(start()));
     QObject::connect(&c, SIGNAL(disconnected()), &t , SLOT(stop()));
     QObject::connect(&a, SIGNAL(aboutToQuit()), &c, SLOT(disconnect()));

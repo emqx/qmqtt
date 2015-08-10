@@ -61,8 +61,6 @@ int main(int argc, char ** argv)
 {
     QCoreApplication a(argc, argv);
     QCommandLineParser parser;
-    parser.addPositionalArgument("topic", QCoreApplication::translate("main", "Topic to subscribe"));
-
     QCommandLineOption hostOption("host",
             QCoreApplication::translate("host", "The MQTT host to connect, localhost used if not defined."),
             "host", "localhost");
@@ -73,16 +71,18 @@ int main(int argc, char ** argv)
             QCoreApplication::translate("port", "The MQTT port to connect, 1883 used if not defined."),
             "port", "1883");
 
+    parser.addPositionalArgument("topic", QCoreApplication::translate("main", "Topic to subscribe"));
     parser.addOption(hostOption);
     parser.addOption(qosOption);
     parser.addOption(portOption);
-
     parser.process(a);
     QStringList args = parser.positionalArguments();
+
     if (args.size() < 1) {
         parser.showHelp(0);
         return 0;
     }
+
     QString host = parser.value("host");
     quint32 port = parser.value("port").toUInt();
     QString qos = parser.value("qos");
@@ -95,16 +95,15 @@ int main(int argc, char ** argv)
     MyClient c(host, port);
     c.setTopic(topic);
     c.setQos(qos);
+
     QObject::connect(&c, &MyClient::connected, &s, &Logger::showConnected);
     QObject::connect(&c, &MyClient::connected, &c, &MyClient::subscribeTo);
     QObject::connect(&c, &MyClient::disconnected, &s, &Logger::showDisConnected);
     QObject::connect(&c, &MyClient::subscribed, &s, &Logger::showSubscribed);
     QObject::connect(&c, &MyClient::received, &s, &Logger::showMqttData);
-    
+    QObject::connect(&a, &QCoreApplication::aboutToQuit, &c, &MyClient::disconnect);
+
     c.connect();
 
     a.exec();
-
-    c.unsubscribed(topic);
-    c.disconnect();
 }
