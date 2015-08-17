@@ -7,6 +7,8 @@ HEADERS += \
     $$PWD/qmqtt_network.h \
     $$PWD/qmqtt_will.h \
     $$PWD/qmqtt.h \
+    $$PWD/qmqtt_routesubscription.h \
+    $$PWD/qmqtt_routedmessage.h \
     $$PWD/qmqtt_router.h
 
 SOURCES += \
@@ -16,4 +18,6 @@ SOURCES += \
     $$PWD/qmqtt_message.cpp \
     $$PWD/qmqtt_network.cpp \
     $$PWD/qmqtt_will.cpp \
+    $$PWD/qmqtt_routesubscription.cpp \
+    $$PWD/qmqtt_routedmessage.cpp \
     $$PWD/qmqtt_router.cpp
