@@ -35,14 +35,24 @@ HEADERS += qmqtt_client.h\
     qmqtt_routesubscription.h \
     qmqtt_routedmessage.h
 
-unix:!symbian {
-    maemo5 {
-        target.path = /opt/usr/lib
+isEmpty(PREFIX) {
+    contains(MEEGO_EDITION,harmattan) {
+        PREFIX = /usr
+    } else:unix:!symbian {
+        maemo5 {
+            PREFIX = /opt/usr
+        } else {
+            PREFIX = /usr/local
+        }
     } else {
-        target.path = /usr/lib
+        PREFIX = $$[QT_INSTALL_PREFIX]
     }
-    INSTALLS += target
 }
+
+headers.files = $$HEADERS
+headers.path = $$PREFIX/include/qmqtt
+target.path = $$PREFIX/lib
+INSTALLS += headers target
 
 OTHER_FILES += \
     qmqtt.pri
