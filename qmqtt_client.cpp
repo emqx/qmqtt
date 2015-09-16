@@ -36,14 +36,18 @@
 namespace QMQTT {
 
 Client::Client(const QString & host, quint32 port, QObject * parent /* =0 */)
-    :pd_ptr(new ClientPrivate(this))
+:d_ptr(new ClientPrivate(this))
+
 {
-    pd_func()->init(host, port, parent);
+    Q_D(Client);
+    d->init(host, port, parent);
 }
 
 Client::~Client()
 {
     //?
+    Q_D(Client);
+    delete d;
 }
 
 /*----------------------------------------------------------------
@@ -51,102 +55,126 @@ Client::~Client()
  ----------------------------------------------------------------*/
 QString Client::host() const
 {
-    return pd_func()->host;
+    Q_D(const Client);
+//     QString* str = d->host;
+//    return const_cast<QString *const>(d->host);
+//    return d->host;
+    return d->host;
 }
 
 void Client::setHost(const QString & host)
 {
-    pd_func()->host = host;
+//    d->host = host;
+    Q_D(Client);
+    d->host = host;
 }
 
 quint32 Client::port() const
 {
-    return pd_func()->port;
+    Q_D(const Client);
+    return d->port;
 }
 
 void Client::setPort(quint32 port)
 {
-    pd_func()->port = port;
+    Q_D(Client);
+    d->port = port;
 }
 
 QString Client::clientId() const
 {
-    return pd_func()->clientId;
+     Q_D(const Client);
+    return d->clientId;
 }
 
 void Client::setClientId(const QString &clientId)
 {
-    pd_func()->clientId = clientId;
+     Q_D(Client);
+    d->clientId = clientId;
 }
 
 QString Client::username() const
 {
-    return pd_func()->username;
+     Q_D(const Client);
+    return d->username;
 }
 
 void Client::setUsername(const QString & username)
 {
-    pd_func()->username = username;
+     Q_D(Client);
+    d->username = username;
 }
 
 QString Client::password() const
 {
-    return pd_func()->password;
+     Q_D(const Client);
+    return d->password;
 }
 
 void Client::setPassword(const QString & password)
 {
-    pd_func()->password = password;
+     Q_D(Client);
+    d->password = password;
 }
 
 int Client::keepalive()
 {
-    return pd_func()->keepalive;
+     Q_D( Client);
+    return d->keepalive;
 }
 
 void Client::setKeepAlive(int keepalive)
 {
-    pd_func()->keepalive = keepalive;
+     Q_D(Client);
+    d->keepalive = keepalive;
 }
 
 bool Client::cleansess()
 {
-    return pd_func()->cleansess;
+     Q_D(Client);
+    return d->cleansess;
 }
 
 void Client::setCleansess(bool cleansess)
 {
-    pd_func()->cleansess = cleansess;
+     Q_D(Client);
+    d->cleansess = cleansess;
 }
 
 bool Client::autoReconnect() const
 {
-    return pd_func()->network->autoReconnect();
+    Q_D(const Client);
+    return d->network->autoReconnect();
 }
 
 void Client::setAutoReconnect(bool value)
 {
-    pd_func()->network->setAutoReconnect(value);
+    Q_D(Client);
+    d->network->setAutoReconnect(value);
 }
 
 Will *Client::will()
 {
-    return pd_func()->will;
+    Q_D(Client);
+    return d->will;
 }
 
 void Client::setWill(Will *will)
 {
-    pd_func()->will = will;
+    Q_D(Client);
+    d->will = will;
 }
 
 State Client::state() const
 {
-    return pd_func()->state;
+    Q_D(const Client);
+    return d->state;
 }
 
 bool Client::isConnected()
 {
-    return pd_func()->network->isConnected();
+    Q_D(Client);
+    return d->network->isConnected();
 }
 
 
@@ -155,56 +183,65 @@ bool Client::isConnected()
  ----------------------------------------------------------------*/
 void Client::connect()
 {
-    pd_func()->sockConnect();
+    Q_D(Client);
+    d->sockConnect();
 }
 
 void Client::onConnected()
 {
+    Q_D(Client);
     qCDebug(client) << "Sock Connected....";
-    pd_func()->sendConnect();
-    pd_func()->startKeepalive();
+    d->sendConnect();
+    d->startKeepalive();
     emit connected();
 }
 
 quint16 Client::publish(Message &message)
 {
-    quint16 msgid = pd_func()->sendPublish(message);
+    Q_D(Client);
+    quint16 msgid = d->sendPublish(message);
     emit published(message);
     return msgid;
 }
 
 void Client::puback(quint8 type, quint16 msgid)
 {
-    pd_func()->sendPuback(type, msgid);
+    Q_D(Client);
+    d->sendPuback(type, msgid);
     emit pubacked(type, msgid);
 }
 
 quint16 Client::subscribe(const QString &topic, quint8 qos)
 {
-    quint16 msgid = pd_func()->sendSubscribe(topic, qos);
+    Q_D(Client);
+    quint16 msgid = d->sendSubscribe(topic, qos);
     emit subscribed(topic);
     return msgid;
 }
 
 void Client::unsubscribe(const QString &topic)
 {
-    pd_func()->sendUnsubscribe(topic);
+   Q_D(Client);
+    d->sendUnsubscribe(topic);
     emit unsubscribed(topic);
 }
 
 void Client::ping()
 {
-    pd_func()->sendPing();
+    Q_D(Client);
+    d->sendPing();
 }
 
 void Client::disconnect()
 {
-    pd_func()->disconnect();
+    Q_D(Client);
+    d->disconnect();
 }
 
 void Client::onDisconnected()
 {
-    pd_func()->stopKeepalive();
+    Q_D(Client);
+    d->stopKeepalive();
     emit disconnected();
 }
 
@@ -274,20 +311,22 @@ void Client::handleConnack(quint8 ack)
 
 void Client::handlePublish(Message & message)
 {
+    Q_D(Client);
     if(message.qos() == MQTT_QOS1) {
-        pd_func()->sendPuback(PUBACK, message.id());
+        d->sendPuback(PUBACK, message.id());
     } else if(message.qos() == MQTT_QOS2) {
-        pd_func()->sendPuback(PUBREC, message.id());
+        d->sendPuback(PUBREC, message.id());
     }
     emit received(message);
 }
 
 void Client::handlePuback(quint8 type, quint16 msgid)
 {
+    Q_D(Client);
     if(type == PUBREC) {
-        pd_func()->sendPuback(PUBREL, msgid);
+        d->sendPuback(PUBREL, msgid);
     } else if (type == PUBREL) {
-        pd_func()->sendPuback(PUBCOMP, msgid);
+        d->sendPuback(PUBCOMP, msgid);
     }
     emit pubacked(type, msgid);
 }
