@@ -32,8 +32,7 @@
 #ifndef QMQTT_GLOBAL_H
 #define QMQTT_GLOBAL_H
 
-#include <QtCore/qglobal.h>
-
+//#include <QtCore/qglobal.h>
 #if defined(QMQTT_LIBRARY)
 #  define QMQTTSHARED_EXPORT Q_DECL_EXPORT
 #else
@@ -42,6 +41,7 @@
 
 #define QMQTT_VERSION "0.2.0"
 
+/*
 #define P_DECLARE_PRIVATE(Class) \
     friend class Class##Private; \
     inline Class##Private* pd_func() { return reinterpret_cast<Class##Private *>(this->pd_ptr); } \
@@ -54,5 +54,6 @@
 
 #define P_D(Class) Class##Private * const d = this->pd_func()
 #define P_Q(Class) Class * const q = this->pq_func()
-
+*/
 #endif // QMQTT_GLOBAL_H
+
