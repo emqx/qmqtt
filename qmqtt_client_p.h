@@ -42,18 +42,16 @@
 #include "qmqtt_global.h"
 #include "qmqtt_message.h"
 #include "qmqtt_will.h"
-
+#include "qmqtt_network.h"
 namespace QMQTT {
 
 Q_DECLARE_LOGGING_CATEGORY(client)
-
 class ClientPrivate
 {
 
-    P_DECLARE_PUBLIC(QMQTT::Client)
-
+    Q_DECLARE_PUBLIC(Client)
 public:
-    explicit  ClientPrivate(Client * q);
+    ClientPrivate(Client * qt);
     ~ClientPrivate();
     void init(QObject * parent = 0);
     void init(const QString & host, int port, QObject *parent = 0);
@@ -74,7 +72,7 @@ public:
     QPointer<QMQTT::Network> network;
     QPointer<QTimer> timer;
 
-    Client * const pq_ptr;
+
 
 public slots:
     void sockConnect();
@@ -92,6 +90,9 @@ public slots:
 private:
     QString randomClientId();
     quint16 nextmid();
+    Client * const q_ptr;
+
+
 
 };
 
