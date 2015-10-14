@@ -88,11 +88,8 @@ class QMQTTSHARED_EXPORT Client : public QObject
     Q_PROPERTY(int keepalive READ keepalive WRITE setKeepAlive)
     Q_PROPERTY(bool autoReconnect READ autoReconnect WRITE setAutoReconnect)
 
-    Q_DISABLE_COPY(Client)
 
-    P_DECLARE_PRIVATE(QMQTT::Client)
-
-    //friend class ClientPrivate;
+//    friend class ClientPrivate;
 
 public:
     Client(const QString &host = "localhost", quint32 port = 1883, QObject * parent = 0);
@@ -169,8 +166,11 @@ private slots:
     void handleConnack(quint8 ack);
     void handlePuback(quint8 type, quint16 msgid);
 
-protected:
-    ClientPrivate * const pd_ptr;
+private:
+    ClientPrivate *const  d_ptr;
+
+    Q_DISABLE_COPY(Client)
+    Q_DECLARE_PRIVATE(Client)
 
 };
 

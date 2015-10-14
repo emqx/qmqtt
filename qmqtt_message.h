@@ -35,10 +35,10 @@
 #include <QObject>
 #include <QString>
 #include <QByteArray>
-
+#include "qmqtt_global.h"
 namespace QMQTT {
 
-class Message
+class QMQTTSHARED_EXPORT Message
 {
 public:
     Message();

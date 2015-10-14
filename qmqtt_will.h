@@ -34,10 +34,10 @@
 
 #include <QObject>
 #include <QString>
-
+#include "qmqtt_global.h"
 namespace QMQTT {
 
-class Will : public QObject
+class QMQTTSHARED_EXPORT Will : public QObject
 {
     Q_OBJECT
 
