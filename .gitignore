@@ -5,3 +5,4 @@ release
 moc_*
 Makefile
 build-*
+*.autosave
