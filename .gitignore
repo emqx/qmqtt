@@ -1,3 +1,7 @@
 *.pro.user
 debug
 release
+*.o
+moc_*
+Makefile
+build-*

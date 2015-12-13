@@ -5,12 +5,10 @@
 #-------------------------------------------------
 
 QT       += network
-
 QT       -= gui
 
 TARGET = qmqtt
 TEMPLATE = lib
-
 DEFINES += QMQTT_LIBRARY
 
 SOURCES += qmqtt_client.cpp \
@@ -21,7 +19,7 @@ SOURCES += qmqtt_client.cpp \
     qmqtt_router.cpp \
     qmqtt_will.cpp \
     qmqtt_routesubscription.cpp \
-    qmqtt_routedmessage.cpp
+    qmqtt_routedmessage.cpp \
 
 HEADERS += qmqtt_client.h\
     qmqtt_global.h \
@@ -54,5 +52,14 @@ headers.path = $$PREFIX/include/qmqtt
 target.path = $$PREFIX/lib
 INSTALLS += headers target
 
-OTHER_FILES += \
-    qmqtt.pri
+OTHER_FILES += qmqtt.pri
+
+tests.target = all
+tests.commands = @echo XXXXXXXXXXXXXXXXXXXXXXXXXXX; \
+    mkdir -p $${OUT_PWD}/tests; \
+    cd $${OUT_PWD}/tests; \
+    $${QMAKE_QMAKE} $${PWD}/tests/tests.pro; \
+    make; \
+    ./qmqtt_tests; \
+    cd $${OUT_PWD}
+QMAKE_EXTRA_TARGETS += tests
