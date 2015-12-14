@@ -54,12 +54,12 @@ INSTALLS += headers target
 
 OTHER_FILES += qmqtt.pri
 
+unittests_directory = unittests
 unittests.target = all
-unittests.commands = @echo XXXXXXXXXXXXXXXXXXXXXXXXXXX; \
-    mkdir -p $${OUT_PWD}/unittests; \
-    cd $${OUT_PWD}/unittests; \
-    $${QMAKE_QMAKE} $${PWD}/unittests/unittests.pro; \
-    make; \
-    ./qmqtt_unittests; \
+unittests.commands = \
+    mkdir -p $${OUT_PWD}/$${unittests_directory}; \
+    cd $${OUT_PWD}/$${unittests_directory}; \
+    $${QMAKE_QMAKE} $${PWD}/$${unittests_directory}/unittests.pro; \
+    make check; \
     cd $${OUT_PWD}
 QMAKE_EXTRA_TARGETS += unittests
