@@ -61,7 +61,7 @@ unix {
         mkdir -p $${OUT_PWD}/$${unittests_directory}; \
         cd $${OUT_PWD}/$${unittests_directory}; \
         $${QMAKE_QMAKE} $${PWD}/$${unittests_directory}/unittests.pro; \
-        make check; \
+        LD_LIBRARY_PATH=$${OUT_PWD} make check; \
         cd $${OUT_PWD}
     QMAKE_EXTRA_TARGETS += unittests
 }

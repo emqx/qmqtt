@@ -5,8 +5,13 @@ DEFINES += QMQTT_LIBRARY_TESTS
 CONFIG += testcase
 
 SOURCES += \
-    testmain.cpp
+    testmain.cpp \
+    willtests.cpp \
+    messagetests.cpp
 
 HEADERS += \
-    sampletest2.h \
-    sampletest.h
+    willtests.h \
+    messagetests.h
+
+INCLUDEPATH += ..
+LIBS += -L.. -lqmqtt

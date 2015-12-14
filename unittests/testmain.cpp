@@ -1,7 +1,6 @@
+#include "willtests.h"
+#include "messagetests.h"
 #include <QtTest>
-
-#include "sampletest.h"
-#include "sampletest2.h"
 
 class TestRunner
 {
@@ -33,11 +32,11 @@ int main(int argc, char *argv[])
 
     TestRunner runner(argc, argv);
 
-    SampleTest sampleTest;
-    runner.exec(&sampleTest);
+    WillTests willTests;
+    runner.exec(&willTests);
 
-    SampleTest2 sampleTest2;
-    runner.exec(&sampleTest2);
+    MessageTests messageTests;
+    runner.exec(&messageTests);
 
     return runner.ExitCode;
 }
