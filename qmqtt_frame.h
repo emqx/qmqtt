@@ -83,19 +83,23 @@
 
 namespace QMQTT {
 
-class Frame : public QObject
+class Frame // : public QObject
 {
-    Q_OBJECT
+//    Q_OBJECT
 
-    Q_DISABLE_COPY(Frame)
+//    Q_DISABLE_COPY(Frame)
 
 public:
-    explicit Frame(quint8 header, QObject *parent = 0);
-    explicit Frame(quint8 header, QByteArray & data, QObject *parent = 0);
-    ~Frame();
+    explicit Frame();
+    explicit Frame(quint8 header);
+    explicit Frame(quint8 header, QByteArray data);
+    virtual ~Frame();
 
-    quint8 header();
-    QByteArray & data();
+    Frame(const Frame& other);
+    Frame& operator=(const Frame& other);
+
+    quint8 header() const;
+    QByteArray data() const;
 
     int readInt();
     char readChar();
@@ -109,6 +113,8 @@ public:
     //TODO: FIXME LATER
     void write(QDataStream &stream);
 
+    bool operator==(const Frame& other) const;
+
 private:
     void encodeLength(QByteArray & lenbuf, int length);
     quint8 _header;
@@ -116,5 +122,9 @@ private:
 };
 
 } // namespace QMQTT
+
+QDebug operator<<(QDebug debug, const QMQTT::Frame& frame);
+
+Q_DECLARE_METATYPE(QMQTT::Frame);
 
 #endif // QMQTT_FRAME_H

@@ -1,5 +1,7 @@
 #include "willtests.h"
 #include "messagetests.h"
+#include "frametests.h"
+#include "networktests.h"
 #include <QtTest>
 
 class TestRunner
@@ -27,7 +29,7 @@ public:
 };
 
 int main(int argc, char *argv[])
-{
+{    
     QApplication app(argc, argv);
 
     TestRunner runner(argc, argv);
@@ -37,6 +39,13 @@ int main(int argc, char *argv[])
 
     MessageTests messageTests;
     runner.exec(&messageTests);
+
+    FrameTests frameTests;
+    runner.exec(&frameTests);
+
+    NetworkTests networkTests;
+    runner.exec(&networkTests);
+
 
     return runner.ExitCode;
 }

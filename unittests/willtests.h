@@ -16,7 +16,7 @@ public:
     explicit WillTests();
     virtual ~WillTests();
 
-    QScopedPointer<QMQTT::Will> m_uut;
+    QScopedPointer<QMQTT::Will> _uut;
 
 private slots:
     void init();

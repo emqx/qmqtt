@@ -16,7 +16,7 @@ public:
     explicit MessageTests();
     virtual ~MessageTests();
 
-    QScopedPointer<QMQTT::Message> m_uut;
+    QScopedPointer<QMQTT::Message> _uut;
 
 private slots:
     void init();
