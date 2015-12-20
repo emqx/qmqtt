@@ -2,7 +2,7 @@ QMQTT
 =====
 
 mqtt client for Qt
-
+Please compile the library with >=Qt 5.3 version.
 Usage
 =====
 
