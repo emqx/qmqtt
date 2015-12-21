@@ -92,7 +92,7 @@ class QMQTTSHARED_EXPORT Client : public QObject
 //    friend class ClientPrivate;
 
 public:
-    Client(const QString &host = "localhost", quint32 port = 1883, QObject * parent = 0);
+    Client(const QString host = "localhost", quint32 port = 1883, QObject * parent = 0);
     ~Client();
 
     /*
@@ -161,7 +161,7 @@ signals:
 private slots:
     void onConnected();
     void onDisconnected();
-    void onReceived(Frame & frame);
+    void onReceived(QMQTT::Frame frame);
     void handlePublish(Message &message);
     void handleConnack(quint8 ack);
     void handlePuback(quint8 type, quint16 msgid);

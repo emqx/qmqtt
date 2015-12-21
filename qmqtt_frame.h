@@ -86,9 +86,7 @@ namespace QMQTT {
 class Frame // : public QObject
 {
 //    Q_OBJECT
-
 //    Q_DISABLE_COPY(Frame)
-
 public:
     explicit Frame();
     explicit Frame(quint8 header);
@@ -97,6 +95,8 @@ public:
 
     Frame(const Frame& other);
     Frame& operator=(const Frame& other);
+
+    bool operator==(const Frame& other) const;
 
     quint8 header() const;
     QByteArray data() const;
@@ -112,8 +112,6 @@ public:
 
     //TODO: FIXME LATER
     void write(QDataStream &stream);
-
-    bool operator==(const Frame& other) const;
 
 private:
     void encodeLength(QByteArray & lenbuf, int length);

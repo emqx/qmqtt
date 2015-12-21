@@ -170,7 +170,7 @@ QDebug operator<<(QDebug debug, const QMQTT::Frame& frame)
                     << " data=" <<
                        QString(frame.data().left(8).toHex())
                        .replace(QRegExp("(..)"), " 0x\\1")
-                       .trimmed().toLatin1().constData()
+                       .trimmed().toUtf8().constData()
                     << " )";
     return debug;
 }

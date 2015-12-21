@@ -52,16 +52,24 @@ headers.path = $$PREFIX/include/qmqtt
 target.path = $$PREFIX/lib
 INSTALLS += headers target
 
-OTHER_FILES += qmqtt.pri
+OTHER_FILES += \
+    qmqtt.pri
+
+UNIT_TESTS += \
+    tests/clienttests.h \
+    tests/clienttests.cpp \
+    tests/tests.pro
+
+OTHER_FILES += $${UNIT_TESTS}
 
 unix {
-    unittests_directory = unittests
-    unittests.target = all
-    unittests.commands = \
-        mkdir -p $${OUT_PWD}/$${unittests_directory}; \
-        cd $${OUT_PWD}/$${unittests_directory}; \
-        $${QMAKE_QMAKE} $${PWD}/$${unittests_directory}/unittests.pro; \
+    unit_tests_directory = tests
+    unit_tests.target = all
+    unit_tests.commands = \
+        mkdir -p $${OUT_PWD}/$${unit_tests_directory}; \
+        cd $${OUT_PWD}/$${unit_tests_directory}; \
+        $${QMAKE_QMAKE} $${PWD}/$${unit_tests_directory}/tests.pro; \
         LD_LIBRARY_PATH=$${OUT_PWD} make check; \
         cd $${OUT_PWD}
-    QMAKE_EXTRA_TARGETS += unittests
+    QMAKE_EXTRA_TARGETS += unit_tests
 }
