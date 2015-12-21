@@ -1,14 +1,14 @@
 #include "tcpserver.h"
 #include <QTcpSocket>
-#include <QDebug>
 
+const QHostAddress TcpServer::HOST = QHostAddress::LocalHost;
 const quint16 TcpServer::PORT = 3875;
 
 TcpServer::TcpServer()
     : _socket(NULL)
 {
     connect(this, &QTcpServer::newConnection, this, &TcpServer::on_newConnection);
-    listen(QHostAddress::LocalHost, 3875);
+    listen(HOST, PORT);
 }
 
 TcpServer::~TcpServer()
@@ -20,6 +20,10 @@ void TcpServer::on_newConnection()
     if(NULL != _socket)
     {
         disconnect(_socket, &QTcpSocket::readyRead, this, &TcpServer::on_readyRead);
+        _socket->disconnectFromHost();
+        _socket->deleteLater();
+        _socket = NULL;
+        _data.clear();
     }
     _socket = nextPendingConnection();
     if(NULL != _socket)

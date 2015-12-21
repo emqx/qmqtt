@@ -21,7 +21,7 @@ void FrameTests::cleanup()
     _uut.reset();
 }
 
-void FrameTests::default_constructor()
+void FrameTests::defaultConstructor_Test()
 {
     QSKIP("Disabled test, getters segfault");
     // These segfault currently. QByteArray contains no data when default constructed.
@@ -30,7 +30,7 @@ void FrameTests::default_constructor()
     // QCOMPARE(_uut->readString(), QString("blah"));
 }
 
-void FrameTests::constructor_with_parameters()
+void FrameTests::constructorWithParameters_Test()
 {
     QByteArray byteArray;
     _uut.reset(new QMQTT::Frame(0, byteArray));
@@ -38,7 +38,7 @@ void FrameTests::constructor_with_parameters()
     QCOMPARE(_uut.isNull(), false);
 }
 
-void FrameTests::readInt_reads_bytearray()
+void FrameTests::readIntReadsBytearray_Test()
 {
     QByteArray byteArray;
     byteArray.resize(2);
@@ -49,7 +49,7 @@ void FrameTests::readInt_reads_bytearray()
     QCOMPARE(_uut->readInt(), static_cast<int>((1 << 8) + 2));
 }
 
-void FrameTests::readChar_reads_bytearray()
+void FrameTests::readCharReadsBytearray_Test()
 {
     QByteArray byteArray;
     byteArray.resize(1);
@@ -59,7 +59,7 @@ void FrameTests::readChar_reads_bytearray()
     QCOMPARE(_uut->readChar(), static_cast<char>(42));
 }
 
-void FrameTests::readString_reads_bytearray()
+void FrameTests::readStringReadsBytearray_Test()
 {
     QByteArray byteArray;
     byteArray.resize(5);
@@ -73,28 +73,28 @@ void FrameTests::readString_reads_bytearray()
     QCOMPARE(_uut->readString(), QString("abc"));
 }
 
-void FrameTests::writeInt_writes_to_bytearray()
+void FrameTests::writeIntWritesToBytearray_Test()
 {
     _uut->writeInt(42);
 
     QCOMPARE(_uut->readInt(), 42);
 }
 
-void FrameTests::writeChar_writes_to_bytearray()
+void FrameTests::writeCharWritesToBytearray_Test()
 {
     _uut->writeChar(static_cast<char>(42));
 
     QCOMPARE(_uut->readChar(), static_cast<char>(42));
 }
 
-void FrameTests::writeString_writes_to_bytearray()
+void FrameTests::writeStringWritesToBytearray_Test()
 {
     _uut->writeString(QString("forty-two"));
 
     QCOMPARE(_uut->readString(), QString("forty-two"));
 }
 
-void FrameTests::writeRawData_writes_to_bytearray()
+void FrameTests::writeRawDataWritesToBytearray_Test()
 {
     QByteArray byteArray;
     byteArray.resize(2);
@@ -105,7 +105,7 @@ void FrameTests::writeRawData_writes_to_bytearray()
     QCOMPARE(_uut->readInt(), static_cast<int>((3 << 8) + 4));
 }
 
-void FrameTests::write_writes_to_datastream()
+void FrameTests::writeWritesToDatastream_Test()
 {
     QByteArray frameData(128, 0);
     for (unsigned char c = 0; c < 128; c++)

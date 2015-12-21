@@ -2,6 +2,7 @@
 #define TCP_SERVER_H
 
 #include <QTcpServer>
+#include <QHostAddress>
 
 class TcpServer : public QTcpServer
 {
@@ -17,6 +18,7 @@ protected:
     QTcpSocket* _socket;
     QByteArray _data;
 
+    static const QHostAddress HOST;
     static const quint16 PORT;
 
 protected slots:
