@@ -1,10 +1,47 @@
-#include "networktests.h"
 #include "tcpserver.h"
 #include <qmqtt_network.h>
+#include <qmqtt_frame.h>
 #include <QTest>
 #include <QSignalSpy>
-#include <QEventLoop>
 #include <QDebug>
+#include <QObject>
+#include <QScopedPointer>
+
+class NetworkTests : public QObject
+{
+    Q_OBJECT
+public:
+    explicit NetworkTests();
+    virtual ~NetworkTests();
+
+    QScopedPointer<QMQTT::Network> _uut;
+
+private:
+    void flushEvents();
+    QByteArray serializeFrame(QMQTT::Frame& frame) const;
+
+private slots:
+    void init();
+    void cleanup();
+
+    void defaultConstructor_Test();
+    void connectToMakesTCPConnection_Test();
+    void connectedSignalEmittedAfterConnectionMade_Test();
+    void isConnectedTrueWhenInConnectedState_Test();
+    void isConnectedFalseWhenNotInConnectedState_Test();
+    void disconnectWillDisconnectASocketConnection_Test();
+    void disconnectedSignalEmittedAfterADisconnection_Test();
+    void sendframeSendsTheFrame_Test();
+    void receivedReceivesAFrame_Test();
+    void stateIsUnconnectedStateBeforeAnyConnectionMade_Test();
+    void stateIsConnectingStateAfterToldToConnectButNotYetConnected_Test();
+    void stateIsConnectedStateAfterConnectionHasBeenMade_Test();
+    void stateIsUnconnectedStateAfterGivenDisconnect_Test();
+    void autoReconnectDefaultsToFalse_Test();
+    void autoReconnectTrueAfterSetAutoReconnectTrue_Test();
+    void willNotAutoReconnectIfAutoReconnectIsSetFalse_Test();
+    void willAutoReconnectIfAutoReconnectIsSetTrue_Test();
+};
 
 NetworkTests::NetworkTests()
     : _uut(NULL)
@@ -226,3 +263,6 @@ void NetworkTests::willAutoReconnectIfAutoReconnectIsSetTrue_Test()
     QCOMPARE(_uut->autoReconnect(), true);
     QCOMPARE(_uut->isConnected(), true);
 }
+
+QTEST_MAIN(NetworkTests);
+#include "networktests.moc"

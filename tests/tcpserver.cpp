@@ -1,4 +1,5 @@
 #include "tcpserver.h"
+#include <QHostAddress>
 #include <QTcpSocket>
 
 const QHostAddress TcpServer::HOST = QHostAddress::LocalHost;

@@ -55,12 +55,9 @@ INSTALLS += headers target
 OTHER_FILES += \
     qmqtt.pri
 
-UNIT_TESTS += \
-    tests/clienttests.h \
-    tests/clienttests.cpp \
-    tests/tests.pro
+include(tests/tests.pri)
 
-OTHER_FILES += $${UNIT_TESTS}
+#message($${TEST_FILES})
 
 unix {
     unit_tests_directory = tests

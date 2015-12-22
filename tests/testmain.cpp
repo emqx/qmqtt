@@ -12,24 +12,24 @@ class TestRunner
 {
 public:
     TestRunner(int argc = 0, char** argv = NULL)
-        : Argc(argc)
-        , Argv(argv)
-        , ExitCode(0)
+        : _argc(argc)
+        , _argv(argv)
+        , _exitCode(0)
     {
     }
 
     void exec(QObject* testObject)
     {
-        int ec = QTest::qExec(testObject, Argc, Argv);
-        if (ExitCode == 0)
+        int ec = QTest::qExec(testObject, _argc, _argv);
+        if (_exitCode == 0)
         {
-            ExitCode = ec;
+            _exitCode = ec;
         }
     }
 
-    int Argc;
-    char** Argv;
-    int ExitCode;
+    int _argc;
+    char** _argv;
+    int _exitCode;
 };
 
 int main(int argc, char *argv[])
@@ -62,5 +62,5 @@ int main(int argc, char *argv[])
     ClientTests clientTests;
     runner.exec(&clientTests);
 
-    return runner.ExitCode;
+    return runner._exitCode;
 }
