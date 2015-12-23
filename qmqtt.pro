@@ -55,18 +55,24 @@ INSTALLS += headers target
 OTHER_FILES += \
     qmqtt.pri
 
+TEST_FILES += \
+    tests/willtests.cpp \
+    tests/willtests.pro \
+    tests/messagetests.cpp \
+    tests/messagetests.pro \
+    tests/frametests.cpp \
+    tests/frametests.pro \
+    tests/routedmessagetests.cpp \
+    tests/routedmessagetests.pro \
+    tests/routertests.cpp \
+    tests/routertests.pro \
+    tests/routesubscriptiontests.cpp \
+    tests/routesubscriptiontests.pro \
+    tests/networktests.cpp \
+    tests/networktests.pro \
+    tests/clienttests.cpp \
+    tests/clienttests.pro \
+    tests/tcpserver.cpp \
+    tests/tcpserver.h
+
 include(tests/tests.pri)
-
-#message($${TEST_FILES})
-
-unix {
-    unit_tests_directory = tests
-    unit_tests.target = all
-    unit_tests.commands = \
-        mkdir -p $${OUT_PWD}/$${unit_tests_directory}; \
-        cd $${OUT_PWD}/$${unit_tests_directory}; \
-        $${QMAKE_QMAKE} $${PWD}/$${unit_tests_directory}/tests.pro; \
-        LD_LIBRARY_PATH=$${OUT_PWD} make check; \
-        cd $${OUT_PWD}
-    QMAKE_EXTRA_TARGETS += unit_tests
-}

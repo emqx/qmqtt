@@ -1,11 +1,9 @@
 QT += widgets testlib network
 QT -= gui
-TARGET = qmqtt_tests
+TARGET = routertests
 DEFINES += QMQTT_LIBRARY_TESTS
 CONFIG += testcase
-
-include(tests.pri)
-SOURCES += $${TEST_SOURCES}
-HEADERS += $${TEST_HEADERS}
+SOURCES += tcpserver.cpp routertests.cpp
+HEADERS += tcpserver.h
 INCLUDEPATH += ..
 LIBS += -L.. -lqmqtt

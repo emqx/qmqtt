@@ -1,9 +1,26 @@
-#include "routertests.h"
 #include <qmqtt_router.h>
 #include <qmqtt_client.h>
 #include <qmqtt_routesubscription.h>
 #include <QTest>
 #include <QSignalSpy>
+#include <QScopedPointer>
+
+class RouterTests : public QObject
+{
+    Q_OBJECT
+public:
+    explicit RouterTests();
+    virtual ~RouterTests();
+
+    QScopedPointer<QMQTT::Client> _client;
+    QScopedPointer<QMQTT::Router> _uut;
+
+private slots:
+    void init();
+    void cleanup();
+
+    void subscribe_Test();
+};
 
 RouterTests::RouterTests()
     : _uut(NULL)
@@ -34,3 +51,6 @@ void RouterTests::subscribe_Test()
 }
 
 // todo: need to figure out how to test subscribe a little better
+
+QTEST_MAIN(RouterTests);
+#include "routertests.moc"

@@ -1,0 +1,9 @@
+QT += widgets testlib network
+QT -= gui
+TARGET = clienttests
+DEFINES += QMQTT_LIBRARY_TESTS
+CONFIG += testcase
+SOURCES += tcpserver.cpp clienttests.cpp
+HEADERS += tcpserver.h
+INCLUDEPATH += ..
+LIBS += -L.. -lqmqtt

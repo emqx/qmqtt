@@ -1,6 +1,37 @@
-#include "frametests.h"
 #include <qmqtt_frame.h>
 #include <QTest>
+#include <QScopedPointer>
+
+class FrameTests : public QObject
+{
+    Q_OBJECT
+public:
+    explicit FrameTests();
+    virtual ~FrameTests();
+
+    QScopedPointer<QMQTT::Frame> _uut;
+
+private slots:
+    void init();
+    void cleanup();
+
+    void defaultConstructor_Test();
+    void constructorWithParameters_Test();
+
+    // todo: copy constructor
+    // todo: assignment operator
+    // todo: equality operator
+
+    void readIntReadsBytearray_Test();
+    void readCharReadsBytearray_Test();
+    void readStringReadsBytearray_Test();
+
+    void writeIntWritesToBytearray_Test();
+    void writeCharWritesToBytearray_Test();
+    void writeStringWritesToBytearray_Test();
+    void writeRawDataWritesToBytearray_Test();
+    void writeWritesToDatastream_Test();
+};
 
 FrameTests::FrameTests()
     : _uut(NULL)
@@ -123,3 +154,6 @@ void FrameTests::writeWritesToDatastream_Test()
     QCOMPARE(static_cast<quint8>(streamedData.at(2)), static_cast<quint8>(0x01));
     QCOMPARE(streamedData.mid(3), frameData);
 }
+
+QTEST_MAIN(FrameTests);
+#include "frametests.moc"

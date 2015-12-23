@@ -1,6 +1,22 @@
-#include "routedmessagetests.h"
 #include <qmqtt_routedmessage.h>
 #include <QTest>
+#include <QScopedPointer>
+
+class RoutedMessageTests : public QObject
+{
+    Q_OBJECT
+public:
+    explicit RoutedMessageTests();
+    virtual ~RoutedMessageTests();
+
+    QScopedPointer<QMQTT::RoutedMessage> _uut;
+
+private slots:
+    void init();
+    void cleanup();
+
+    void constructor_Test();
+};
 
 RoutedMessageTests::RoutedMessageTests()
     : _uut(NULL)
@@ -27,3 +43,6 @@ void RoutedMessageTests::constructor_Test()
     QHash<QString, QString> emptyHash;
     QCOMPARE(_uut->parameters(), emptyHash);
 }
+
+QTEST_MAIN(RoutedMessageTests);
+#include "routedmessagetests.moc"

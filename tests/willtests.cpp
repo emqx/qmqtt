@@ -1,6 +1,29 @@
-#include "willtests.h"
 #include <qmqtt_will.h>
 #include <QTest>
+#include <QScopedPointer>
+
+class WillTests : public QObject
+{
+    Q_OBJECT
+public:
+    explicit WillTests();
+    virtual ~WillTests();
+
+    QScopedPointer<QMQTT::Will> _uut;
+
+private slots:
+    void init();
+    void cleanup();
+
+    void qosDefaultsToZero_Test();
+    void qosSettableToFive_Test();
+
+    void retainDefaultsToFalse_Test();
+    void retainSettableToTrue_Test();
+
+    void topicSettableToAString_Test();
+    void messageSettableToAString_Test();
+};
 
 WillTests::WillTests()
     : _uut(NULL)
@@ -54,3 +77,6 @@ void WillTests::messageSettableToAString_Test()
     _uut->setMessage(QString("message"));
     QCOMPARE(_uut->message(), QString("message"));
 }
+
+QTEST_MAIN(WillTests);
+#include "willtests.moc"

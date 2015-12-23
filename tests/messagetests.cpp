@@ -1,6 +1,38 @@
-#include "messagetests.h"
 #include <qmqtt_message.h>
 #include <QTest>
+#include <QScopedPointer>
+
+namespace QMQTT
+{
+    class Message;
+}
+
+class MessageTests : public QObject
+{
+    Q_OBJECT
+public:
+    explicit MessageTests();
+    virtual ~MessageTests();
+
+    QScopedPointer<QMQTT::Message> _uut;
+
+private slots:
+    void init();
+    void cleanup();
+
+    void defaultConstructor_Test();
+    void constructorWithParametersHasDefaultValues_Test();
+    void constructorWithParameters_Test();
+
+    // todo: equality operator
+
+    void idSettable_Test();
+    void qosSettable_Test();
+    void retainSettable_Test();
+    void dupSettable_Test();
+    void topicSettable_Test();
+    void payloadSettable_Test();
+};
 
 MessageTests::MessageTests()
     : _uut(NULL)
@@ -85,3 +117,6 @@ void MessageTests::payloadSettable_Test()
     _uut->setPayload("payload");
     QCOMPARE(_uut->payload(), QByteArray("payload"));
 }
+
+QTEST_MAIN(MessageTests);
+#include "messagetests.moc"
