@@ -78,4 +78,8 @@ private:
 
 } // namespace QMQTT
 
+QDebug operator<<(QDebug debug, QMQTT::Message& message);
+
+Q_DECLARE_METATYPE(QMQTT::Message);
+
 #endif // QMQTT_MESSAGE_H

@@ -45,9 +45,9 @@ void RouterTests::cleanup()
 
 void RouterTests::subscribe_Test()
 {
-    QMQTT::RouteSubscription* subscription = _uut->subscribe("/route");
+    QMQTT::RouteSubscription* subscription = _uut->subscribe("route");
     QVERIFY(NULL != subscription);
-    QCOMPARE(subscription->route(), QString("/route"));
+    QCOMPARE(subscription->route(), QString("route"));
 }
 
 // todo: need to figure out how to test subscribe a little better

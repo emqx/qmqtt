@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QSharedPointer>
 #include <QTcpServer>
+#include <QSignalSpy>
 
 class ClientTests : public QObject
 {
@@ -21,9 +22,13 @@ public:
     void disconnectServerAndWaitForDisconnect(QSharedPointer<QTcpServer> server);
     quint64 readEncodedLength(QDataStream& in);
     quint8 readByte(QDataStream& in);
+    void writeByte(QDataStream& out, quint8 byte);
     quint16 readInt(QDataStream& in);
+    void writeInt(QDataStream& out, quint16 i);
     QByteArray readByteArray(QDataStream& in, const quint64 length);
+    void writeByteArray(QDataStream& out, const QByteArray byteArray);
     QString readString(QDataStream& in);
+    void writeString(QDataStream& out, const QString string);
 
 private slots:
     void init();
@@ -33,6 +38,7 @@ private slots:
     void constructorWithHost_Test();
     void constructorWithHostAndPort_Test();
     void constructorWithHostPortAndParent_Test();
+    // setters and getter tests
     void hostReturnsHostValue_Test();
     void portReturnsPortValue_Test();
     void setHostSetsHostValue_Test();
@@ -56,10 +62,29 @@ private slots:
     void willDefaultsToNull_Test();
     void setWillSetsAWill_Test();
     void stateDefaultsToStateInit_Test();
-    void stateStuckOnStateInitEvenWhenConnectedToSocket_Test();
-    void publishWillPublishAMessage();
+    void stateRemainsInStateInitWhenConnected_Test();
+    // message send tests
+    void connectSendsConnectMessage_Test();
+    void publishSendsPublishMessage_Test();
+    void subscribeSendsSubscribeMessage_Test();
+    void pubackSendsPubackMessage_Test();
+    void unsubscribeSendsUnsubscribeMessage_Test();
+    void disconnectSendsDisconnectMessage_Test();
+    void pingSendsPingMessage_Test();
+    // signals tests
+    void connectEmitsConnectedSignal_Test();
+    void tcpSocketErrorEmitsErrorSignal_Test();
+    void receivingConnackEmitsConnackedSignal_Test();
+    void publishEmitsPublishedSignal_Test();
+    void receivingPubackEmitsPubackedSignal_Test();
+    void receivingPublishEmitsReceivedSignal_Test();
+    void subscribeEmitsSubscribedSignal_Test();
+    void receivingSubackEmitsSubackedSignal_Test();
+    void unsubscribeEmitsUnsubscribedSignal_Test();
+    void receivingUnsubackEmitsUnsubackedSignal_Test();
+    void receivingPingrespEmitsPongSignal_Test();
+    void tcpSocketDisconnectEmitsDisconnectedSignal_Test();
 };
-
 
 ClientTests::ClientTests()
     : _uut(NULL)
@@ -110,6 +135,87 @@ void ClientTests::disconnectServerAndWaitForDisconnect(QSharedPointer<QTcpServer
     socket->disconnectFromHost();
     socket->state() == QAbstractSocket::UnconnectedState
         || socket->waitForDisconnected(5000);
+}
+
+const quint8 CONNECT_TYPE = 0x10;
+const quint8 CONNACK_TYPE = 0x20;
+const quint8 PUBLISH_TYPE = 0x30;
+const quint8 PUBACK_TYPE = 0x40;
+const quint8 PUBREC_TYPE = 0x50;
+const quint8 PUBREL_TYPE = 0x60;
+const quint8 PUBCOMP_TYPE = 0x70;
+const quint8 SUBSCRIBE_TYPE = 0x80;
+const quint8 SUBACK_TYPE = 0x90;
+const quint8 UNSUBSCRIBE_TYPE = 0xA0;
+const quint8 UNSUBACK_TYPE = 0xB0;
+const quint8 PINGREQ_TYPE = 0xC0;
+const quint8 PINGRESP_TYPE = 0xD0;
+const quint8 DISCONNECT_TYPE = 0xE0;
+const quint8 QOS0 = 0x00;
+const quint8 QOS1 = 0x02;
+const quint8 QOS2 = 0x04;
+
+quint64 ClientTests::readEncodedLength(QDataStream& in)
+{
+    quint64 length = 0;
+    quint8 byte = 0;
+    int shift = 0;
+    do {
+        in >> byte;
+        length |= (byte & 0x7f) << shift;
+        shift += 7;
+    } while (byte & 0x80);
+    return length;
+}
+
+quint8 ClientTests::readByte(QDataStream& in)
+{
+    quint8 byte = 0;
+    in >> byte;
+    return byte;
+}
+
+void ClientTests::writeByte(QDataStream& out, quint8 byte)
+{
+    out << byte;
+}
+
+quint16 ClientTests::readInt(QDataStream& in)
+{
+    quint16 i = 0;
+    in >> i;
+    return i;
+}
+
+void ClientTests::writeInt(QDataStream& out, const quint16 i)
+{
+    out << i;
+}
+
+QByteArray ClientTests::readByteArray(QDataStream& in, const quint64 length)
+{
+    QByteArray byteArray(length, ' ');
+    int actualLength = in.readRawData(byteArray.data(), length);
+    byteArray.resize(actualLength);
+    return byteArray;
+}
+
+void ClientTests::writeByteArray(QDataStream& out, const QByteArray byteArray)
+{
+    out.writeRawData(byteArray.constData(), byteArray.size());
+}
+
+QString ClientTests::readString(QDataStream& in)
+{
+    quint16 length = readInt(in);
+    return QString::fromUtf8(readByteArray(in, length));
+}
+
+void ClientTests::writeString(QDataStream& out, const QString string)
+{
+    QByteArray byteArray = string.toUtf8();
+    writeInt(out, byteArray.size());
+    writeByteArray(out, byteArray);
 }
 
 void ClientTests::constructorWithNoParameters_Test()
@@ -304,7 +410,7 @@ void ClientTests::stateDefaultsToStateInit_Test()
 }
 
 // todo: unused state variable for now
-void ClientTests::stateStuckOnStateInitEvenWhenConnectedToSocket_Test()
+void ClientTests::stateRemainsInStateInitWhenConnected_Test()
 {
     QSharedPointer<QTcpServer> server = createTcpServer();
     connectClientToServer(_uut, server);
@@ -314,80 +420,35 @@ void ClientTests::stateStuckOnStateInitEvenWhenConnectedToSocket_Test()
     QCOMPARE(_uut->state(), QMQTT::STATE_INIT);
 }
 
-// 1 << 1
-
-const quint8 CONNECT_TYPE = 0x10;
-const quint8 CONNACK_TYPE = 0x20;
-const quint8 PUBLISH_TYPE = 0x30;
-const quint8 PUBACK_TYPE = 0x40;
-const quint8 PUBREC_TYPE = 0x50;
-const quint8 PUBREL_TYPE = 0x60;
-const quint8 PUBCOMP_TYPE = 0x70;
-const quint8 SUBSCRIBE_TYPE = 0x80;
-const quint8 SUBACK_TYPE = 0x90;
-const quint8 UNSUBSCRIBE_TYPE = 0xA0;
-const quint8 UNSUBACK_TYPE = 0xB0;
-const quint8 PINGREQ_TYPE = 0xC0;
-const quint8 PINGRESP_TYPE = 0xD0;
-const quint8 DISCONNECT_TYPE = 0xE0;
-const quint8 QOS0 = 0x00;
-const quint8 QOS1 = 0x02;
-const quint8 QOS2 = 0x04;
-
-quint64 ClientTests::readEncodedLength(QDataStream& in)
-{
-    quint64 length = 0;
-    quint8 byte = 0;
-    int shift = 0;
-    do {
-        in >> byte;
-        length |= (byte & 0x7f) << shift;
-        shift += 7;
-    } while (byte & 0x80);
-    return length;
-}
-
-quint8 ClientTests::readByte(QDataStream& in)
-{
-    quint8 byte = 0;
-    in >> byte;
-    return byte;
-}
-
-quint16 ClientTests::readInt(QDataStream& in)
-{
-    quint16 i = 0;
-    in >> i;
-    return i;
-}
-
-QByteArray ClientTests::readByteArray(QDataStream &in, const quint64 length)
-{
-    QByteArray byteArray(length, ' ');
-    int actualLength = in.readRawData(byteArray.data(), length);
-    byteArray.resize(actualLength);
-    return byteArray;
-}
-
-QString ClientTests::readString(QDataStream& in)
-{
-    quint16 length = readInt(in);
-    return QString::fromUtf8(readByteArray(in, length));
-}
-
-void ClientTests::publishWillPublishAMessage()
+void ClientTests::connectSendsConnectMessage_Test()
 {
     QSharedPointer<TcpServer> server = QSharedPointer<TcpServer>(new TcpServer);
 
-    _uut->setHost(server->serverAddress().toString());
-    _uut->setPort(server->serverPort());
-    _uut->connect();
+    connectClientToServer(_uut, server);
+
+    server->waitForNewConnection(5000);
+    flushEvents();
+
+    QByteArray byteArray = server->data();
+    QDataStream in(&byteArray, QBuffer::ReadOnly);
+
+    quint8 header = readByte(in);
+    quint64 numberOfBytes = readEncodedLength(in);
+    readByteArray(in, numberOfBytes);
+    QCOMPARE(header, static_cast<quint8>(CONNECT_TYPE | QOS1));
+}
+
+void ClientTests::publishSendsPublishMessage_Test()
+{
+    QSharedPointer<TcpServer> server = QSharedPointer<TcpServer>(new TcpServer);
+
+    connectClientToServer(_uut, server);
 
     server->waitForNewConnection(5000);
     flushEvents();
 
     QByteArray payload("payload");
-    QMQTT::Message message(222, "/topic", payload);
+    QMQTT::Message message(222, "topic", payload);
     _uut->publish(message);
     flushEvents();
 
@@ -405,37 +466,395 @@ void ClientTests::publishWillPublishAMessage()
     QCOMPARE(header, static_cast<quint8>(PUBLISH_TYPE | QOS0));
 }
 
-QTEST_MAIN(ClientTests);
-#include "clienttests.moc"
+void ClientTests::subscribeSendsSubscribeMessage_Test()
+{
+    QSharedPointer<TcpServer> server = QSharedPointer<TcpServer>(new TcpServer);
 
-/*
-public slots:
-    quint16 publish(Message &message);
-    void puback(quint8 type, quint16 msgid);
+    connectClientToServer(_uut, server);
+
+    server->waitForNewConnection(5000);
+    flushEvents();
+
+    _uut->subscribe("topic", QOS2);
+    flushEvents();
+
+    QByteArray byteArray = server->data();
+    QDataStream in(&byteArray, QBuffer::ReadOnly);
+
+    quint8 header = readByte(in);
+    quint64 numberOfBytes = readEncodedLength(in);
+    readByteArray(in, numberOfBytes);
+    QCOMPARE(header, static_cast<quint8>(CONNECT_TYPE | QOS1));
+
+    header = readByte(in);
+    numberOfBytes = readEncodedLength(in);
+    readByteArray(in, numberOfBytes);
+    QCOMPARE(header, static_cast<quint8>(SUBSCRIBE_TYPE | QOS1));
+}
+
+// all these under puback
+//    void puback(quint8 type, quint16 msgid);
 //    void pubrec(int msgid);
 //    void pubrel(int msgid);
 //    void pubcomp(int msgid);
-    quint16 subscribe(const QString &topic, quint8 qos);
-    void unsubscribe(const QString &topic);
-    void ping();
-    void disconnect();
+void ClientTests::pubackSendsPubackMessage_Test()
+{
+    QSharedPointer<TcpServer> server = QSharedPointer<TcpServer>(new TcpServer);
 
-signals:
-    void connected();
-    void error(QAbstractSocket::SocketError);
-    void connacked(quint8 ack);
-    //send PUBLISH and receive PUBACK
-    void published(QMQTT::Message &message);
-    void pubacked(quint8 type, quint16 msgid);
-    //receive PUBLISH
-    void received(const QMQTT::Message &message);
-    //send SUBSCRIBE and receive SUBACKED
-    void subscribed(const QString &topic);
-    void subacked(quint16 mid, quint8 qos);
-    //send UNSUBSCRIBE and receive UNSUBACKED
-    void unsubscribed(const QString &topic);
-    void unsubacked(quint16 mid);
-    //receive PINGRESP
-    void pong();
-    void disconnected();
-*/
+    connectClientToServer(_uut, server);
+
+    server->waitForNewConnection(5000);
+    flushEvents();
+
+    _uut->puback(PUBACK, 42);
+    flushEvents();
+
+    QByteArray byteArray = server->data();
+    QDataStream in(&byteArray, QBuffer::ReadOnly);
+
+    quint8 header = readByte(in);
+    quint64 numberOfBytes = readEncodedLength(in);
+    readByteArray(in, numberOfBytes);
+    QCOMPARE(header, static_cast<quint8>(CONNECT_TYPE | QOS1));
+
+    header = readByte(in);
+    numberOfBytes = readEncodedLength(in);
+    readByteArray(in, numberOfBytes);
+    QCOMPARE(header, static_cast<quint8>(PUBACK_TYPE | QOS0));
+}
+
+void ClientTests::unsubscribeSendsUnsubscribeMessage_Test()
+{
+    QSharedPointer<TcpServer> server = QSharedPointer<TcpServer>(new TcpServer);
+
+    connectClientToServer(_uut, server);
+
+    server->waitForNewConnection(5000);
+    flushEvents();
+
+    _uut->unsubscribe("topic");
+    flushEvents();
+
+    QByteArray byteArray = server->data();
+    QDataStream in(&byteArray, QBuffer::ReadOnly);
+
+    quint8 header = readByte(in);
+    quint64 numberOfBytes = readEncodedLength(in);
+    readByteArray(in, numberOfBytes);
+    QCOMPARE(header, static_cast<quint8>(CONNECT_TYPE | QOS1));
+
+    header = readByte(in);
+    numberOfBytes = readEncodedLength(in);
+    readByteArray(in, numberOfBytes);
+    QCOMPARE(header, static_cast<quint8>(UNSUBSCRIBE_TYPE | QOS1));
+}
+
+// todo: what happens if not already subscribed?
+
+void ClientTests::disconnectSendsDisconnectMessage_Test()
+{
+    QSharedPointer<TcpServer> server = QSharedPointer<TcpServer>(new TcpServer);
+
+    connectClientToServer(_uut, server);
+
+    server->waitForNewConnection(5000);
+    flushEvents();
+
+    _uut->disconnect();
+    flushEvents();
+
+    QByteArray byteArray = server->data();
+    QDataStream in(&byteArray, QBuffer::ReadOnly);
+
+    quint8 header = readByte(in);
+    quint64 numberOfBytes = readEncodedLength(in);
+    readByteArray(in, numberOfBytes);
+    QCOMPARE(header, static_cast<quint8>(CONNECT_TYPE | QOS1));
+
+    header = readByte(in);
+    numberOfBytes = readEncodedLength(in);
+    readByteArray(in, numberOfBytes);
+    QCOMPARE(header, static_cast<quint8>(DISCONNECT_TYPE | QOS0));
+}
+
+void ClientTests::pingSendsPingMessage_Test()
+{
+    QSharedPointer<TcpServer> server = QSharedPointer<TcpServer>(new TcpServer);
+
+    connectClientToServer(_uut, server);
+
+    server->waitForNewConnection(5000);
+    flushEvents();
+
+    _uut->ping();
+    flushEvents();
+
+    QByteArray byteArray = server->data();
+    QDataStream in(&byteArray, QBuffer::ReadOnly);
+
+    quint8 header = readByte(in);
+    quint64 numberOfBytes = readEncodedLength(in);
+    readByteArray(in, numberOfBytes);
+    QCOMPARE(header, static_cast<quint8>(CONNECT_TYPE | QOS1));
+
+    header = readByte(in);
+    numberOfBytes = readEncodedLength(in);
+    readByteArray(in, numberOfBytes);
+    QCOMPARE(header, static_cast<quint8>(PINGREQ_TYPE | QOS0));
+}
+
+void ClientTests::connectEmitsConnectedSignal_Test()
+{
+    QSharedPointer<TcpServer> server = QSharedPointer<TcpServer>(new TcpServer);
+
+    QSignalSpy spy(_uut.data(), &QMQTT::Client::connected);
+
+    connectClientToServer(_uut, server);
+
+    server->waitForNewConnection(5000);
+    flushEvents();
+
+    QCOMPARE(spy.count(), 1);
+}
+
+void ClientTests::tcpSocketErrorEmitsErrorSignal_Test()
+{
+    QSignalSpy spy(_uut.data(), &QMQTT::Client::error);
+
+    _uut->setHost(QHostAddress(TcpServer::HOST).toString());
+    _uut->setPort(TcpServer::PORT);
+    _uut->connect();
+
+    flushEvents();
+
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.at(0).at(0).value<QAbstractSocket::SocketError>(), QAbstractSocket::ConnectionRefusedError);
+}
+
+// todo: connect starts keepalive
+
+void ClientTests::receivingConnackEmitsConnackedSignal_Test()
+{
+    QSharedPointer<TcpServer> server = QSharedPointer<TcpServer>(new TcpServer);
+
+    QSignalSpy spy(_uut.data(), &QMQTT::Client::connacked);
+
+    connectClientToServer(_uut, server);
+
+    server->waitForNewConnection(5000);
+    flushEvents();
+
+    QMQTT::Frame frame(CONNACK_TYPE, QByteArray(2, 0x0));
+    QDataStream out(server->socket());
+    frame.write(out);
+    server->socket()->waitForBytesWritten(5000);
+    flushEvents();
+
+    QCOMPARE(spy.count(), 1);
+    // todo: compare data received?
+}
+
+// todo: connack, connection accepted
+// todo: connack, connection refused, unnacceptable protocol
+// todo: connack, connection refused, identifier rejected
+
+#include <qmqtt_message.h>
+
+void ClientTests::publishEmitsPublishedSignal_Test()
+{
+    QSharedPointer<TcpServer> server = QSharedPointer<TcpServer>(new TcpServer);
+
+    connectClientToServer(_uut, server);
+
+    server->waitForNewConnection(5000);
+    flushEvents();
+
+    qRegisterMetaType<QMQTT::Message>("QMQTT::Message");
+    QSignalSpy spy(_uut.data(), &QMQTT::Client::published);
+
+    QByteArray payload("payload");
+    QMQTT::Message message(222, "topic", payload);
+    _uut->publish(message);
+    flushEvents();
+
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.at(0).at(0).value<QMQTT::Message>(), message);
+}
+
+void ClientTests::receivingPubackEmitsPubackedSignal_Test()
+{
+    QSharedPointer<TcpServer> server = QSharedPointer<TcpServer>(new TcpServer);
+
+    connectClientToServer(_uut, server);
+
+    server->waitForNewConnection(5000);
+    flushEvents();
+
+    qRegisterMetaType<QMQTT::Message>("QMQTT::Message");
+    QSignalSpy spy(_uut.data(), &QMQTT::Client::pubacked);
+
+    QMQTT::Frame frame(PUBACK_TYPE, QByteArray(2, 0x0));
+    QDataStream out(server->socket());
+    frame.write(out);
+    server->socket()->waitForBytesWritten(5000);
+    flushEvents();
+
+    QCOMPARE(spy.count(), 1);
+    // todo: compare data received?
+}
+
+void ClientTests::receivingPublishEmitsReceivedSignal_Test()
+{
+    QSharedPointer<TcpServer> server = QSharedPointer<TcpServer>(new TcpServer);
+
+    connectClientToServer(_uut, server);
+
+    server->waitForNewConnection(5000);
+    flushEvents();
+
+    QSignalSpy spy(_uut.data(), &QMQTT::Client::received);
+
+    QByteArray variableHeader;
+    QDataStream variableHeaderDataStream(&variableHeader, QIODevice::WriteOnly);
+    writeString(variableHeaderDataStream, "topic");
+    QMQTT::Frame frame(PUBLISH_TYPE, variableHeader);
+    QDataStream out(server->socket());
+    frame.write(out);
+
+    server->socket()->waitForBytesWritten(5000);
+    flushEvents();
+
+    QCOMPARE(spy.count(), 1);
+    // todo: compare data received?
+}
+
+void ClientTests::subscribeEmitsSubscribedSignal_Test()
+{
+    QSharedPointer<TcpServer> server = QSharedPointer<TcpServer>(new TcpServer);
+
+    connectClientToServer(_uut, server);
+
+    server->waitForNewConnection(5000);
+    flushEvents();
+
+    QSignalSpy spy(_uut.data(), &QMQTT::Client::subscribed);
+
+    _uut->subscribe("topic", QOS2);
+    flushEvents();
+
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.at(0).at(0).toString(), QString("topic"));
+}
+
+void ClientTests::receivingSubackEmitsSubackedSignal_Test()
+{
+    QSharedPointer<TcpServer> server = QSharedPointer<TcpServer>(new TcpServer);
+
+    connectClientToServer(_uut, server);
+
+    server->waitForNewConnection(5000);
+    flushEvents();
+
+    QSignalSpy spy(_uut.data(), &QMQTT::Client::subacked);
+
+    QByteArray variableHeader;
+    QDataStream variableHeaderDataStream(&variableHeader, QIODevice::WriteOnly);
+    writeInt(variableHeaderDataStream, 0);
+    writeByte(variableHeaderDataStream, 0x00);
+    QMQTT::Frame frame(SUBACK_TYPE, variableHeader);
+    QDataStream out(server->socket());
+    frame.write(out);
+
+    server->socket()->waitForBytesWritten(5000);
+    flushEvents();
+
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.at(0).at(0).value<quint8>(), QOS0);
+}
+
+void ClientTests::unsubscribeEmitsUnsubscribedSignal_Test()
+{
+    QSharedPointer<TcpServer> server = QSharedPointer<TcpServer>(new TcpServer);
+
+    connectClientToServer(_uut, server);
+
+    server->waitForNewConnection(5000);
+    flushEvents();
+
+    QSignalSpy spy(_uut.data(), &QMQTT::Client::unsubscribed);
+
+    _uut->unsubscribe("topic");
+    flushEvents();
+
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.at(0).at(0).toString(), QString("topic"));
+}
+
+void ClientTests::receivingUnsubackEmitsUnsubackedSignal_Test()
+{
+    QSharedPointer<TcpServer> server = QSharedPointer<TcpServer>(new TcpServer);
+
+    connectClientToServer(_uut, server);
+
+    server->waitForNewConnection(5000);
+    flushEvents();
+
+    QSignalSpy spy(_uut.data(), &QMQTT::Client::unsubacked);
+
+    QByteArray variableHeader;
+    QDataStream variableHeaderDataStream(&variableHeader, QIODevice::WriteOnly);
+    writeInt(variableHeaderDataStream, 13);
+    QMQTT::Frame frame(UNSUBACK_TYPE, variableHeader);
+    QDataStream out(server->socket());
+    frame.write(out);
+
+    server->socket()->waitForBytesWritten(5000);
+    flushEvents();
+
+    QCOMPARE(spy.count(), 1);
+    // todo: msg id is always zero, it appears
+    QCOMPARE(spy.at(0).at(0).value<quint16>(), static_cast<quint16>(0));
+}
+
+void ClientTests::receivingPingrespEmitsPongSignal_Test()
+{
+    QSharedPointer<TcpServer> server = QSharedPointer<TcpServer>(new TcpServer);
+
+    connectClientToServer(_uut, server);
+
+    server->waitForNewConnection(5000);
+    flushEvents();
+
+    QSignalSpy spy(_uut.data(), &QMQTT::Client::pong);
+
+    QByteArray variableHeader;
+    QMQTT::Frame frame(PINGRESP_TYPE, variableHeader);
+    QDataStream out(server->socket());
+    frame.write(out);
+
+    server->socket()->waitForBytesWritten(5000);
+    flushEvents();
+
+    QCOMPARE(spy.count(), 1);
+}
+
+void ClientTests::tcpSocketDisconnectEmitsDisconnectedSignal_Test()
+{
+    QSharedPointer<TcpServer> server = QSharedPointer<TcpServer>(new TcpServer);
+
+    connectClientToServer(_uut, server);
+
+    server->waitForNewConnection(5000);
+    flushEvents();
+
+    QSignalSpy spy(_uut.data(), &QMQTT::Client::disconnected);
+
+    server->socket()->disconnectFromHost();
+    server->socket()->waitForDisconnected(5000);
+    flushEvents();
+
+    QCOMPARE(spy.count(), 1);
+}
+
+QTEST_MAIN(ClientTests);
+#include "clienttests.moc"

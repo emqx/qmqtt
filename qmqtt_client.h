@@ -144,15 +144,15 @@ signals:
     void error(QAbstractSocket::SocketError);
     void connacked(quint8 ack);
     //send PUBLISH and receive PUBACK
-    void published(QMQTT::Message &message);
+    void published(QMQTT::Message message);
     void pubacked(quint8 type, quint16 msgid);
     //receive PUBLISH
-    void received(const QMQTT::Message &message);
+    void received(const QMQTT::Message message);
     //send SUBSCRIBE and receive SUBACKED
-    void subscribed(const QString &topic);
+    void subscribed(const QString topic);
     void subacked(quint16 mid, quint8 qos);
     //send UNSUBSCRIBE and receive UNSUBACKED
-    void unsubscribed(const QString &topic);
+    void unsubscribed(const QString topic);
     void unsubacked(quint16 mid);
     //receive PINGRESP
     void pong();

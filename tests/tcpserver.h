@@ -14,12 +14,12 @@ public:
     QByteArray data() const;
     QTcpSocket* socket() const;
 
+    static const QHostAddress HOST;
+    static const quint16 PORT;
+
 protected:
     QTcpSocket* _socket;
     QByteArray _data;
-
-    static const QHostAddress HOST;
-    static const quint16 PORT;
 
 protected slots:
     void on_newConnection();

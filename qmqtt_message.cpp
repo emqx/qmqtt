@@ -30,6 +30,7 @@
  *
  */
 #include "qmqtt_message.h"
+#include <QDebug>
 
 namespace QMQTT {
 
@@ -128,3 +129,10 @@ void Message::setPayload(const QByteArray &payload)
 }
 
 } // namespace QMQTT
+
+QDebug operator<<(QDebug debug, QMQTT::Message& message)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace() << "Message( id=" << message.id() << " )";
+    return debug;
+}
