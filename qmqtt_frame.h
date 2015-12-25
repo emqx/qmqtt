@@ -119,8 +119,6 @@ private:
 
 } // namespace QMQTT
 
-QDebug operator<<(QDebug debug, const QMQTT::Frame& frame);
-
 Q_DECLARE_METATYPE(QMQTT::Frame);
 
 #endif // QMQTT_FRAME_H

@@ -162,15 +162,3 @@ void Frame::encodeLength(QByteArray &lenbuf, int length)
 }
 
 } // namespace QMQTT
-
-QDebug operator<<(QDebug debug, const QMQTT::Frame& frame)
-{
-    QDebugStateSaver saver(debug);
-    debug.nospace() << "( header=" << frame.header()
-                    << " data=" <<
-                       QString(frame.data().left(8).toHex())
-                       .replace(QRegExp("(..)"), " 0x\\1")
-                       .trimmed().toUtf8().constData()
-                    << " )";
-    return debug;
-}

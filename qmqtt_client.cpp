@@ -247,7 +247,7 @@ void Client::onDisconnected()
 
 //---------------------------------------------
 //---------------------------------------------
-void Client::onReceived(QMQTT::Frame frame)
+void Client::onReceived(Frame frame)
 {
     quint8 qos = 0;
     bool retain, dup;

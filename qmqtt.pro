@@ -5,10 +5,12 @@
 #-------------------------------------------------
 
 QT       += network
+
 QT       -= gui
 
 TARGET = qmqtt
 TEMPLATE = lib
+
 DEFINES += QMQTT_LIBRARY
 
 SOURCES += qmqtt_client.cpp \
