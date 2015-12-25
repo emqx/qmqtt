@@ -55,7 +55,7 @@ void FrameTests::cleanup()
 void FrameTests::defaultConstructor_Test()
 {
     QSKIP("Disabled test, getters segfault");
-    // These segfault currently. QByteArray contains no data when default constructed.
+    // todo: these segfault currently. QByteArray contains no data when default constructed.
     // QCOMPARE(_uut->readInt(), 0);
     // QCOMPARE(_uut->readChar(), static_cast<char>(12));
     // QCOMPARE(_uut->readString(), QString("blah"));

@@ -83,10 +83,8 @@
 
 namespace QMQTT {
 
-class Frame // : public QObject
+class Frame
 {
-//    Q_OBJECT
-//    Q_DISABLE_COPY(Frame)
 public:
     explicit Frame();
     explicit Frame(quint8 header);
