@@ -144,10 +144,10 @@ signals:
     void error(QAbstractSocket::SocketError);
     void connacked(quint8 ack);
     //send PUBLISH and receive PUBACK
-    void published(Message message);
+    void published(QMQTT::Message message);
     void pubacked(quint8 type, quint16 msgid);
     //receive PUBLISH
-    void received(const Message message);
+    void received(const QMQTT::Message message);
     //send SUBSCRIBE and receive SUBACKED
     void subscribed(const QString topic);
     void subacked(quint16 mid, quint8 qos);
@@ -161,7 +161,7 @@ signals:
 private slots:
     void onConnected();
     void onDisconnected();
-    void onReceived(Frame frame);
+    void onReceived(QMQTT::Frame frame);
     void handlePublish(Message &message);
     void handleConnack(quint8 ack);
     void handlePuback(quint8 type, quint16 msgid);

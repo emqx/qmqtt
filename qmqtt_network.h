@@ -64,7 +64,7 @@ signals:
     void connected();
     void disconnected();
     void error(QAbstractSocket::SocketError);
-    void received(Frame frame);
+    void received(QMQTT::Frame frame);
 
 public slots:
     void connectTo(const QString & host, quint32 port);

@@ -658,8 +658,6 @@ void ClientTests::receivingConnackEmitsConnackedSignal_Test()
 // todo: connack, connection refused, unnacceptable protocol
 // todo: connack, connection refused, identifier rejected
 
-#include <qmqtt_message.h>
-
 void ClientTests::publishEmitsPublishedSignal_Test()
 {
     QSharedPointer<TcpServer> server = QSharedPointer<TcpServer>(new TcpServer);

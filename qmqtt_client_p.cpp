@@ -66,7 +66,7 @@ void ClientPrivate::init(QObject * parent)
     QObject::connect(network, SIGNAL(connected()), q, SLOT(onConnected()));
     QObject::connect(network, SIGNAL(error(QAbstractSocket::SocketError)), q, SIGNAL(error(QAbstractSocket::SocketError)));
     QObject::connect(network, SIGNAL(disconnected()), q, SLOT(onDisconnected()));
-    QObject::connect(network, SIGNAL(received(Frame)), q, SLOT(onReceived(Frame)));
+    QObject::connect(network, SIGNAL(received(QMQTT::Frame)), q, SLOT(onReceived(QMQTT::Frame)));
 }
 
 void ClientPrivate::init(const QString host, int port, QObject * parent)
