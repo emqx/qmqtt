@@ -92,7 +92,7 @@ class QMQTTSHARED_EXPORT Client : public QObject
 //    friend class ClientPrivate;
 
 public:
-    Client(const QString &host = "localhost", quint32 port = 1883, QObject * parent = 0);
+    Client(const QString host = "localhost", quint32 port = 1883, QObject * parent = 0);
     ~Client();
 
     /*
@@ -144,15 +144,15 @@ signals:
     void error(QAbstractSocket::SocketError);
     void connacked(quint8 ack);
     //send PUBLISH and receive PUBACK
-    void published(QMQTT::Message &message);
+    void published(QMQTT::Message message);
     void pubacked(quint8 type, quint16 msgid);
     //receive PUBLISH
-    void received(const QMQTT::Message &message);
+    void received(const QMQTT::Message message);
     //send SUBSCRIBE and receive SUBACKED
-    void subscribed(const QString &topic);
+    void subscribed(const QString topic);
     void subacked(quint16 mid, quint8 qos);
     //send UNSUBSCRIBE and receive UNSUBACKED
-    void unsubscribed(const QString &topic);
+    void unsubscribed(const QString topic);
     void unsubacked(quint16 mid);
     //receive PINGRESP
     void pong();
@@ -161,7 +161,7 @@ signals:
 private slots:
     void onConnected();
     void onDisconnected();
-    void onReceived(Frame & frame);
+    void onReceived(QMQTT::Frame frame);
     void handlePublish(Message &message);
     void handleConnack(quint8 ack);
     void handlePuback(quint8 type, quint16 msgid);

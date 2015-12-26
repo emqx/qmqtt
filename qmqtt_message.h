@@ -46,6 +46,8 @@ public:
             quint8 qos = 0, bool retain = false, bool dup = false);
     ~Message();
 
+    bool operator==(const Message& other) const;
+
     quint16 id();
     void setId(quint16 id);
 
@@ -75,5 +77,7 @@ private:
 };
 
 } // namespace QMQTT
+
+Q_DECLARE_METATYPE(QMQTT::Message);
 
 #endif // QMQTT_MESSAGE_H
