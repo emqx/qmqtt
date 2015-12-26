@@ -56,3 +56,25 @@ INSTALLS += headers target
 
 OTHER_FILES += \
     qmqtt.pri
+
+TEST_FILES += \
+    tests/willtests.cpp \
+    tests/willtests.pro \
+    tests/messagetests.cpp \
+    tests/messagetests.pro \
+    tests/frametests.cpp \
+    tests/frametests.pro \
+    tests/routedmessagetests.cpp \
+    tests/routedmessagetests.pro \
+    tests/routertests.cpp \
+    tests/routertests.pro \
+    tests/routesubscriptiontests.cpp \
+    tests/routesubscriptiontests.pro \
+    tests/networktests.cpp \
+    tests/networktests.pro \
+    tests/clienttests.cpp \
+    tests/clienttests.pro \
+    tests/tcpserver.cpp \
+    tests/tcpserver.h
+
+include(tests/tests.pri)
