@@ -33,304 +33,197 @@
 #include "qmqtt_client.h"
 #include "qmqtt_client_p.h"
 
-namespace QMQTT {
-
-Client::Client(const QString host, quint32 port, QObject * parent /* =0 */)
-:d_ptr(new ClientPrivate(this))
-
+QMQTT::Client::Client(const QString host, const quint16 port, QObject* parent)
+    : QObject(parent)
+    , d_ptr(new ClientPrivate(this))
 {
     Q_D(Client);
-    d->init(host, port, parent);
+    d->init(host, port);
 }
 
-Client::~Client()
+QMQTT::Client::~Client()
 {
-    //?
-    Q_D(Client);
-    delete d;
 }
 
-/*----------------------------------------------------------------
- * Get/Set Property
- ----------------------------------------------------------------*/
-QString Client::host() const
+QString QMQTT::Client::host() const
 {
     Q_D(const Client);
-//     QString* str = d->host;
-//    return const_cast<QString *const>(d->host);
-//    return d->host;
-    return d->host;
+    return d->host();
 }
 
-void Client::setHost(const QString & host)
+void QMQTT::Client::setHost(const QString& host)
 {
-//    d->host = host;
     Q_D(Client);
-    d->host = host;
+    d->setHost(host);
 }
 
-quint32 Client::port() const
+quint16 QMQTT::Client::port() const
 {
     Q_D(const Client);
-    return d->port;
+    return d->port();
 }
 
-void Client::setPort(quint32 port)
+void QMQTT::Client::setPort(const quint16 port)
 {
     Q_D(Client);
-    d->port = port;
+    d->setPort(port);
 }
 
-QString Client::clientId() const
-{
-     Q_D(const Client);
-    return d->clientId;
-}
-
-void Client::setClientId(const QString &clientId)
-{
-     Q_D(Client);
-    d->clientId = clientId;
-}
-
-QString Client::username() const
-{
-     Q_D(const Client);
-    return d->username;
-}
-
-void Client::setUsername(const QString & username)
-{
-     Q_D(Client);
-    d->username = username;
-}
-
-QString Client::password() const
-{
-     Q_D(const Client);
-    return d->password;
-}
-
-void Client::setPassword(const QString & password)
-{
-     Q_D(Client);
-    d->password = password;
-}
-
-int Client::keepalive()
-{
-     Q_D( Client);
-    return d->keepalive;
-}
-
-void Client::setKeepAlive(int keepalive)
-{
-     Q_D(Client);
-    d->keepalive = keepalive;
-}
-
-bool Client::cleansess()
-{
-     Q_D(Client);
-    return d->cleansess;
-}
-
-void Client::setCleansess(bool cleansess)
-{
-     Q_D(Client);
-    d->cleansess = cleansess;
-}
-
-bool Client::autoReconnect() const
+QString QMQTT::Client::clientId() const
 {
     Q_D(const Client);
-    return d->network->autoReconnect();
+    return d->clientId();
 }
 
-void Client::setAutoReconnect(bool value)
+void QMQTT::Client::setClientId(const QString& clientId)
 {
     Q_D(Client);
-    d->network->setAutoReconnect(value);
+    d->setClientId(clientId);
 }
 
-Will *Client::will()
-{
-    Q_D(Client);
-    return d->will;
-}
-
-void Client::setWill(Will *will)
-{
-    Q_D(Client);
-    d->will = will;
-}
-
-State Client::state() const
+QString QMQTT::Client::username() const
 {
     Q_D(const Client);
-    return d->state;
+    return d->username();
 }
 
-bool Client::isConnected()
+void QMQTT::Client::setUsername(const QString& username)
 {
     Q_D(Client);
-    return d->network->isConnected();
+    d->setUsername(username);
 }
 
+QString QMQTT::Client::password() const
+{
+    Q_D(const Client);
+    return d->password();
+}
+
+void QMQTT::Client::setPassword(const QString& password)
+{
+    Q_D(Client);
+    d->setPassword(password);
+}
+
+int QMQTT::Client::keepalive() const
+{
+    Q_D(const Client);
+    return d->keepalive();
+}
+
+void QMQTT::Client::setKeepAlive(const int keepalive)
+{
+    Q_D(Client);
+    d->setKeepAlive(keepalive);
+}
+
+bool QMQTT::Client::cleansess()
+{
+    Q_D(Client);
+    return d->cleansess();
+}
+
+void QMQTT::Client::setCleansess(const bool cleansess)
+{
+    Q_D(Client);
+    d->setCleansess(cleansess);
+}
+
+bool QMQTT::Client::autoReconnect() const
+{
+    Q_D(const Client);
+    return d->autoReconnect();
+}
+
+void QMQTT::Client::setAutoReconnect(const bool value)
+{
+    Q_D(Client);
+    d->setAutoReconnect(value);
+}
+
+QMQTT::Will* QMQTT::Client::will() const
+{
+    Q_D(const Client);
+    return d->will();
+}
+
+void QMQTT::Client::setWill(Will* will)
+{
+    Q_D(Client);
+    d->setWill(will);
+}
+
+QMQTT::ClientState QMQTT::Client::state() const
+{
+    Q_D(const Client);
+    return d->state();
+}
+
+bool QMQTT::Client::isConnectedToHost() const
+{
+    Q_D(const Client);
+    return d->isConnectedToHost();
+}
 
 /*----------------------------------------------------------------
  * MQTT Command
  ----------------------------------------------------------------*/
-void Client::connect()
+void QMQTT::Client::connectToHost()
 {
     Q_D(Client);
-    d->sockConnect();
+    d->connectToHost();
 }
 
-void Client::onConnected()
+void QMQTT::Client::onNetworkConnected()
+{    
+    Q_D(Client);
+    d->onNetworkConnected();
+}
+
+quint16 QMQTT::Client::publish(Message& message)
 {
     Q_D(Client);
-    qCDebug(client) << "Sock Connected....";
-    d->sendConnect();
-    d->startKeepalive();
-    emit connected();
+    return d->publish(message);
 }
 
-quint16 Client::publish(Message &message)
+void QMQTT::Client::puback(const quint8 type, const quint16 msgid)
 {
     Q_D(Client);
-    quint16 msgid = d->sendPublish(message);
-    emit published(message);
-    return msgid;
+    d->puback(type, msgid);
 }
 
-void Client::puback(quint8 type, quint16 msgid)
+quint16 QMQTT::Client::subscribe(const QString& topic, const quint8 qos)
 {
     Q_D(Client);
-    d->sendPuback(type, msgid);
-    emit pubacked(type, msgid);
+    return d->subscribe(topic, qos);
 }
 
-quint16 Client::subscribe(const QString &topic, quint8 qos)
+void QMQTT::Client::unsubscribe(const QString& topic)
 {
     Q_D(Client);
-    quint16 msgid = d->sendSubscribe(topic, qos);
-    emit subscribed(topic);
-    return msgid;
+    d->unsubscribe(topic);
 }
 
-void Client::unsubscribe(const QString &topic)
-{
-   Q_D(Client);
-    d->sendUnsubscribe(topic);
-    emit unsubscribed(topic);
-}
-
-void Client::ping()
+void QMQTT::Client::ping()
 {
     Q_D(Client);
-    d->sendPing();
+    d->ping();
 }
 
-void Client::disconnect()
+void QMQTT::Client::disconnectFromHost()
 {
     Q_D(Client);
-    d->disconnect();
+    d->disconnectFromHost();
 }
 
-void Client::onDisconnected()
+void QMQTT::Client::onNetworkDisconnected()
 {
     Q_D(Client);
-    d->stopKeepalive();
-    emit disconnected();
+    d->onNetworkDisconnected();
 }
 
-//---------------------------------------------
-//---------------------------------------------
-void Client::onReceived(const QMQTT::Frame& frm)
-{
-    QMQTT::Frame frame(frm);
-    quint8 qos = 0;
-    bool retain, dup;
-    QString topic;
-    quint16 mid = 0;
-    quint8 header = frame.header();
-    quint8 type = GETTYPE(header);
-    Message message;
-    qCDebug(client) << "handleFrame: type=" << type;
-
-    switch(type) {
-    case CONNACK:
-        //skip reserved
-        frame.readChar();
-        handleConnack(frame.readChar());
-        break;
-    case PUBLISH:
-        qos = GETQOS(header);;
-        retain = GETRETAIN(header);
-        dup = GETDUP(header);
-        topic = frame.readString();
-        if( qos > MQTT_QOS0) {
-            mid = frame.readInt();
-        }
-        message.setId(mid);
-        message.setTopic(topic);
-        message.setPayload(frame.data());
-        message.setQos(qos);
-        message.setRetain(retain);
-        message.setDup(dup);
-        handlePublish(message);
-        break;
-    case PUBACK:
-    case PUBREC:
-    case PUBREL:
-    case PUBCOMP:
-        mid = frame.readInt();
-        handlePuback(type, mid);
-        break;
-    case SUBACK:
-        mid = frame.readInt();
-        qos = frame.readChar();
-        emit subacked(mid, qos);
-        break;
-    case UNSUBACK:
-        emit unsubacked(mid);
-        break;
-    case PINGRESP:
-        emit pong();
-        break;
-    default:
-        break;
-    }
-}
-
-void Client::handleConnack(const quint8 ack)
-{
-    qCDebug(client) << "connack: " << ack;
-    emit connacked(ack);
-}
-
-void Client::handlePublish(const Message& message)
+void QMQTT::Client::onReceived(const QMQTT::Frame& frame)
 {
     Q_D(Client);
-    if(message.qos() == MQTT_QOS1) {
-        d->sendPuback(PUBACK, message.id());
-    } else if(message.qos() == MQTT_QOS2) {
-        d->sendPuback(PUBREC, message.id());
-    }
-    emit received(message);
+    d->onReceived(frame);
 }
-
-void Client::handlePuback(const quint8 type, const quint16 msgid)
-{
-    Q_D(Client);
-    if(type == PUBREC) {
-        d->sendPuback(PUBREL, msgid);
-    } else if (type == PUBREL) {
-        d->sendPuback(PUBCOMP, msgid);
-    }
-    emit pubacked(type, msgid);
-}
-
-} // namespace QMQTT
-

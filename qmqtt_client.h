@@ -1,5 +1,5 @@
 /*
- * qmqtt_client.h - qmqtt client heaer
+ * qmqtt_client.h - qmqtt client header
  *
  * Copyright (c) 2013  Ery Lee <ery.lee at gmail dot com>
  * All rights reserved.
@@ -32,42 +32,24 @@
 #ifndef QMQTT_CLIENT_H
 #define QMQTT_CLIENT_H
 
-#include <QObject>
 #include "qmqtt_global.h"
-#include "qmqtt_will.h"
-#include "qmqtt_message.h"
-#include "qmqtt_network.h"
-
-/*
- * MQTT Version
- */
-#define MQTT_PROTO_MAJOR 3
-#define MQTT_PROTO_MINOR 1
-#define MQTT_PROTOCOL_VERSION "MQTT/3.1"
-
-/*
- * MQTT QOS
- */
-#define MQTT_QOS0 0
-#define MQTT_QOS1 1
-#define MQTT_QOS2 2
+#include <QObject>
+#include <QAbstractSocket>
+#include <QScopedPointer>
 
 namespace QMQTT {
 
-/*
- * MQTT ConnAck
- */
-enum ConnAck
-{
-    CONNACK_ACCEPT  = 0,
-    CONNACK_PROTO_VER,
-    CONNACK_INVALID_ID,
-    CONNACK_SERVER,
-    CONNACK_CREDENTIALS,
-    CONNACK_AUTH
-};
+static const quint8 LIBRARY_VERSION_MAJOR = 0;
+static const quint8 LIBRARY_VERSION_MINOR = 3;
+static const quint8 LIBRARY_VERSION_REVISION = 0;
+//static const char* LIBRARY_VERSION = "0.3.0";
 
-enum State
+static const quint8 PROTOCOL_VERSION_MAJOR = 3;
+static const quint8 PROTOCOL_VERSION_MINOR = 1;
+static const quint8 PROTOCOL_VERSION_REVISION = 1;
+//static const char* PROTOCOL_VERSION = "MQTT/3.1";
+
+enum ClientState
 {
     STATE_INIT = 0,
     STATE_CONNECTING,
@@ -76,71 +58,65 @@ enum State
 };
 
 class ClientPrivate;
+class Will;
+class Message;
+class Frame;
+
 class QMQTTSHARED_EXPORT Client : public QObject
 {
     Q_OBJECT
-
-    Q_PROPERTY(quint32 port READ port WRITE setPort)
-    Q_PROPERTY(QString host READ host WRITE setHost)
-    Q_PROPERTY(QString clientId READ clientId WRITE setClientId)
-    Q_PROPERTY(QString username READ username WRITE setUsername)
-    Q_PROPERTY(QString password READ password WRITE setPassword)
-    Q_PROPERTY(int keepalive READ keepalive WRITE setKeepAlive)
-    Q_PROPERTY(bool autoReconnect READ autoReconnect WRITE setAutoReconnect)
-
-
-//    friend class ClientPrivate;
+    Q_PROPERTY(quint32 _port READ port WRITE setPort)
+    Q_PROPERTY(QString _host READ host WRITE setHost)
+    Q_PROPERTY(QString _clientId READ clientId WRITE setClientId)
+    Q_PROPERTY(QString _username READ username WRITE setUsername)
+    Q_PROPERTY(QString _password READ password WRITE setPassword)
+    Q_PROPERTY(int _keepalive READ keepalive WRITE setKeepAlive)
+    Q_PROPERTY(bool _autoReconnect READ autoReconnect WRITE setAutoReconnect)
 
 public:
-    Client(const QString host = "localhost", quint32 port = 1883, QObject * parent = 0);
+    Client(const QString host = "localhost", const quint16 port = 1883, QObject* parent = 0);
     ~Client();
 
-    /*
-     * Property Get/Set
-     */
     QString host() const;
-    void setHost(const QString & host);
-    quint32 port() const;
-    void setPort(quint32 port);
-
+    quint16 port() const;
     QString clientId() const;
-    void setClientId(const QString &clientId);
     QString username() const;
-    void setUsername(const QString & username);
     QString password() const;
-    void setPassword(const QString & password);
-    int keepalive();
-    void setKeepAlive(int keepalive);
+    int keepalive() const;
     bool cleansess();
-    void setCleansess(bool cleansess);
-
-    bool isConnected();
+    bool isConnectedToHost() const;
     bool autoReconnect() const;
+    Will* will() const;
+    ClientState state() const;
+
+public slots:
+    void setHost(const QString& host);
+    void setPort(const quint16 port);
+    void setClientId(const QString& clientId);
+    void setUsername(const QString& username);
+    void setPassword(const QString& password);
+    void setKeepAlive(int keepalive);
+    void setCleansess(bool cleansess);
     void setAutoReconnect(bool value);
-    Will *will();
     void setWill(Will *will);
 
-    State state() const;
+    void connectToHost();
+    void disconnectFromHost();
 
-    /*
-     * MQTT Command
-     */
-public slots:
-    void connect();
     quint16 publish(Message &message);
-    void puback(quint8 type, quint16 msgid);
+    void puback(const quint8 type, const quint16 msgid);
     /*
     void pubrec(int msgid);
     void pubrel(int msgid);
     void pubcomp(int msgid);
     */
-    quint16 subscribe(const QString &topic, quint8 qos);
+    quint16 subscribe(const QString &topic, const quint8 qos);
     void unsubscribe(const QString &topic);
     void ping();
-    void disconnect();
 
 signals:
     void connected();
+    void disconnected();
     void error(const QAbstractSocket::SocketError socketError);
     void connacked(const quint8 ack);
     //send PUBLISH and receive PUBACK
@@ -156,23 +132,20 @@ signals:
     void unsubacked(const quint16 mid);
     //receive PINGRESP
     void pong();
-    void disconnected();
 
 private slots:
-    void onConnected();
-    void onDisconnected();
+    void onNetworkConnected();
+    void onNetworkDisconnected();
     void onReceived(const QMQTT::Frame& frame);
-    void handlePublish(const Message& message);
-    void handleConnack(const quint8 ack);
-    void handlePuback(const quint8 type, const quint16 msgid);
+
+protected:
+    QScopedPointer<ClientPrivate> d_ptr;
 
 private:
-    ClientPrivate *const  d_ptr;
-
     Q_DISABLE_COPY(Client)
     Q_DECLARE_PRIVATE(Client)
-
 };
 
 } // namespace QMQTT
+
 #endif // QMQTT_CLIENT_H

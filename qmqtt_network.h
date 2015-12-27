@@ -50,10 +50,9 @@ public:
     explicit Network(QObject *parent = 0);
     ~Network();
 
-    void disconnect();
     void sendFrame(Frame & frame);
 
-    bool isConnected();
+    bool isConnectedToHost() const;
 
     bool autoReconnect() const;
     void setAutoReconnect(bool value);
@@ -67,7 +66,8 @@ signals:
     void received(const QMQTT::Frame& frame);
 
 public slots:
-    void connectTo(const QString & host, quint32 port);
+    void connectToHost(const QString& host, const quint16 port);
+    void disconnectFromHost();
     //void error( QAbstractSocket::SocketError socketError );
 
 private slots:
@@ -93,7 +93,6 @@ private:
     bool _autoreconn;
     quint16 _timeout;
     //state
-    bool _connected;
 };
 
 } // namespace QMQTT

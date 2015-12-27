@@ -1,9 +1,12 @@
-#include "tcpserver.h"
 #include "qmqtt_client.h"
+#include "qmqtt_will.h"
+#include "qmqtt_message.h"
+#include "qmqtt_frame.h"
+#include "tcpserver.h"
 #include <QTest>
 #include <QObject>
 #include <QSharedPointer>
-#include <QTcpServer>
+#include <QTcpSocket>
 #include <QSignalSpy>
 
 class ClientTests : public QObject
@@ -126,7 +129,7 @@ void ClientTests::connectClientToServer(QSharedPointer<QMQTT::Client> client,
 {
     client->setHost(server->serverAddress().toString());
     client->setPort(server->serverPort());
-    client->connect();
+    client->connectToHost();
 }
 
 void ClientTests::disconnectServerAndWaitForDisconnect(QSharedPointer<QTcpServer> server)
@@ -223,7 +226,7 @@ void ClientTests::constructorWithNoParameters_Test()
     // todo: eliminate annoying pass by reference in constructor
     QString host("localhost");
     QCOMPARE(_uut->host(), host);
-    QCOMPARE(_uut->port(), static_cast<quint32>(1883));
+    QCOMPARE(_uut->port(), static_cast<quint16>(1883));
     QVERIFY(NULL == _uut->parent());
 }
 
@@ -233,7 +236,7 @@ void ClientTests::constructorWithHost_Test()
 
     QString host("8.8.8.8");
     QCOMPARE(_uut->host(), host);
-    QCOMPARE(_uut->port(), static_cast<quint32>(1883));
+    QCOMPARE(_uut->port(), static_cast<quint16>(1883));
     QVERIFY(NULL == _uut->parent());
 }
 
@@ -243,7 +246,7 @@ void ClientTests::constructorWithHostAndPort_Test()
 
     QString host("8.8.8.8");
     QCOMPARE(_uut->host(), host);
-    QCOMPARE(_uut->port(), static_cast<quint32>(8883));
+    QCOMPARE(_uut->port(), static_cast<quint16>(8883));
     QVERIFY(NULL == _uut->parent());
 }
 
@@ -254,7 +257,7 @@ void ClientTests::constructorWithHostPortAndParent_Test()
 
     QString host("8.8.8.8");
     QCOMPARE(_uut->host(), host);
-    QCOMPARE(_uut->port(), static_cast<quint32>(8883));
+    QCOMPARE(_uut->port(), static_cast<quint16>(8883));
     QCOMPARE(_uut->parent(), &parent);
     _uut.reset();
 }
@@ -274,13 +277,13 @@ void ClientTests::setHostSetsHostValue_Test()
 
 void ClientTests::portReturnsPortValue_Test()
 {
-    QCOMPARE(_uut->port(), static_cast<quint32>(1883));
+    QCOMPARE(_uut->port(), static_cast<quint16>(1883));
 }
 
 void ClientTests::setPortSetsPortValue_Test()
 {
     _uut->setPort(8883);
-    QCOMPARE(_uut->port(), static_cast<quint32>(8883));
+    QCOMPARE(_uut->port(), static_cast<quint16>(8883));
 }
 
 void ClientTests::clientIdReturnsClientId_Test()
@@ -349,7 +352,7 @@ void ClientTests::connectWillMakeTCPConnection_Test()
 
 void ClientTests::isConnectedIsFalseWhenNotConnected_Test()
 {
-    QCOMPARE(_uut->isConnected(), false);
+    QCOMPARE(_uut->isConnectedToHost(), false);
 }
 
 void ClientTests::isConnectedIsTrueWhenConnected_Test()
@@ -359,7 +362,7 @@ void ClientTests::isConnectedIsTrueWhenConnected_Test()
     server->waitForNewConnection(5000);
     flushEvents();
 
-    QCOMPARE(_uut->isConnected(), true);
+    QCOMPARE(_uut->isConnectedToHost(), true);
 }
 
 void ClientTests::autoReconnectDefaultsToFalse_Test()
@@ -380,12 +383,12 @@ void ClientTests::autoReconnectDoesNotReconnect_Test()
     server->waitForNewConnection(5000);
     flushEvents();
 
-    QCOMPARE(_uut->isConnected(), true);
+    QCOMPARE(_uut->isConnectedToHost(), true);
 
     disconnectServerAndWaitForDisconnect(server);
 
     flushEvents();
-    QCOMPARE(_uut->isConnected(), false);
+    QCOMPARE(_uut->isConnectedToHost(), false);
 }
 
 void ClientTests::willDefaultsToNull_Test()
@@ -430,7 +433,7 @@ void ClientTests::connectSendsConnectMessage_Test()
     flushEvents();
 
     QByteArray byteArray = server->data();
-    QDataStream in(&byteArray, QBuffer::ReadOnly);
+    QDataStream in(&byteArray, QIODevice::ReadOnly);
 
     quint8 header = readByte(in);
     quint64 numberOfBytes = readEncodedLength(in);
@@ -453,7 +456,7 @@ void ClientTests::publishSendsPublishMessage_Test()
     flushEvents();
 
     QByteArray byteArray = server->data();
-    QDataStream in(&byteArray, QBuffer::ReadOnly);
+    QDataStream in(&byteArray, QIODevice::ReadOnly);
 
     quint8 header = readByte(in);
     quint64 numberOfBytes = readEncodedLength(in);
@@ -479,7 +482,7 @@ void ClientTests::subscribeSendsSubscribeMessage_Test()
     flushEvents();
 
     QByteArray byteArray = server->data();
-    QDataStream in(&byteArray, QBuffer::ReadOnly);
+    QDataStream in(&byteArray, QIODevice::ReadOnly);
 
     quint8 header = readByte(in);
     quint64 numberOfBytes = readEncodedLength(in);
@@ -510,7 +513,7 @@ void ClientTests::pubackSendsPubackMessage_Test()
     flushEvents();
 
     QByteArray byteArray = server->data();
-    QDataStream in(&byteArray, QBuffer::ReadOnly);
+    QDataStream in(&byteArray, QIODevice::ReadOnly);
 
     quint8 header = readByte(in);
     quint64 numberOfBytes = readEncodedLength(in);
@@ -536,7 +539,7 @@ void ClientTests::unsubscribeSendsUnsubscribeMessage_Test()
     flushEvents();
 
     QByteArray byteArray = server->data();
-    QDataStream in(&byteArray, QBuffer::ReadOnly);
+    QDataStream in(&byteArray, QIODevice::ReadOnly);
 
     quint8 header = readByte(in);
     quint64 numberOfBytes = readEncodedLength(in);
@@ -560,11 +563,11 @@ void ClientTests::disconnectSendsDisconnectMessage_Test()
     server->waitForNewConnection(5000);
     flushEvents();
 
-    _uut->disconnect();
+    _uut->disconnectFromHost();
     flushEvents();
 
     QByteArray byteArray = server->data();
-    QDataStream in(&byteArray, QBuffer::ReadOnly);
+    QDataStream in(&byteArray, QIODevice::ReadOnly);
 
     quint8 header = readByte(in);
     quint64 numberOfBytes = readEncodedLength(in);
@@ -590,7 +593,7 @@ void ClientTests::pingSendsPingMessage_Test()
     flushEvents();
 
     QByteArray byteArray = server->data();
-    QDataStream in(&byteArray, QBuffer::ReadOnly);
+    QDataStream in(&byteArray, QIODevice::ReadOnly);
 
     quint8 header = readByte(in);
     quint64 numberOfBytes = readEncodedLength(in);
@@ -623,7 +626,7 @@ void ClientTests::tcpSocketErrorEmitsErrorSignal_Test()
 
     _uut->setHost(QHostAddress(TcpServer::HOST).toString());
     _uut->setPort(TcpServer::PORT);
-    _uut->connect();
+    _uut->connectToHost();
 
     flushEvents();
 

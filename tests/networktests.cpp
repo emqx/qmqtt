@@ -83,7 +83,7 @@ void NetworkTests::flushEvents()
 
 void NetworkTests::defaultConstructor_Test()
 {
-    QCOMPARE(_uut->isConnected(), false);
+    QCOMPARE(_uut->isConnectedToHost(), false);
     QCOMPARE(_uut->autoReconnect(), false);
     QCOMPARE(_uut->state(), QAbstractSocket::UnconnectedState);
 }
@@ -91,7 +91,7 @@ void NetworkTests::defaultConstructor_Test()
 void NetworkTests::connectToMakesTCPConnection_Test()
 {
     TcpServer server;
-    _uut->connectTo(server.serverAddress().toString(), server.serverPort());
+    _uut->connectToHost(server.serverAddress().toString(), server.serverPort());
     bool timedOut = false;
     bool connectionMade = server.waitForNewConnection(5000, &timedOut);
 
@@ -103,7 +103,7 @@ void NetworkTests::connectedSignalEmittedAfterConnectionMade_Test()
 {
     TcpServer server;
     QSignalSpy spy(_uut.data(), &QMQTT::Network::connected);
-    _uut->connectTo(server.serverAddress().toString(), server.serverPort());
+    _uut->connectToHost(server.serverAddress().toString(), server.serverPort());
     QCOMPARE(spy.count(), 0);
 
     flushEvents();
@@ -113,41 +113,41 @@ void NetworkTests::connectedSignalEmittedAfterConnectionMade_Test()
 void NetworkTests::isConnectedTrueWhenInConnectedState_Test()
 {
     TcpServer server;
-    _uut->connectTo(server.serverAddress().toString(), server.serverPort());
+    _uut->connectToHost(server.serverAddress().toString(), server.serverPort());
     flushEvents();
 
-    QCOMPARE(_uut->isConnected(), true);
+    QCOMPARE(_uut->isConnectedToHost(), true);
 }
 
 void NetworkTests::isConnectedFalseWhenNotInConnectedState_Test()
 {
-    QCOMPARE(_uut->isConnected(), false);
+    QCOMPARE(_uut->isConnectedToHost(), false);
 }
 
 void NetworkTests::disconnectWillDisconnectASocketConnection_Test()
 {
     TcpServer server;
-    _uut->connectTo(server.serverAddress().toString(), server.serverPort());
+    _uut->connectToHost(server.serverAddress().toString(), server.serverPort());
     flushEvents();
-    QCOMPARE(_uut->isConnected(), true);
+    QCOMPARE(_uut->isConnectedToHost(), true);
 
-    _uut->disconnect();
+    _uut->disconnectFromHost();
     flushEvents();
 
-    QCOMPARE(_uut->isConnected(), false);
+    QCOMPARE(_uut->isConnectedToHost(), false);
 }
 
 void NetworkTests::disconnectedSignalEmittedAfterADisconnection_Test()
 {
     TcpServer server;
-    _uut->connectTo(server.serverAddress().toString(), server.serverPort());
+    _uut->connectToHost(server.serverAddress().toString(), server.serverPort());
     flushEvents();
-    QCOMPARE(_uut->isConnected(), true);
+    QCOMPARE(_uut->isConnectedToHost(), true);
 
     QSignalSpy spy(_uut.data(), &QMQTT::Network::disconnected);
     QCOMPARE(spy.count(), 0);
 
-    _uut->disconnect();
+    _uut->disconnectFromHost();
     flushEvents();
 
     QCOMPARE(spy.count(), 1);
@@ -156,9 +156,9 @@ void NetworkTests::disconnectedSignalEmittedAfterADisconnection_Test()
 void NetworkTests::sendframeSendsTheFrame_Test()
 {
     TcpServer server;
-    _uut->connectTo(server.serverAddress().toString(), server.serverPort());
+    _uut->connectToHost(server.serverAddress().toString(), server.serverPort());
     flushEvents();
-    QCOMPARE(_uut->isConnected(), true);
+    QCOMPARE(_uut->isConnectedToHost(), true);
 
     QByteArray data("abc");
     QMQTT::Frame frame(42, data);
@@ -171,9 +171,9 @@ void NetworkTests::sendframeSendsTheFrame_Test()
 void NetworkTests::receivedReceivesAFrame_Test()
 {
     TcpServer server;
-    _uut->connectTo(server.serverAddress().toString(), server.serverPort());
+    _uut->connectToHost(server.serverAddress().toString(), server.serverPort());
     flushEvents();
-    QCOMPARE(_uut->isConnected(), true);
+    QCOMPARE(_uut->isConnectedToHost(), true);
 
     qRegisterMetaType<QMQTT::Frame>("QMQTT::Frame");
     QSignalSpy spy(_uut.data(), &QMQTT::Network::received);
@@ -197,14 +197,14 @@ void NetworkTests::stateIsUnconnectedStateBeforeAnyConnectionMade_Test()
 void NetworkTests::stateIsConnectingStateAfterToldToConnectButNotYetConnected_Test()
 {
     TcpServer server;
-    _uut->connectTo(server.serverAddress().toString(), server.serverPort());
+    _uut->connectToHost(server.serverAddress().toString(), server.serverPort());
     QCOMPARE(_uut->state(), QAbstractSocket::ConnectingState);
 }
 
 void NetworkTests::stateIsConnectedStateAfterConnectionHasBeenMade_Test()
 {
     TcpServer server;
-    _uut->connectTo(server.serverAddress().toString(), server.serverPort());
+    _uut->connectToHost(server.serverAddress().toString(), server.serverPort());
     flushEvents();
     QCOMPARE(_uut->state(), QAbstractSocket::ConnectedState);
 }
@@ -212,11 +212,11 @@ void NetworkTests::stateIsConnectedStateAfterConnectionHasBeenMade_Test()
 void NetworkTests::stateIsUnconnectedStateAfterGivenDisconnect_Test()
 {
     TcpServer server;
-    _uut->connectTo(server.serverAddress().toString(), server.serverPort());
+    _uut->connectToHost(server.serverAddress().toString(), server.serverPort());
     flushEvents();
     QCOMPARE(_uut->state(), QAbstractSocket::ConnectedState);
 
-    _uut->disconnect();
+    _uut->disconnectFromHost();
     QCOMPARE(_uut->state(), QAbstractSocket::UnconnectedState);
 }
 
@@ -234,16 +234,16 @@ void NetworkTests::autoReconnectTrueAfterSetAutoReconnectTrue_Test()
 void NetworkTests::willNotAutoReconnectIfAutoReconnectIsSetFalse_Test()
 {
     TcpServer server;
-    _uut->connectTo(server.serverAddress().toString(), server.serverPort());
+    _uut->connectToHost(server.serverAddress().toString(), server.serverPort());
     flushEvents();
-    QCOMPARE(_uut->isConnected(), true);
+    QCOMPARE(_uut->isConnectedToHost(), true);
 
     server.socket()->disconnectFromHost();
     server.socket()->state() == QAbstractSocket::UnconnectedState
        || server.socket()->waitForDisconnected(5000);
     flushEvents();
 
-    QCOMPARE(_uut->isConnected(), false);
+    QCOMPARE(_uut->isConnectedToHost(), false);
 }
 
 void NetworkTests::willAutoReconnectIfAutoReconnectIsSetTrue_Test()
@@ -253,16 +253,16 @@ void NetworkTests::willAutoReconnectIfAutoReconnectIsSetTrue_Test()
     _uut->setAutoReconnect(true);
 
     TcpServer server;
-    _uut->connectTo(server.serverAddress().toString(), server.serverPort());
+    _uut->connectToHost(server.serverAddress().toString(), server.serverPort());
     flushEvents();
-    QCOMPARE(_uut->isConnected(), true);
+    QCOMPARE(_uut->isConnectedToHost(), true);
 
     server.socket()->disconnectFromHost();
     server.socket()->waitForDisconnected(5000);
     flushEvents();
 
     QCOMPARE(_uut->autoReconnect(), true);
-    QCOMPARE(_uut->isConnected(), true);
+    QCOMPARE(_uut->isConnectedToHost(), true);
 }
 
 QTEST_MAIN(NetworkTests);
