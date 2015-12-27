@@ -239,7 +239,8 @@ void NetworkTests::willNotAutoReconnectIfAutoReconnectIsSetFalse_Test()
     QCOMPARE(_uut->isConnected(), true);
 
     server.socket()->disconnectFromHost();
-    server.socket()->waitForDisconnected(5000);
+    server.socket()->state() == QAbstractSocket::UnconnectedState
+       || server.socket()->waitForDisconnected(5000);
     flushEvents();
 
     QCOMPARE(_uut->isConnected(), false);

@@ -48,16 +48,16 @@ public:
 
     bool operator==(const Message& other) const;
 
-    quint16 id();
+    quint16 id() const;
     void setId(quint16 id);
 
     quint8 qos() const;
     void setQos(quint8 qos);
 
-    bool retain();
+    bool retain() const;
     void setRetain(bool retain);
 
-    bool dup();
+    bool dup() const;
     void setDup(bool dup);
 
     QString topic() const;

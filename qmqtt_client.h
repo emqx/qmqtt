@@ -141,19 +141,19 @@ public slots:
 
 signals:
     void connected();
-    void error(QAbstractSocket::SocketError);
-    void connacked(quint8 ack);
+    void error(const QAbstractSocket::SocketError socketError);
+    void connacked(const quint8 ack);
     //send PUBLISH and receive PUBACK
-    void published(QMQTT::Message message);
-    void pubacked(quint8 type, quint16 msgid);
+    void published(const QMQTT::Message& message);
+    void pubacked(const quint8 type, const quint16 msgid);
     //receive PUBLISH
-    void received(const QMQTT::Message message);
+    void received(const QMQTT::Message& message);
     //send SUBSCRIBE and receive SUBACKED
-    void subscribed(const QString topic);
-    void subacked(quint16 mid, quint8 qos);
+    void subscribed(const QString& topic);
+    void subacked(const quint16 mid, const quint8 qos);
     //send UNSUBSCRIBE and receive UNSUBACKED
-    void unsubscribed(const QString topic);
-    void unsubacked(quint16 mid);
+    void unsubscribed(const QString& topic);
+    void unsubacked(const quint16 mid);
     //receive PINGRESP
     void pong();
     void disconnected();
@@ -161,10 +161,10 @@ signals:
 private slots:
     void onConnected();
     void onDisconnected();
-    void onReceived(QMQTT::Frame frame);
-    void handlePublish(Message &message);
-    void handleConnack(quint8 ack);
-    void handlePuback(quint8 type, quint16 msgid);
+    void onReceived(const QMQTT::Frame& frame);
+    void handlePublish(const Message& message);
+    void handleConnack(const quint8 ack);
+    void handlePuback(const quint8 type, const quint16 msgid);
 
 private:
     ClientPrivate *const  d_ptr;
