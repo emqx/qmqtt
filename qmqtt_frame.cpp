@@ -37,54 +37,31 @@ namespace QMQTT {
 
 Q_LOGGING_CATEGORY(frame, "qmqtt.frame")
 
-Frame::Frame()
-    : _header(0)
-    , _data(QByteArray())
+Frame::Frame(quint8 header, QObject *parent) :
+    QObject(parent),
+    _header(header),
+    _data(QByteArray())
 {
 }
 
-Frame::Frame(quint8 header)
-    : _header(header)
-    , _data(QByteArray())
+Frame::Frame(quint8 header, QByteArray & data, QObject *parent) :
+    QObject(parent),
+    _header(header),
+    _data(data)
 {
 }
-
-Frame::Frame(quint8 header, QByteArray data)
-    : _header(header)
-    , _data(data)
-{
-}
-
-Frame::Frame(const Frame& other)
-{
-    _header = other._header;
-    _data = other._data;
-}
-
-Frame& Frame::Frame::operator=(const Frame& other)
-{
-    _header = other._header;
-    _data = other._data;
-    return *this;
-}
-
-bool Frame::operator==(const Frame& other) const
-{
-  return _header == other._header
-      && _data == other._data;
-}
-
 
 Frame::~Frame()
 {
+
 }
 
-quint8 Frame::header() const
+quint8 Frame::header()
 {
     return _header;
 }
 
-QByteArray Frame::data() const
+QByteArray & Frame::data()
 {
     return _data;
 }

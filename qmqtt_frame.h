@@ -83,21 +83,19 @@
 
 namespace QMQTT {
 
-class Frame
+class Frame : public QObject
 {
+    Q_OBJECT
+
+    Q_DISABLE_COPY(Frame)
+
 public:
-    explicit Frame();
-    explicit Frame(quint8 header);
-    explicit Frame(quint8 header, QByteArray data);
-    virtual ~Frame();
+    explicit Frame(quint8 header, QObject *parent = 0);
+    explicit Frame(quint8 header, QByteArray & data, QObject *parent = 0);
+    ~Frame();
 
-    Frame(const Frame& other);
-    Frame& operator=(const Frame& other);
-
-    bool operator==(const Frame& other) const;
-
-    quint8 header() const;
-    QByteArray data() const;
+    quint8 header();
+    QByteArray & data();
 
     int readInt();
     char readChar();
@@ -118,7 +116,5 @@ private:
 };
 
 } // namespace QMQTT
-
-Q_DECLARE_METATYPE(QMQTT::Frame);
 
 #endif // QMQTT_FRAME_H

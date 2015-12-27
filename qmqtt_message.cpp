@@ -58,16 +58,6 @@ Message::~Message()
     //NOTHING TODO
 }
 
-bool Message::operator==(const Message& other) const
-{
-  return _id == other._id
-      && _topic == other._topic
-      && _payload == other._payload
-      && _qos == other._qos
-      && _retain == other._retain
-      && _dup == other._dup;
-}
-
 quint16 Message::id()
 {
     return _id;
