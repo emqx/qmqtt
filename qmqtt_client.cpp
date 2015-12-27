@@ -247,8 +247,9 @@ void Client::onDisconnected()
 
 //---------------------------------------------
 //---------------------------------------------
-void Client::onReceived(QMQTT::Frame frame)
+void Client::onReceived(const QMQTT::Frame& frm)
 {
+    QMQTT::Frame frame(frm);
     quint8 qos = 0;
     bool retain, dup;
     QString topic;
@@ -303,13 +304,13 @@ void Client::onReceived(QMQTT::Frame frame)
     }
 }
 
-void Client::handleConnack(quint8 ack)
+void Client::handleConnack(const quint8 ack)
 {
     qCDebug(client) << "connack: " << ack;
     emit connacked(ack);
 }
 
-void Client::handlePublish(Message & message)
+void Client::handlePublish(const Message& message)
 {
     Q_D(Client);
     if(message.qos() == MQTT_QOS1) {
@@ -320,7 +321,7 @@ void Client::handlePublish(Message & message)
     emit received(message);
 }
 
-void Client::handlePuback(quint8 type, quint16 msgid)
+void Client::handlePuback(const quint8 type, const quint16 msgid)
 {
     Q_D(Client);
     if(type == PUBREC) {

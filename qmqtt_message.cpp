@@ -68,7 +68,7 @@ bool Message::operator==(const Message& other) const
       && _dup == other._dup;
 }
 
-quint16 Message::id()
+quint16 Message::id() const
 {
     return _id;
 }
@@ -88,7 +88,7 @@ void Message::setQos(quint8 qos)
     _qos = qos;
 }
 
-bool Message::retain()
+bool Message::retain() const
 {
     return _retain;
 }
@@ -98,7 +98,7 @@ void Message::setRetain(bool retain)
     _retain = retain;
 }
 
-bool Message::dup()
+bool Message::dup() const
 {
     return _dup;
 }

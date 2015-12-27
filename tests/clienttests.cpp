@@ -667,7 +667,7 @@ void ClientTests::publishEmitsPublishedSignal_Test()
     server->waitForNewConnection(5000);
     flushEvents();
 
-    qRegisterMetaType<QMQTT::Message>("QMQTT::Message");
+    qRegisterMetaType<QMQTT::Message>("QMQTT::Message&");
     QSignalSpy spy(_uut.data(), &QMQTT::Client::published);
 
     QByteArray payload("payload");
@@ -848,7 +848,8 @@ void ClientTests::tcpSocketDisconnectEmitsDisconnectedSignal_Test()
     QSignalSpy spy(_uut.data(), &QMQTT::Client::disconnected);
 
     server->socket()->disconnectFromHost();
-    server->socket()->waitForDisconnected(5000);
+    server->socket()->state() == QAbstractSocket::UnconnectedState
+       || server->socket()->waitForDisconnected(5000);
     flushEvents();
 
     QCOMPARE(spy.count(), 1);
