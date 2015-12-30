@@ -45,7 +45,7 @@ QMQTT::ClientPrivate::ClientPrivate(Client* qq_ptr)
     : _host("localhost")
     , _port(1883)
     , _gmid(1)
-    , _cleansess(false)
+    , _cleanSession(false)
     , _keepalive(300)
     , _state(STATE_INIT)
     , _will(NULL)
@@ -103,7 +103,7 @@ void QMQTT::ClientPrivate::sendConnect()
     qCDebug(client) << "CONNECT header: " << frame.header();
 
     //flags
-    flags = FLAG_CLEANSESS(flags, _cleansess ? 1 : 0 );
+    flags = FLAG_CLEANSESS(flags, _cleanSession ? 1 : 0 );
     flags = FLAG_WILL(flags, _will ? 1 : 0);
     if (_will) {
         flags = FLAG_WILLQOS(flags, _will->qos());
@@ -392,14 +392,14 @@ QMQTT::ClientState QMQTT::ClientPrivate::state() const
     return _state;
 }
 
-void QMQTT::ClientPrivate::setCleansess(const bool cleansess)
+void QMQTT::ClientPrivate::setCleanSession(const bool cleanSession)
 {
-    _cleansess = cleansess;
+    _cleanSession = cleanSession;
 }
 
-bool QMQTT::ClientPrivate::cleansess()
+bool QMQTT::ClientPrivate::cleanSession() const
 {
-    return _cleansess;
+    return _cleanSession;
 }
 
 void QMQTT::ClientPrivate::setKeepAlive(const int keepalive)

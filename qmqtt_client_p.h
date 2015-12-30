@@ -54,7 +54,7 @@ public:
     QString _clientId;
     QString _username;
     QString _password;
-    bool _cleansess;
+    bool _cleanSession;
     int _keepalive;
     ClientState _state;
     QMQTT::Will* _will;
@@ -92,8 +92,8 @@ public:
     QMQTT::Will* will() const;
     void setWill(Will* will);
     QMQTT::ClientState state() const;
-    void setCleansess(const bool cleansess);
-    bool cleansess();
+    void setCleanSession(const bool cleanSession);
+    bool cleanSession() const;
     void setKeepAlive(const int keepalive);
     int keepalive() const;
     void setPassword(const QString& password);

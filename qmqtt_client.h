@@ -83,7 +83,7 @@ public:
     QString username() const;
     QString password() const;
     int keepalive() const;
-    bool cleansess();
+    bool cleanSession() const;
     bool isConnectedToHost() const;
     bool autoReconnect() const;
     Will* will() const;
@@ -96,7 +96,7 @@ public slots:
     void setUsername(const QString& username);
     void setPassword(const QString& password);
     void setKeepAlive(int keepalive);
-    void setCleansess(bool cleansess);
+    void setCleanSession(const bool cleansess);
     void setAutoReconnect(bool value);
     void setWill(Will *will);
 

@@ -54,8 +54,8 @@ private slots:
     void setPasswordSetsPassword_Test();
     void keepaliveReturnsKeepAlive_Test();
     void setKeepAliveSetsKeepAlive_Test();
-    void cleansessReturnsCleansess_Test();
-    void setCleansessSetsCleansess_Test();
+    void cleanSessionReturnsCleanSession_Test();
+    void setCleanSessionSetsCleanSession_Test();
     void connectWillMakeTCPConnection_Test();
     void isConnectedIsFalseWhenNotConnected_Test();
     void isConnectedIsTrueWhenConnected_Test();
@@ -330,15 +330,15 @@ void ClientTests::setKeepAliveSetsKeepAlive_Test()
     QCOMPARE(_uut->keepalive(), 400);
 }
 
-void ClientTests::cleansessReturnsCleansess_Test()
+void ClientTests::cleanSessionReturnsCleanSession_Test()
 {
-    QCOMPARE(_uut->cleansess(), false);
+    QCOMPARE(_uut->cleanSession(), false);
 }
 
-void ClientTests::setCleansessSetsCleansess_Test()
+void ClientTests::setCleanSessionSetsCleanSession_Test()
 {
-    _uut->setCleansess(true);
-    QCOMPARE(_uut->cleansess(), true);
+    _uut->setCleanSession(true);
+    QCOMPARE(_uut->cleanSession(), true);
 }
 
 void ClientTests::connectWillMakeTCPConnection_Test()

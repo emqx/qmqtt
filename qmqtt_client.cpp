@@ -117,16 +117,16 @@ void QMQTT::Client::setKeepAlive(const int keepalive)
     d->setKeepAlive(keepalive);
 }
 
-bool QMQTT::Client::cleansess()
+bool QMQTT::Client::cleanSession() const
 {
-    Q_D(Client);
-    return d->cleansess();
+    Q_D(const Client);
+    return d->cleanSession();
 }
 
-void QMQTT::Client::setCleansess(const bool cleansess)
+void QMQTT::Client::setCleanSession(const bool cleanSession)
 {
     Q_D(Client);
-    d->setCleansess(cleansess);
+    d->setCleanSession(cleanSession);
 }
 
 bool QMQTT::Client::autoReconnect() const
