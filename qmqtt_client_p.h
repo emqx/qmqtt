@@ -1,5 +1,5 @@
 /*
- * qmqtt_client_p.h - qmqtt client private heaer
+ * qmqtt_client_p.h - qmqtt client private header
  *
  * Copyright (c) 2013  Ery Lee <ery.lee at gmail dot com>
  * All rights reserved.
@@ -32,68 +32,82 @@
 #ifndef QMQTT_CLIENT_P_H
 #define QMQTT_CLIENT_P_H
 
-#include <QObject>
-#include <QPointer>
-#include <QTimer>
-#include <QDateTime>
-#include <QHostInfo>
-#include <QLoggingCategory>
-
-#include "qmqtt_global.h"
-#include "qmqtt_message.h"
+#include "qmqtt_client.h"
+#include "qmqtt_client_p.h"
 #include "qmqtt_will.h"
 #include "qmqtt_network.h"
+#include <QTimer>
+
 namespace QMQTT {
 
-Q_DECLARE_LOGGING_CATEGORY(client)
 class ClientPrivate
 {
-
-    Q_DECLARE_PUBLIC(Client)
 public:
-    ClientPrivate(Client * qt);
+    ClientPrivate(Client* qq_ptr);
     ~ClientPrivate();
-    void init(QObject * parent = 0);
-    void init(const QString host, int port, QObject *parent = 0);
 
-    QString host;
-    quint32 port;
-    quint16 gmid;
+    void init(const QString& host, const quint16 port);
 
-    QString clientId;
-    QString username;
-    QString password;
-    bool cleansess;
-    int keepalive;
+    QString _host;
+    quint16 _port;
+    quint16 _gmid;
+    QString _clientId;
+    QString _username;
+    QString _password;
+    bool _cleanSession;
+    int _keepalive;
+    ClientState _state;
+    QMQTT::Will* _will;
+    QMQTT::Network _network;
+    QTimer _timer;
 
-    State state;
+    Client* const q_ptr;
 
-    QPointer<QMQTT::Will> will;
-    QPointer<QMQTT::Network> network;
-    QPointer<QTimer> timer;
-
-
-
-public slots:
-    void sockConnect();
+    QString randomClientId();
+    quint16 nextmid();
+    void connectToHost();
     void sendConnect();
-    void sendPing();
+    void ping();
     quint16 sendUnsubscribe(const QString &topic);
     quint16 sendSubscribe(const QString &topic, quint8 qos);
     quint16 sendPublish(Message &msg);
     void sendPuback(quint8 type, quint16 mid);
     void sendDisconnect();
-    void disconnect();
+    void disconnectFromHost();
     void startKeepalive();
     void stopKeepalive();
+    void onNetworkConnected();
+    void onNetworkDisconnected();
+    quint16 publish(Message& message);
+    void puback(const quint8 type, const quint16 msgid);
+    quint16 subscribe(const QString& topic, const quint8 qos);
+    void unsubscribe(const QString& topic);
+    void onReceived(const QMQTT::Frame& frame);
+    void handleConnack(const quint8 ack);
+    void handlePublish(const Message& message);
+    void handlePuback(const quint8 type, const quint16 msgid);
+    bool autoReconnect() const;
+    void setAutoReconnect(const bool value);
+    bool isConnectedToHost() const;
+    QMQTT::Will* will() const;
+    void setWill(Will* will);
+    QMQTT::ClientState state() const;
+    void setCleanSession(const bool cleanSession);
+    bool cleanSession() const;
+    void setKeepAlive(const int keepalive);
+    int keepalive() const;
+    void setPassword(const QString& password);
+    QString password() const;
+    void setUsername(const QString& username);
+    QString username() const;
+    void setClientId(const QString& clientId);
+    QString clientId() const;
+    void setPort(const quint16 port);
+    quint16 port() const;
+    void setHost(const QString& host);
+    QString host() const;
 
-private:
-    QString randomClientId();
-    quint16 nextmid();
-    Client * const q_ptr;
-
-
-
+    Q_DECLARE_PUBLIC(Client)
 };
 
 } // namespace QMQTT

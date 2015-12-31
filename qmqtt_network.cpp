@@ -46,7 +46,6 @@ Network::Network(QObject *parent) :
     _leftSize = 0;
     _autoreconn = false;
     _timeout = 3000;
-    _connected = false;
     _buffer->open(QIODevice::ReadWrite);
     initSocket();
 }
@@ -67,17 +66,16 @@ void Network::initSocket()
 
 Network::~Network()
 {
-    disconnect();
+    disconnectFromHost();
 }
 
-bool Network::isConnected()
+bool Network::isConnectedToHost() const
 {
-    return _connected;
+    return NULL != _socket && _socket->state() == QAbstractSocket::ConnectedState;
 }
 
-void Network::connectTo(const QString & host, const quint32 port)
+void Network::connectToHost(const QString& host, const quint16 port)
 {
-
     if(!_socket)
     {
         qCWarning(network) << "AMQP: Socket didn't create.";
@@ -100,7 +98,7 @@ void Network::sendFrame(Frame & frame)
 
 }
 
-void Network::disconnect()
+void Network::disconnectFromHost()
 {
     if(_socket) _socket->close();
 }
@@ -129,7 +127,6 @@ void Network::setAutoReconnect(bool b)
 void Network::sockConnected()
 {
     qCDebug(network) << "Network connected...";
-    _connected = true;
     emit connected();
 }
 
@@ -182,7 +179,6 @@ int Network::readRemaingLength(QDataStream &in)
 
 void Network::sockDisconnected()
 {
-    _connected = false;
     emit disconnected();
 }
 

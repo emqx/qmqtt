@@ -104,7 +104,7 @@ public:
     QString readString();
 
     void writeInt(int i);
-    void writeChar(char c);
+    void writeChar(const quint8 c);
     void writeString(const QString &string);
     void writeRawData(const QByteArray &data);
 

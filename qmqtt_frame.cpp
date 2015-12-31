@@ -124,7 +124,7 @@ void Frame::writeString(const QString &string)
     _data.append(string);
 }
 
-void Frame::writeChar(char c)
+void Frame::writeChar(const quint8 c)
 {
     _data.append(c);
 }
