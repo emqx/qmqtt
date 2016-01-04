@@ -8,7 +8,7 @@ class TcpServer : public QTcpServer
 {
     Q_OBJECT
 public:
-    TcpServer();
+    explicit TcpServer();
     virtual ~TcpServer();
 
     QByteArray data() const;
