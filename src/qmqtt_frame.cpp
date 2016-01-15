@@ -61,7 +61,7 @@ Frame::Frame(const Frame& other)
     _data = other._data;
 }
 
-Frame& Frame::Frame::operator=(const Frame& other)
+Frame& Frame::operator=(const Frame& other)
 {
     _header = other._header;
     _data = other._data;
