@@ -72,7 +72,8 @@ void CustomPrinter::OnTestEnd(const TestInfo& test_info)
                  << "0: error: Test failed: "
                  << test_info.test_case_name() << "." << test_info.name()
                  << endl
-                 << part.summary();
+                 << part.summary()
+                 << endl;
         }
     }
 

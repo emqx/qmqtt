@@ -14,7 +14,8 @@ SOURCES += \
     customprinter.cpp \
     networktest.cpp \
     messagetest.cpp \
-    frametest.cpp
+    frametest.cpp \
+    sockettest.cpp
 
 # to be ported to gtest or deleted
 #	routedmessagetests.cpp \

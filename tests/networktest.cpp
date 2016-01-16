@@ -10,6 +10,9 @@
 
 using namespace testing;
 
+const QHostAddress HOST = QHostAddress::LocalHost;
+const quint16 PORT = 3875;
+
 class NetworkTest : public Test
 {
 public:
@@ -50,7 +53,7 @@ TEST_F(NetworkTest, defaultConstructor_Test)
 
 TEST_F(NetworkTest, connectToMakesTCPConnection_Test)
 {
-    TcpServer server;
+    TcpServer server(HOST, PORT);
     _network->connectToHost(server.serverAddress(), server.serverPort());
     bool timedOut = false;
     bool connectionMade = server.waitForNewConnection(5000, &timedOut);
@@ -61,7 +64,7 @@ TEST_F(NetworkTest, connectToMakesTCPConnection_Test)
 
 TEST_F(NetworkTest, connectedSignalEmittedAfterConnectionMade_Test)
 {
-    TcpServer server;
+    TcpServer server(HOST, PORT);
     QSignalSpy spy(_network.data(), &QMQTT::Network::connected);
     _network->connectToHost(server.serverAddress(), server.serverPort());
     EXPECT_EQ(0, spy.count());
@@ -72,7 +75,7 @@ TEST_F(NetworkTest, connectedSignalEmittedAfterConnectionMade_Test)
 
 TEST_F(NetworkTest, isConnectedTrueWhenInConnectedState_Test)
 {
-    TcpServer server;
+    TcpServer server(HOST, PORT);
     _network->connectToHost(server.serverAddress(), server.serverPort());
     flushEvents();
 
@@ -86,7 +89,7 @@ TEST_F(NetworkTest, isConnectedFalseWhenNotInConnectedState_Test)
 
 TEST_F(NetworkTest, disconnectWillDisconnectASocketConnection_Test)
 {
-    TcpServer server;
+    TcpServer server(HOST, PORT);
     _network->connectToHost(server.serverAddress(), server.serverPort());
     flushEvents();
     EXPECT_TRUE(_network->isConnectedToHost());
@@ -99,7 +102,7 @@ TEST_F(NetworkTest, disconnectWillDisconnectASocketConnection_Test)
 
 TEST_F(NetworkTest, disconnectedSignalEmittedAfterADisconnection_Test)
 {
-    TcpServer server;
+    TcpServer server(HOST, PORT);
     _network->connectToHost(server.serverAddress(), server.serverPort());
     flushEvents();
     EXPECT_TRUE(_network->isConnectedToHost());
@@ -115,7 +118,7 @@ TEST_F(NetworkTest, disconnectedSignalEmittedAfterADisconnection_Test)
 
 TEST_F(NetworkTest, sendframeSendsTheFrame_Test)
 {
-    TcpServer server;
+    TcpServer server(HOST, PORT);
     _network->connectToHost(server.serverAddress(), server.serverPort());
     flushEvents();
     EXPECT_TRUE(_network->isConnectedToHost());
@@ -130,7 +133,7 @@ TEST_F(NetworkTest, sendframeSendsTheFrame_Test)
 
 TEST_F(NetworkTest, receivedReceivesAFrame_Test)
 {
-    TcpServer server;
+    TcpServer server(HOST, PORT);
     _network->connectToHost(server.serverAddress(), server.serverPort());
     flushEvents();
     EXPECT_TRUE(_network->isConnectedToHost());
@@ -156,14 +159,14 @@ TEST_F(NetworkTest, stateIsUnconnectedStateBeforeAnyConnectionMade_Test)
 
 TEST_F(NetworkTest, stateIsConnectingStateAfterToldToConnectButNotYetConnected_Test)
 {
-    TcpServer server;
+    TcpServer server(HOST, PORT);
     _network->connectToHost(server.serverAddress(), server.serverPort());
     EXPECT_EQ(QAbstractSocket::ConnectingState, _network->state());
 }
 
 TEST_F(NetworkTest, stateIsConnectedStateAfterConnectionHasBeenMade_Test)
 {
-    TcpServer server;
+    TcpServer server(HOST, PORT);
     _network->connectToHost(server.serverAddress(), server.serverPort());
     flushEvents();
     EXPECT_EQ(QAbstractSocket::ConnectedState, _network->state());
@@ -171,7 +174,7 @@ TEST_F(NetworkTest, stateIsConnectedStateAfterConnectionHasBeenMade_Test)
 
 TEST_F(NetworkTest, stateIsUnconnectedStateAfterGivenDisconnect_Test)
 {
-    TcpServer server;
+    TcpServer server(HOST, PORT);
     _network->connectToHost(server.serverAddress(), server.serverPort());
     flushEvents();
     EXPECT_EQ(QAbstractSocket::ConnectedState, _network->state());
@@ -193,7 +196,7 @@ TEST_F(NetworkTest, autoReconnectTrueAfterSetAutoReconnectTrue_Test)
 
 TEST_F(NetworkTest, willNotAutoReconnectIfAutoReconnectIsSetFalse_Test)
 {
-    TcpServer server;
+    TcpServer server(HOST, PORT);
     _network->connectToHost(server.serverAddress(), server.serverPort());
     flushEvents();
     EXPECT_TRUE(_network->isConnectedToHost());
@@ -211,7 +214,7 @@ TEST_F(NetworkTest, DISABLED_willAutoReconnectIfAutoReconnectIsSetTrue_Test)
 {
     _network->setAutoReconnect(true);
 
-    TcpServer server;
+    TcpServer server(HOST, PORT);
     _network->connectToHost(server.serverAddress(), server.serverPort());
     flushEvents();
     EXPECT_TRUE(_network->isConnectedToHost());

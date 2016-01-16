@@ -8,7 +8,7 @@ class TcpServer : public QTcpServer
 {
     Q_OBJECT
 public:
-    explicit TcpServer();
+    explicit TcpServer(const QHostAddress host, const quint16 port);
     virtual ~TcpServer();
 
     QByteArray data() const;
