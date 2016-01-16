@@ -169,7 +169,7 @@ TEST_F(SocketTest, outgoingDataIsSent_Test)
 
 TEST_F(SocketTest, socketErrorEmitsErrorSignal_Test)
 {
-    QSignalSpy spy(_socket.data(), static_cast<void (Socket::*)(QAbstractSocket::SocketError)>(&Socket::error));
+    QSignalSpy spy(_socket.data(), static_cast<void (SocketInterface::*)(QAbstractSocket::SocketError)>(&SocketInterface::error));
     _socket->connectToHost(HOST, PORT);
     flushEvents();
 

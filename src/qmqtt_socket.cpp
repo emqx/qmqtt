@@ -2,16 +2,16 @@
 #include <QTcpSocket>
 
 Socket::Socket(QObject* parent)
-    : QObject(parent)
+    : SocketInterface(parent)
     , _socket(new QTcpSocket)
 {
-    connect(_socket.data(), &QTcpSocket::connected,    this, &Socket::connected);
-    connect(_socket.data(), &QTcpSocket::disconnected, this, &Socket::disconnected);
-    connect(_socket.data(), &QTcpSocket::readyRead,    this, &Socket::readyRead);
+    connect(_socket.data(), &QTcpSocket::connected,    this, &SocketInterface::connected);
+    connect(_socket.data(), &QTcpSocket::disconnected, this, &SocketInterface::disconnected);
+    connect(_socket.data(), &QTcpSocket::readyRead,    this, &SocketInterface::readyRead);
     connect(_socket.data(),
             static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error),
             this,
-            static_cast<void (Socket::*)(QAbstractSocket::SocketError)>(&Socket::error));
+            static_cast<void (SocketInterface::*)(QAbstractSocket::SocketError)>(&SocketInterface::error));
 }
 
 Socket::~Socket()
