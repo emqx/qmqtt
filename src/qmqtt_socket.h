@@ -23,6 +23,10 @@ public:
     bool waitForBytesWritten(int msecs);
     QAbstractSocket::SocketError error() const;
 
+    // QIODevice demands
+    qint64 readData(char* data, qint64 maxlen);
+    qint64 writeData(const char* data, qint64 len);
+
 protected:
     QScopedPointer<QTcpSocket> _socket;
 };

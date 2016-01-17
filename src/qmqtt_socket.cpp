@@ -57,3 +57,14 @@ QAbstractSocket::SocketError Socket::error() const
 {
     return _socket->error();
 }
+
+// QIODevice demands
+qint64 Socket::readData(char* data, qint64 maxlen)
+{
+    return _socket->read(data, maxlen);
+}
+
+qint64 Socket::writeData(const char* data, qint64 len)
+{
+    return _socket->write(data, len);
+}

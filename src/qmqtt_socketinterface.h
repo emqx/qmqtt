@@ -1,15 +1,14 @@
 #ifndef QMQTT_SOCKET_INTERFACE_H
 #define QMQTT_SOCKET_INTERFACE_H
 
-#include <QObject>
 #include <QHostAddress>
 #include <QIODevice>
 
-class SocketInterface : public QObject
+class SocketInterface : public QIODevice
 {
     Q_OBJECT
 public:
-    explicit SocketInterface(QObject* parent = NULL) : QObject(parent) {}
+    explicit SocketInterface(QObject* parent = NULL) : QIODevice(parent) {}
     virtual	~SocketInterface() {}
 
     virtual void connectToHost(const QHostAddress& address, quint16 port, QIODevice::OpenMode openMode = QIODevice::ReadWrite) = 0;
@@ -18,6 +17,7 @@ public:
     virtual QAbstractSocket::SocketState state() const = 0;
     virtual bool atEnd() const = 0;
     virtual qint64 write(const char* data, qint64 maxSize) = 0;
+
     virtual bool waitForBytesWritten(int msecs) = 0;
     virtual QAbstractSocket::SocketError error() const = 0;
 
