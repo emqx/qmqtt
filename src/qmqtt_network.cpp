@@ -32,11 +32,13 @@
 
 #include <QDataStream>
 #include "qmqtt_network.h"
+#include "qmqtt_socket.h"
 
 namespace QMQTT {
 
 Network::Network(QObject* parent)
     : NetworkInterface(parent)
+    , _socket(new QMQTT::Socket(this))
     , _buffer(new QBuffer(this))
 {
     _offsetBuf = 0;
@@ -50,9 +52,9 @@ Network::Network(QObject* parent)
 
 void Network::initSocket()
 {
-    QObject::connect(&_socket, &QTcpSocket::connected, this, &Network::sockConnected);
-    QObject::connect(&_socket, &QTcpSocket::disconnected, this, &Network::sockDisconnected);
-    QObject::connect(&_socket, &QTcpSocket::readyRead, this, &Network::sockReadReady);
+    QObject::connect(_socket, &SocketInterface::connected, this, &Network::sockConnected);
+    QObject::connect(_socket, &SocketInterface::disconnected, this, &Network::sockDisconnected);
+    QObject::connect(_socket, &SocketInterface::readyRead, this, &Network::sockReadReady);
 }
 
 Network::~Network()
@@ -62,33 +64,33 @@ Network::~Network()
 
 bool Network::isConnectedToHost() const
 {
-    return QAbstractSocket::ConnectedState == _socket.state();
+    return QAbstractSocket::ConnectedState == _socket->state();
 }
 
 void Network::connectToHost(const QHostAddress& host, const quint16 port)
 {
     _host = host;
     _port = port;
-    _socket.connectToHost(host, port);
+    _socket->connectToHost(host, port);
 }
 
 void Network::sendFrame(Frame & frame)
 {
-    if(QAbstractSocket::ConnectedState == _socket.state())
+    if(QAbstractSocket::ConnectedState == _socket->state())
     {
-        QDataStream out(&_socket);
+        QDataStream out(_socket);
         frame.write(out);
     }
 }
 
 void Network::disconnectFromHost()
 {
-    _socket.disconnectFromHost();
+    _socket->disconnectFromHost();
 }
 
 QAbstractSocket::SocketState Network::state() const
 {
-    return _socket.state();
+    return _socket->state();
 }
 
 bool Network::autoReconnect() const
@@ -110,9 +112,9 @@ void Network::sockConnected()
 
 void Network::sockReadReady()
 {
-    QDataStream in(&_socket);
+    QDataStream in(_socket);
     QDataStream out(_buffer);
-    while(!_socket.atEnd())
+    while(!_socket->atEnd())
     {
         if(_leftSize == 0)
         {

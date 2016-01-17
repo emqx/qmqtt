@@ -12,6 +12,7 @@ using namespace testing;
 
 const QHostAddress HOST = QHostAddress::LocalHost;
 const quint16 PORT = 3875;
+const int TCP_TIMEOUT_MS = 5000;
 
 class NetworkTest : public Test
 {
@@ -54,10 +55,9 @@ TEST_F(NetworkTest, defaultConstructor_Test)
 TEST_F(NetworkTest, connectToMakesTCPConnection_Test)
 {
     TcpServer server(HOST, PORT);
-    _network->connectToHost(server.serverAddress(), server.serverPort());
+    _network->connectToHost(HOST, PORT);
     bool timedOut = false;
-    bool connectionMade = server.waitForNewConnection(5000, &timedOut);
-
+    bool connectionMade = server.waitForNewConnection(TCP_TIMEOUT_MS, &timedOut);
     EXPECT_TRUE(connectionMade);
     EXPECT_FALSE(timedOut);
 }
@@ -203,7 +203,7 @@ TEST_F(NetworkTest, willNotAutoReconnectIfAutoReconnectIsSetFalse_Test)
 
     server.socket()->disconnectFromHost();
     server.socket()->state() == QAbstractSocket::UnconnectedState
-       || server.socket()->waitForDisconnected(5000);
+       || server.socket()->waitForDisconnected(TCP_TIMEOUT_MS);
     flushEvents();
 
     EXPECT_FALSE(_network->isConnectedToHost());
@@ -220,7 +220,7 @@ TEST_F(NetworkTest, DISABLED_willAutoReconnectIfAutoReconnectIsSetTrue_Test)
     EXPECT_TRUE(_network->isConnectedToHost());
 
     server.socket()->disconnectFromHost();
-    server.socket()->waitForDisconnected(5000);
+    server.socket()->waitForDisconnected(TCP_TIMEOUT_MS);
     flushEvents();
 
     EXPECT_TRUE(_network->autoReconnect());

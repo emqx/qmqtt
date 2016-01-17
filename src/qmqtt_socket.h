@@ -7,6 +7,9 @@
 
 class QTcpSocket;
 
+namespace QMQTT
+{
+
 class Socket : public SocketInterface
 {
     Q_OBJECT
@@ -18,17 +21,32 @@ public:
     void disconnectFromHost();
     QByteArray readAll();
     QAbstractSocket::SocketState state() const;
-    bool atEnd() const;
     qint64 write(const char* data, qint64 maxSize);
-    bool waitForBytesWritten(int msecs);
+    bool waitForBytesWritten(int msecs = 30000);
+    bool waitForReadyRead(int msecs = 30000);
     QAbstractSocket::SocketError error() const;
 
-    // QIODevice demands
+    // QIODevice pure virtuals
     qint64 readData(char* data, qint64 maxlen);
     qint64 writeData(const char* data, qint64 len);
+
+    // QIODevice virtuals
+    bool atEnd() const;
+//    bool open(OpenMode mode);
+//    virtual qint64	bytesAvailable() const
+//    virtual qint64	bytesToWrite() const
+//    virtual bool	canReadLine() const
+//    virtual void	close()
+//    bool isSequential() const;
+
+protected slots:
+    void onConnected();
+    void onDisconnected();
 
 protected:
     QScopedPointer<QTcpSocket> _socket;
 };
+
+}
 
 #endif // QMQTT_SOCKET_H

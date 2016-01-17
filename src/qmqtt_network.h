@@ -43,6 +43,8 @@
 
 namespace QMQTT {
 
+class SocketInterface;
+
 class Network : public NetworkInterface
 {
     Q_OBJECT
@@ -75,7 +77,7 @@ private:
     //sock
     quint32 _port;
     QHostAddress _host;
-    QTcpSocket _socket;
+    SocketInterface* _socket;
     //read data
     QPointer<QBuffer> _buffer;
     quint8 _header;

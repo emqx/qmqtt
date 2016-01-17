@@ -4,6 +4,9 @@
 #include <QHostAddress>
 #include <QIODevice>
 
+namespace QMQTT
+{
+
 class SocketInterface : public QIODevice
 {
     Q_OBJECT
@@ -27,5 +30,7 @@ signals:
     void readyRead();
     void error(QAbstractSocket::SocketError socketError);
 };
+
+}
 
 #endif // QMQTT_SOCKET_INTERFACE_H

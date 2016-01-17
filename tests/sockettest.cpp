@@ -12,17 +12,18 @@ using namespace testing;
 const QHostAddress HOST = QHostAddress::LocalHost;
 const quint16 PORT = 3875;
 const QByteArray BYTE_ARRAY = QString::fromLatin1("Supercalifragilisticexpialidocious").toUtf8();
+const int TCP_TIMEOUT_MS = 5000;
 
 class SocketTest : public Test
 {
 public:
     explicit SocketTest()
-        : _socket(new Socket)
+        : _socket(new QMQTT::Socket)
     {
     }
     virtual ~SocketTest() {}
 
-    QScopedPointer<Socket> _socket;
+    QScopedPointer<QMQTT::Socket> _socket;
 
     void flushEvents()
     {
@@ -38,7 +39,7 @@ public:
         QSharedPointer<TcpServer> server = QSharedPointer<TcpServer>(new TcpServer(HOST, PORT));
         _socket->connectToHost(server->serverAddress(), server->serverPort());
         bool timedOut = false;
-        bool connectionMade = server->waitForNewConnection(5000, &timedOut);
+        bool connectionMade = server->waitForNewConnection(TCP_TIMEOUT_MS, &timedOut);
         EXPECT_TRUE(connectionMade);
         EXPECT_FALSE(timedOut);
         EXPECT_THAT(server->socket(), NotNull());
@@ -60,7 +61,7 @@ TEST_F(SocketTest, connectToHostMakesTcpConnection_Test)
     TcpServer server(HOST, PORT);
     _socket->connectToHost(server.serverAddress(), server.serverPort());
     bool timedOut = false;
-    bool connectionMade = server.waitForNewConnection(5000, &timedOut);
+    bool connectionMade = server.waitForNewConnection(TCP_TIMEOUT_MS, &timedOut);
 
     EXPECT_TRUE(connectionMade);
     EXPECT_FALSE(timedOut);
@@ -79,7 +80,7 @@ TEST_F(SocketTest, disconnectFromHostDisconnectsTcpConnection_Test)
 
 TEST_F(SocketTest, tcpConnectionEmitsConnectedSignal_Test)
 {
-    QSignalSpy spy(_socket.data(), &Socket::connected);
+    QSignalSpy spy(_socket.data(), &QMQTT::Socket::connected);
 
     createAndConnectToServer();
     flushEvents();
@@ -90,7 +91,7 @@ TEST_F(SocketTest, tcpConnectionEmitsConnectedSignal_Test)
 TEST_F(SocketTest, tcpDisconnectionEmitsDisconnectedSignal_Test)
 {
     createAndConnectToServer();
-    QSignalSpy spy(_socket.data(), &Socket::disconnected);
+    QSignalSpy spy(_socket.data(), &QMQTT::Socket::disconnected);
 
     _socket->disconnectFromHost();
     flushEvents();
@@ -101,7 +102,7 @@ TEST_F(SocketTest, tcpDisconnectionEmitsDisconnectedSignal_Test)
 TEST_F(SocketTest, remoteDisconnectionEmitsDisconnectedSignal_Test)
 {
     QSharedPointer<TcpServer> server = createAndConnectToServer();
-    QSignalSpy spy(_socket.data(), &Socket::disconnected);
+    QSignalSpy spy(_socket.data(), &QMQTT::Socket::disconnected);
 
     server->socket()->disconnectFromHost();
     flushEvents();
@@ -119,7 +120,7 @@ TEST_F(SocketTest, connectedSocketShowsConnectedState_Test)
 TEST_F(SocketTest, incomingDataTriggersReadyReadSignal_Test)
 {
     QSharedPointer<TcpServer> server = createAndConnectToServer();
-    QSignalSpy spy(_socket.data(), &Socket::readyRead);
+    QSignalSpy spy(_socket.data(), &QMQTT::Socket::readyRead);
 
     server->socket()->write(BYTE_ARRAY);
     flushEvents();
@@ -131,7 +132,7 @@ TEST_F(SocketTest, pendingDataOnSocketReturnsAtEndFalse_Test)
 {
     QSharedPointer<TcpServer> server = createAndConnectToServer();
     server->socket()->write(BYTE_ARRAY);
-    server->socket()->waitForBytesWritten(5000);
+    server->socket()->waitForBytesWritten(TCP_TIMEOUT_MS);
     flushEvents();
 
     EXPECT_FALSE(_socket->atEnd());
@@ -148,7 +149,7 @@ TEST_F(SocketTest, noPendingDataOnSocketReturnsAtEndTrue_Test)
 TEST_F(SocketTest, incomingDataIsRetrivable_Test)
 {
     QSharedPointer<TcpServer> server = createAndConnectToServer();
-    QSignalSpy spy(_socket.data(), &Socket::readyRead);
+    QSignalSpy spy(_socket.data(), &QMQTT::Socket::readyRead);
 
     server->socket()->write(BYTE_ARRAY);
     flushEvents();
@@ -157,19 +158,9 @@ TEST_F(SocketTest, incomingDataIsRetrivable_Test)
     EXPECT_EQ(BYTE_ARRAY, _socket->readAll());
 }
 
-TEST_F(SocketTest, outgoingDataIsSent_Test)
-{
-    QSharedPointer<TcpServer> server = createAndConnectToServer();
-    _socket->write(BYTE_ARRAY.data(), BYTE_ARRAY.size());
-    EXPECT_TRUE(_socket->waitForBytesWritten(5000));
-    EXPECT_TRUE(server->socket()->waitForReadyRead(5000));
-
-    EXPECT_EQ(BYTE_ARRAY, server->data());
-}
-
 TEST_F(SocketTest, socketErrorEmitsErrorSignal_Test)
-{
-    QSignalSpy spy(_socket.data(), static_cast<void (SocketInterface::*)(QAbstractSocket::SocketError)>(&SocketInterface::error));
+{    
+    QSignalSpy spy(_socket.data(), static_cast<void (QMQTT::SocketInterface::*)(QAbstractSocket::SocketError)>(&QMQTT::SocketInterface::error));
     _socket->connectToHost(HOST, PORT);
     flushEvents();
 
@@ -183,4 +174,54 @@ TEST_F(SocketTest, errorGivesSocketErrorReason_Test)
     flushEvents();
 
     EXPECT_EQ(QAbstractSocket::ConnectionRefusedError, _socket->error());
+}
+
+TEST_F(SocketTest, socketSendsOutgoingDataUsingQDataStream_Test)
+{
+    QTcpServer server;
+    server.listen(HOST, PORT);
+    _socket->connectToHost(HOST, PORT);
+    bool timedOut = false;
+    EXPECT_TRUE(server.waitForNewConnection(TCP_TIMEOUT_MS, &timedOut));
+    EXPECT_FALSE(timedOut);
+    QTcpSocket* serverSocket = server.nextPendingConnection();
+    EXPECT_THAT(serverSocket, NotNull());
+    flushEvents();
+    EXPECT_EQ(QAbstractSocket::ConnectedState, _socket->state());
+    EXPECT_EQ(QAbstractSocket::ConnectedState, serverSocket->state());
+
+    QDataStream out(_socket.data());
+    out << static_cast<quint32>(42);
+    EXPECT_TRUE(_socket->waitForBytesWritten(TCP_TIMEOUT_MS));
+    EXPECT_TRUE(serverSocket->waitForReadyRead(TCP_TIMEOUT_MS));
+
+    quint32 i = 0;
+    QDataStream in(serverSocket);
+    in >> i;
+    EXPECT_EQ(42, i);
+}
+
+TEST_F(SocketTest, socketReceivesIncomingDataUsingQDataStream_Test)
+{
+    QTcpServer server;
+    server.listen(HOST, PORT);
+    _socket->connectToHost(HOST, PORT);
+    bool timedOut = false;
+    EXPECT_TRUE(server.waitForNewConnection(TCP_TIMEOUT_MS, &timedOut));
+    EXPECT_FALSE(timedOut);
+    QTcpSocket* serverSocket = server.nextPendingConnection();
+    EXPECT_THAT(serverSocket, NotNull());
+    flushEvents();
+    EXPECT_EQ(QAbstractSocket::ConnectedState, _socket->state());
+    EXPECT_EQ(QAbstractSocket::ConnectedState, serverSocket->state());
+
+    QDataStream out(serverSocket);
+    out << static_cast<quint32>(42);
+    EXPECT_TRUE(serverSocket->waitForBytesWritten(TCP_TIMEOUT_MS));
+    EXPECT_TRUE(_socket->waitForReadyRead(TCP_TIMEOUT_MS));
+
+    quint32 i = 0;
+    QDataStream in(_socket.data());
+    in >> i;
+    EXPECT_EQ(42, i);
 }
