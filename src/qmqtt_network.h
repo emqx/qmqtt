@@ -49,7 +49,9 @@ class Network : public NetworkInterface
 {
     Q_OBJECT
 public:
-    explicit Network(QObject *parent = 0);
+    explicit Network(QObject* parent = NULL);
+    // for testing purposes only
+    explicit Network(SocketInterface* socketInterface, QObject* parent = NULL);
     ~Network();
 
     void sendFrame(Frame& frame);
@@ -71,9 +73,10 @@ private slots:
     // todo: add reconnect feature
     void sockDisconnected();
 
-private:
-    void initSocket();
+public:
+    void initialize();
     int readRemaingLength(QDataStream &in);
+
     //sock
     quint32 _port;
     QHostAddress _host;
@@ -88,6 +91,7 @@ private:
     quint16 _timeout;
     bool _connected;
 
+private:
     Q_DISABLE_COPY(Network)
 };
 

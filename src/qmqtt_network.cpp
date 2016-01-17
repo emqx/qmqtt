@@ -38,20 +38,40 @@ namespace QMQTT {
 
 Network::Network(QObject* parent)
     : NetworkInterface(parent)
+    , _port(1883)
+    , _host(QHostAddress::LocalHost)
     , _socket(new QMQTT::Socket(this))
     , _buffer(new QBuffer(this))
+    , _header(0)
+    , _offsetBuf(0)
+    , _leftSize(0)
+    , _autoreconn(false)
+    , _timeout(3000)
+    , _connected(false)
 {
-    _offsetBuf = 0;
-    _leftSize = 0;
-    _autoreconn = false;
-    _timeout = 3000;
-    _buffer->open(QIODevice::ReadWrite);
-    _connected = false;
-    initSocket();
+    initialize();
 }
 
-void Network::initSocket()
+Network::Network(SocketInterface* socketInterface, QObject* parent)
+    : NetworkInterface(parent)
+    , _port(1883)
+    , _host(QHostAddress::LocalHost)
+    , _socket(socketInterface)
+    , _buffer(new QBuffer(this))
+    , _header(0)
+    , _offsetBuf(0)
+    , _leftSize(0)
+    , _autoreconn(false)
+    , _timeout(3000)
+    , _connected(false)
 {
+    initialize();
+}
+
+void Network::initialize()
+{
+    _buffer->open(QIODevice::ReadWrite);
+
     QObject::connect(_socket, &SocketInterface::connected, this, &Network::sockConnected);
     QObject::connect(_socket, &SocketInterface::disconnected, this, &Network::sockDisconnected);
     QObject::connect(_socket, &SocketInterface::readyRead, this, &Network::sockReadReady);
