@@ -1,228 +1,137 @@
-#include "tcpserver.h"
+#include "socketmock.h"
 #include <qmqtt_network.h>
-#include <qmqtt_frame.h>
 #include <QSignalSpy>
-#include <QDebug>
-#include <QObject>
-#include <QScopedPointer>
 #include <QDataStream>
+#include <QCoreApplication>
 #include <gtest/gtest.h>
 
 using namespace testing;
 
 const QHostAddress HOST = QHostAddress::LocalHost;
 const quint16 PORT = 3875;
-const int TCP_TIMEOUT_MS = 5000;
+const QIODevice::OpenMode OPEN_MODE = QIODevice::ReadWrite;
 
 class NetworkTest : public Test
 {
 public:
     explicit NetworkTest()
-        : _network(new QMQTT::Network)
+        : _socketMock(new SocketMock)
+        , _network(new QMQTT::Network(_socketMock))
     {
     }
     virtual ~NetworkTest() {}
 
+    SocketMock* _socketMock;
     QSharedPointer<QMQTT::Network> _network;
-
-    void flushEvents()
-    {
-        while (QCoreApplication::hasPendingEvents())
-        {
-            QCoreApplication::processEvents(QEventLoop::AllEvents);
-            QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
-        }
-    }
-
-    QByteArray serializeFrame(QMQTT::Frame& frame) const
-    {
-        QByteArray bytes;
-        QBuffer buffer(&bytes);
-        buffer.open(QIODevice::WriteOnly);
-        QDataStream out(&buffer);
-        frame.write(out);
-        return bytes;
-    }
 };
 
-TEST_F(NetworkTest, defaultConstructor_Test)
+TEST_F(NetworkTest, networkIsConnectedReturnsFalseWhenSocketStateIsUnconnectedState_Test)
 {
+    EXPECT_CALL(*_socketMock, state()).WillOnce(Return(QAbstractSocket::UnconnectedState));
     EXPECT_FALSE(_network->isConnectedToHost());
-    EXPECT_FALSE(_network->autoReconnect());
+}
+
+TEST_F(NetworkTest, networkIsConnectedReturnsTrueWhenSocketStateIsConnectedState_Test)
+{
+    EXPECT_CALL(*_socketMock, state()).WillOnce(Return(QAbstractSocket::ConnectedState));
+    EXPECT_TRUE(_network->isConnectedToHost());
+}
+
+TEST_F(NetworkTest, networkStateReturnsUnconnectedStateWhenSocketStateIsUnconnectedState_Test)
+{
+    EXPECT_CALL(*_socketMock, state()).WillOnce(Return(QAbstractSocket::UnconnectedState));
     EXPECT_EQ(QAbstractSocket::UnconnectedState, _network->state());
 }
 
-TEST_F(NetworkTest, connectToMakesTCPConnection_Test)
+TEST_F(NetworkTest, networkStateReturnsConnectedStateWhenSocketStateIsConnectedState_Test)
 {
-    TcpServer server(HOST, PORT);
+    EXPECT_CALL(*_socketMock, state()).WillOnce(Return(QAbstractSocket::ConnectedState));
+    EXPECT_EQ(QAbstractSocket::ConnectedState, _network->state());
+}
+
+TEST_F(NetworkTest, networkConnectToHostCallsSocketConnectToHost)
+{
+    EXPECT_CALL(*_socketMock, connectToHost(HOST, PORT));
     _network->connectToHost(HOST, PORT);
-    bool timedOut = false;
-    bool connectionMade = server.waitForNewConnection(TCP_TIMEOUT_MS, &timedOut);
-    EXPECT_TRUE(connectionMade);
-    EXPECT_FALSE(timedOut);
 }
 
-TEST_F(NetworkTest, connectedSignalEmittedAfterConnectionMade_Test)
+TEST_F(NetworkTest, networkDisconnectFromHostCallsSocketDisconnectFromHost)
 {
-    TcpServer server(HOST, PORT);
-    QSignalSpy spy(_network.data(), &QMQTT::Network::connected);
-    _network->connectToHost(server.serverAddress(), server.serverPort());
-    EXPECT_EQ(0, spy.count());
-
-    flushEvents();
-    EXPECT_EQ(1, spy.count());
-}
-
-TEST_F(NetworkTest, isConnectedTrueWhenInConnectedState_Test)
-{
-    TcpServer server(HOST, PORT);
-    _network->connectToHost(server.serverAddress(), server.serverPort());
-    flushEvents();
-
-    EXPECT_TRUE(_network->isConnectedToHost());
-}
-
-TEST_F(NetworkTest, isConnectedFalseWhenNotInConnectedState_Test)
-{
-    EXPECT_FALSE(_network->isConnectedToHost());
-}
-
-TEST_F(NetworkTest, disconnectWillDisconnectASocketConnection_Test)
-{
-    TcpServer server(HOST, PORT);
-    _network->connectToHost(server.serverAddress(), server.serverPort());
-    flushEvents();
-    EXPECT_TRUE(_network->isConnectedToHost());
-
+    EXPECT_CALL(*_socketMock, disconnectFromHost());
     _network->disconnectFromHost();
-    flushEvents();
-
-    EXPECT_FALSE(_network->isConnectedToHost());
 }
 
-TEST_F(NetworkTest, disconnectedSignalEmittedAfterADisconnection_Test)
+TEST_F(NetworkTest, networkStateCallsSocketState)
 {
-    TcpServer server(HOST, PORT);
-    _network->connectToHost(server.serverAddress(), server.serverPort());
-    flushEvents();
-    EXPECT_TRUE(_network->isConnectedToHost());
-
-    QSignalSpy spy(_network.data(), &QMQTT::Network::disconnected);
-    EXPECT_EQ(0, spy.count());
-
-    _network->disconnectFromHost();
-    flushEvents();
-
-    EXPECT_EQ(1, spy.count());
-}
-
-TEST_F(NetworkTest, sendframeSendsTheFrame_Test)
-{
-    TcpServer server(HOST, PORT);
-    _network->connectToHost(server.serverAddress(), server.serverPort());
-    flushEvents();
-    EXPECT_TRUE(_network->isConnectedToHost());
-
-    QByteArray data("abc");
-    QMQTT::Frame frame(42, data);
-    _network->sendFrame(frame);
-    flushEvents();
-
-    EXPECT_EQ(serializeFrame(frame), server.data());
-}
-
-TEST_F(NetworkTest, receivedReceivesAFrame_Test)
-{
-    TcpServer server(HOST, PORT);
-    _network->connectToHost(server.serverAddress(), server.serverPort());
-    flushEvents();
-    EXPECT_TRUE(_network->isConnectedToHost());
-
-    qRegisterMetaType<QMQTT::Frame>("QMQTT::Frame");
-    QSignalSpy spy(_network.data(), &QMQTT::Network::received);
-
-    QByteArray data("abc");
-    QMQTT::Frame frameSent(42, data);
-    QByteArray bytesSent = serializeFrame(frameSent);
-    server.socket()->write(bytesSent);
-
-    flushEvents();
-
-    EXPECT_EQ(1, spy.count());
-    EXPECT_EQ(frameSent, spy.at(0).at(0).value<QMQTT::Frame>());
-}
-
-TEST_F(NetworkTest, stateIsUnconnectedStateBeforeAnyConnectionMade_Test)
-{
-    EXPECT_EQ(QAbstractSocket::UnconnectedState, _network->state());
-}
-
-TEST_F(NetworkTest, stateIsConnectingStateAfterToldToConnectButNotYetConnected_Test)
-{
-    TcpServer server(HOST, PORT);
-    _network->connectToHost(server.serverAddress(), server.serverPort());
-    EXPECT_EQ(QAbstractSocket::ConnectingState, _network->state());
-}
-
-TEST_F(NetworkTest, stateIsConnectedStateAfterConnectionHasBeenMade_Test)
-{
-    TcpServer server(HOST, PORT);
-    _network->connectToHost(server.serverAddress(), server.serverPort());
-    flushEvents();
+    EXPECT_CALL(*_socketMock, state()).WillOnce(Return(QAbstractSocket::ConnectedState));
     EXPECT_EQ(QAbstractSocket::ConnectedState, _network->state());
 }
 
-TEST_F(NetworkTest, stateIsUnconnectedStateAfterGivenDisconnect_Test)
-{
-    TcpServer server(HOST, PORT);
-    _network->connectToHost(server.serverAddress(), server.serverPort());
-    flushEvents();
-    EXPECT_EQ(QAbstractSocket::ConnectedState, _network->state());
-
-    _network->disconnectFromHost();
-    EXPECT_EQ(QAbstractSocket::UnconnectedState, _network->state());
-}
-
-TEST_F(NetworkTest, autoReconnectDefaultsToFalse_Test)
+TEST_F(NetworkTest, networkAutoReconnectDefaultsToFalse)
 {
     EXPECT_FALSE(_network->autoReconnect());
 }
 
-TEST_F(NetworkTest, autoReconnectTrueAfterSetAutoReconnectTrue_Test)
+TEST_F(NetworkTest, networkSetAutoReconnectTrueSetsAutoReconnectTrue_Test)
 {
     _network->setAutoReconnect(true);
     EXPECT_TRUE(_network->autoReconnect());
 }
 
-TEST_F(NetworkTest, willNotAutoReconnectIfAutoReconnectIsSetFalse_Test)
+TEST_F(NetworkTest, networkSendFrameWillNotSendAFrameIfNotConnected)
 {
-    TcpServer server(HOST, PORT);
-    _network->connectToHost(server.serverAddress(), server.serverPort());
-    flushEvents();
-    EXPECT_TRUE(_network->isConnectedToHost());
+    EXPECT_CALL(*_socketMock, state()).WillOnce(Return(QAbstractSocket::UnconnectedState));
+    EXPECT_CALL(*_socketMock, writeData(_, _)).Times(0);
 
-    server.socket()->disconnectFromHost();
-    server.socket()->state() == QAbstractSocket::UnconnectedState
-       || server.socket()->waitForDisconnected(TCP_TIMEOUT_MS);
-    flushEvents();
-
-    EXPECT_FALSE(_network->isConnectedToHost());
+    QMQTT::Frame frame;
+    _network->sendFrame(frame);
 }
 
-// todo: Autoreconnect feature not yet enabled
-TEST_F(NetworkTest, DISABLED_willAutoReconnectIfAutoReconnectIsSetTrue_Test)
+TEST_F(NetworkTest, networkSendFrameWillSendAFrameIfConnected)
 {
-    _network->setAutoReconnect(true);
+    EXPECT_CALL(*_socketMock, state()).WillOnce(Return(QAbstractSocket::ConnectedState));
+    EXPECT_CALL(*_socketMock, writeData(_, _));
 
-    TcpServer server(HOST, PORT);
-    _network->connectToHost(server.serverAddress(), server.serverPort());
-    flushEvents();
-    EXPECT_TRUE(_network->isConnectedToHost());
+    QMQTT::Frame frame;
+    _network->sendFrame(frame);
+}
 
-    server.socket()->disconnectFromHost();
-    server.socket()->waitForDisconnected(TCP_TIMEOUT_MS);
-    flushEvents();
+TEST_F(NetworkTest, networkEmitsConnectedSignalWhenSocketEmitsConnectedSignal)
+{
+    QSignalSpy spy(_network.data(), &QMQTT::Network::connected);
+    emit _socketMock->connected();
+    EXPECT_EQ(1, spy.count());
+}
 
-    EXPECT_TRUE(_network->autoReconnect());
-    EXPECT_TRUE(_network->isConnectedToHost());
+TEST_F(NetworkTest, networkEmitsDisconnectedSignalWhenSocketEmitsDisconnectedSignal)
+{
+    QSignalSpy spy(_network.data(), &QMQTT::Network::disconnected);
+    emit _socketMock->disconnected();
+    EXPECT_EQ(1, spy.count());
+}
+
+TEST_F(NetworkTest, networkEmitsReceivedSignalOnceAFrameIsReceived)
+{
+    QByteArray byteArray;
+    QBuffer buffer(&byteArray);
+    buffer.open(QIODevice::WriteOnly);
+
+    QDataStream out(&buffer);
+    out << static_cast<quint8>(0x30); // publish header
+    out << static_cast<quint8>(0x81); // remaining length most-signficant 7 bits
+    out << static_cast<quint8>(0x01); // remaining Length least-significant 7 bits
+    for (int i = 0; i < 129; ++i)
+    {
+        out << static_cast<quint8>('a');
+    }
+    buffer.close();
+
+    EXPECT_CALL(*_socketMock, atEnd()).WillOnce(Return(true));
+    EXPECT_CALL(*_socketMock, atEnd()).WillOnce(Return(false)).RetiresOnSaturation();
+    EXPECT_CALL(*_socketMock, readData(_, _))
+        .WillOnce(DoAll(SetArgPointee<0>(*byteArray.data()), Return(0x84)));
+
+    QSignalSpy spy(_network.data(), &QMQTT::Network::received);
+    emit _socketMock->readyRead();
+    EXPECT_EQ(1, spy.count());
 }

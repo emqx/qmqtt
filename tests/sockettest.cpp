@@ -155,7 +155,7 @@ TEST_F(SocketTest, incomingDataIsRetrivable_Test)
     flushEvents();
 
     EXPECT_EQ(1, spy.count());
-    EXPECT_EQ(BYTE_ARRAY, _socket->readAll());
+    EXPECT_EQ(BYTE_ARRAY, _socket->read(Q_INT64_C(1000000)));
 }
 
 TEST_F(SocketTest, socketErrorEmitsErrorSignal_Test)

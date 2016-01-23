@@ -29,155 +29,131 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
-
 #include <QDataStream>
 #include "qmqtt_network.h"
 #include "qmqtt_socket.h"
 
-namespace QMQTT {
+const QHostAddress DEFAULT_HOST = QHostAddress::LocalHost;
+const quint16 DEFAULT_PORT = 1883;
+const bool DEFAULT_AUTORECONNECT = false;
 
-Network::Network(QObject* parent)
+QMQTT::Network::Network(QObject* parent)
     : NetworkInterface(parent)
-    , _port(1883)
-    , _host(QHostAddress::LocalHost)
-    , _socket(new QMQTT::Socket(this))
-    , _buffer(new QBuffer(this))
-    , _header(0)
-    , _offsetBuf(0)
-    , _leftSize(0)
-    , _autoreconn(false)
-    , _timeout(3000)
-    , _connected(false)
+    , _port(DEFAULT_PORT)
+    , _host(DEFAULT_HOST)
+    , _socket(new QMQTT::Socket)
+    , _autoReconnect(DEFAULT_AUTORECONNECT)
 {
     initialize();
 }
 
-Network::Network(SocketInterface* socketInterface, QObject* parent)
+QMQTT::Network::Network(SocketInterface* socketInterface, QObject* parent)
     : NetworkInterface(parent)
-    , _port(1883)
-    , _host(QHostAddress::LocalHost)
+    , _port(DEFAULT_PORT)
+    , _host(DEFAULT_HOST)
     , _socket(socketInterface)
-    , _buffer(new QBuffer(this))
-    , _header(0)
-    , _offsetBuf(0)
-    , _leftSize(0)
-    , _autoreconn(false)
-    , _timeout(3000)
-    , _connected(false)
+    , _autoReconnect(DEFAULT_AUTORECONNECT)
 {
     initialize();
 }
 
-void Network::initialize()
+void QMQTT::Network::initialize()
 {
-    _buffer->open(QIODevice::ReadWrite);
+    _socket->setParent(this);
+    _buffer.open(QIODevice::ReadWrite);
 
-    QObject::connect(_socket, &SocketInterface::connected, this, &Network::sockConnected);
-    QObject::connect(_socket, &SocketInterface::disconnected, this, &Network::sockDisconnected);
-    QObject::connect(_socket, &SocketInterface::readyRead, this, &Network::sockReadReady);
+    QObject::connect(_socket, &SocketInterface::connected, this, &Network::connected);
+    QObject::connect(_socket, &SocketInterface::disconnected, this, &Network::disconnected);
+    QObject::connect(_socket, &SocketInterface::readyRead, this, &Network::onSocketReadReady);
 }
 
-Network::~Network()
+QMQTT::Network::~Network()
 {
-    disconnectFromHost();
 }
 
-bool Network::isConnectedToHost() const
+bool QMQTT::Network::isConnectedToHost() const
 {
-    return QAbstractSocket::ConnectedState == _socket->state();
+    return _socket->state() == QAbstractSocket::ConnectedState;
 }
 
-void Network::connectToHost(const QHostAddress& host, const quint16 port)
+void QMQTT::Network::connectToHost(const QHostAddress& host, const quint16 port)
 {
     _host = host;
     _port = port;
     _socket->connectToHost(host, port);
 }
 
-void Network::sendFrame(Frame & frame)
+void QMQTT::Network::sendFrame(Frame& frame)
 {
-    if(QAbstractSocket::ConnectedState == _socket->state())
+    if(_socket->state() == QAbstractSocket::ConnectedState)
     {
         QDataStream out(_socket);
         frame.write(out);
     }
 }
 
-void Network::disconnectFromHost()
+void QMQTT::Network::disconnectFromHost()
 {
     _socket->disconnectFromHost();
 }
 
-QAbstractSocket::SocketState Network::state() const
+QAbstractSocket::SocketState QMQTT::Network::state() const
 {
     return _socket->state();
 }
 
-bool Network::autoReconnect() const
+bool QMQTT::Network::autoReconnect() const
 {
-    return _autoreconn;
+    return _autoReconnect;
 }
 
-void Network::setAutoReconnect(bool b)
+void QMQTT::Network::setAutoReconnect(const bool autoReconnect)
 {
-    _autoreconn = b;
+    _autoReconnect = autoReconnect;
 }
 
-//PRIVATE SLOTS
-void Network::sockConnected()
+void QMQTT::Network::onSocketReadReady()
 {
-    _connected = true;
-    emit connected();
-}
+    quint8 header = 0;
+    int bytesRemaining = 0;
+    int bytesRead = 0;
 
-void Network::sockReadReady()
-{
     QDataStream in(_socket);
-    QDataStream out(_buffer);
+    QDataStream out(&_buffer);
     while(!_socket->atEnd())
     {
-        if(_leftSize == 0)
+        if(bytesRemaining == 0)
         {
-            _leftSize  = 0;
-            _offsetBuf = 0;
-
-            in >> _header;
-            _leftSize = readRemaingLength(in);
+            in >> header;
+            bytesRemaining = readRemainingLength(in);
         }
+
         QByteArray data;
-        data.resize(_leftSize);
-        _offsetBuf = in.readRawData(data.data(), data.size());
-        _leftSize -= _offsetBuf;
-        out.writeRawData(data.data(), _offsetBuf);
-        if(_leftSize == 0)
+        data.resize(bytesRemaining);
+        bytesRead = in.readRawData(data.data(), data.size());
+        bytesRemaining -= bytesRead;
+        out.writeRawData(data.data(), bytesRead);
+
+        if(bytesRemaining == 0)
         {
-            _buffer->reset();
-            Frame frame(_header, _buffer->buffer());
-            _buffer->buffer().clear();
+            _buffer.reset();
+            Frame frame(header, _buffer.buffer());
+            _buffer.buffer().clear();
             emit received(frame);
         }
     }
 }
 
-/*
- * Read remaining length
- */
-int Network::readRemaingLength(QDataStream &in)
+int QMQTT::Network::readRemainingLength(QDataStream &in)
 {
-     qint8 byte;
-     int len = 0;
-     int mul = 1;
+     qint8 byte = 0;
+     int length = 0;
+     int multiplier = 1;
      do {
          in >> byte;
-         len += (byte & 127) * mul;
-         mul *= 128  ;
+         length += (byte & 127) * multiplier;
+         multiplier *= 128;
      } while ((byte & 128) != 0);
-     return len;
-}
 
-void Network::sockDisconnected()
-{
-    emit disconnected();
+     return length;
 }
-
-} // namespace QMQTT

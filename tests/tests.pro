@@ -25,7 +25,8 @@ SOURCES += \
 HEADERS += \
     tcpserver.h \
     customprinter.h \
-    networkmock.h
+    networkmock.h \
+    socketmock.h
 
 INCLUDEPATH += \
     ../gtest/googletest/googletest/include \

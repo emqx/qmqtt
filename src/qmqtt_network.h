@@ -48,48 +48,34 @@ class SocketInterface;
 class Network : public NetworkInterface
 {
     Q_OBJECT
+
 public:
-    explicit Network(QObject* parent = NULL);
-    // for testing purposes only
-    explicit Network(SocketInterface* socketInterface, QObject* parent = NULL);
+    Network(QObject* parent = NULL);
+    Network(SocketInterface* socketInterface, QObject* parent = NULL);
     ~Network();
 
     void sendFrame(Frame& frame);
-
     bool isConnectedToHost() const;
-
     bool autoReconnect() const;
-    void setAutoReconnect(bool value);
-
+    void setAutoReconnect(const bool autoReconnect);
     QAbstractSocket::SocketState state() const;
 
 public slots:
     void connectToHost(const QHostAddress& host, const quint16 port);
     void disconnectFromHost();
 
-private slots:
-    void sockReadReady();
-    void sockConnected();
-    // todo: add reconnect feature
-    void sockDisconnected();
-
-public:
+protected:
     void initialize();
-    int readRemaingLength(QDataStream &in);
+    int readRemainingLength(QDataStream &in);
 
-    //sock
-    quint32 _port;
+    quint16 _port;
     QHostAddress _host;
     SocketInterface* _socket;
-    //read data
-    QPointer<QBuffer> _buffer;
-    quint8 _header;
-    int _offsetBuf;
-    int _leftSize;
-    //autoconn
-    bool _autoreconn;
-    quint16 _timeout;
-    bool _connected;
+    QBuffer _buffer;
+    bool _autoReconnect;
+
+protected slots:
+    void onSocketReadReady();
 
 private:
     Q_DISABLE_COPY(Network)
