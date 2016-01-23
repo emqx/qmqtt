@@ -2,14 +2,11 @@
 #include <QHostAddress>
 #include <QTcpSocket>
 
-const QHostAddress TcpServer::HOST = QHostAddress::LocalHost;
-const quint16 TcpServer::PORT = 3875;
-
-TcpServer::TcpServer()
+TcpServer::TcpServer(const QHostAddress host, const quint16 port)
     : _socket(NULL)
 {
     connect(this, &QTcpServer::newConnection, this, &TcpServer::on_newConnection);
-    listen(HOST, PORT);
+    listen(host, port);
 }
 
 TcpServer::~TcpServer()

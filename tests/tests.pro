@@ -14,7 +14,8 @@ SOURCES += \
     customprinter.cpp \
     networktest.cpp \
     messagetest.cpp \
-    frametest.cpp
+    frametest.cpp \
+    sockettest.cpp
 
 # to be ported to gtest or deleted
 #	routedmessagetests.cpp \
@@ -24,7 +25,8 @@ SOURCES += \
 HEADERS += \
     tcpserver.h \
     customprinter.h \
-    networkmock.h
+    networkmock.h \
+    socketmock.h
 
 INCLUDEPATH += \
     ../gtest/googletest/googletest/include \

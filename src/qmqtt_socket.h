@@ -1,5 +1,5 @@
 /*
- * qmqtt_network.h - qmqtt network header
+ * qmqtt_socket.h - qmqtt socket header
  *
  * Copyright (c) 2013  Ery Lee <ery.lee at gmail dot com>
  * All rights reserved.
@@ -29,58 +29,42 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#ifndef QMQTT_NETWORK_H
-#define QMQTT_NETWORK_H
+#ifndef QMQTT_SOCKET_H
+#define QMQTT_SOCKET_H
 
-#include "qmqtt_networkinterface.h"
-#include "qmqtt_frame.h"
+#include "qmqtt_socketinterface.h"
 #include <QObject>
-#include <QTcpSocket>
-#include <QPointer>
-#include <QBuffer>
-#include <QByteArray>
-#include <QHostAddress>
+#include <QScopedPointer>
 
-namespace QMQTT {
+class QTcpSocket;
 
-class SocketInterface;
+namespace QMQTT
+{
 
-class Network : public NetworkInterface
+class Socket : public SocketInterface
 {
     Q_OBJECT
-
 public:
-    Network(QObject* parent = NULL);
-    Network(SocketInterface* socketInterface, QObject* parent = NULL);
-    ~Network();
+    explicit Socket(QObject* parent = NULL);
+    virtual	~Socket();
 
-    void sendFrame(Frame& frame);
-    bool isConnectedToHost() const;
-    bool autoReconnect() const;
-    void setAutoReconnect(const bool autoReconnect);
-    QAbstractSocket::SocketState state() const;
-
-public slots:
-    void connectToHost(const QHostAddress& host, const quint16 port);
+    void connectToHost(const QHostAddress& address, quint16 port);
     void disconnectFromHost();
-
-protected:
-    void initialize();
-    int readRemainingLength(QDataStream &in);
-
-    quint16 _port;
-    QHostAddress _host;
-    SocketInterface* _socket;
-    QBuffer _buffer;
-    bool _autoReconnect;
+    QAbstractSocket::SocketState state() const;
+    bool waitForBytesWritten(int msecs = 30000);
+    bool waitForReadyRead(int msecs = 30000);
+    QAbstractSocket::SocketError error() const;
+    bool atEnd() const;
+    qint64 readData(char* data, qint64 maxlen);
+    qint64 writeData(const char* data, qint64 len);
 
 protected slots:
-    void onSocketReadReady();
+    void onStateChanged(QAbstractSocket::SocketState state);
 
-private:
-    Q_DISABLE_COPY(Network)
+protected:
+    QScopedPointer<QTcpSocket> _socket;
 };
 
-} // namespace QMQTT
+}
 
-#endif // QMQTT_NETWORK_H
+#endif // QMQTT_SOCKET_H

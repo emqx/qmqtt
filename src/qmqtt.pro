@@ -1,9 +1,3 @@
-#-------------------------------------------------
-#
-# Project created by QtCreator 2013-03-20T14:30:19
-#
-#-------------------------------------------------
-
 QT       += network
 
 QT       -= gui
@@ -21,7 +15,8 @@ SOURCES += qmqtt_client.cpp \
     qmqtt_router.cpp \
     qmqtt_routesubscription.cpp \
     qmqtt_routedmessage.cpp \
-    qmqtt_message_p.cpp
+    qmqtt_message_p.cpp \
+    qmqtt_socket.cpp
 
 HEADERS += qmqtt_client.h\
     qmqtt_global.h \
@@ -34,7 +29,9 @@ HEADERS += qmqtt_client.h\
     qmqtt_routesubscription.h \
     qmqtt_routedmessage.h \
     qmqtt_networkinterface.h \
-    qmqtt_message_p.h
+    qmqtt_message_p.h \
+    qmqtt_socketinterface.h \
+    qmqtt_socket.h
 
 isEmpty(PREFIX) {
     contains(MEEGO_EDITION,harmattan) {
