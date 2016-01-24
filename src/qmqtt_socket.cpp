@@ -70,7 +70,6 @@ bool QMQTT::Socket::atEnd() const
     return _socket->atEnd();
 }
 
-
 bool QMQTT::Socket::waitForBytesWritten(int msecs)
 {
     return _socket->waitForBytesWritten(msecs);
@@ -86,7 +85,6 @@ QAbstractSocket::SocketError QMQTT::Socket::error() const
     return _socket->error();
 }
 
-// QIODevice demands
 qint64 QMQTT::Socket::readData(char* data, qint64 maxlen)
 {
     return _socket->read(data, maxlen);
