@@ -18,15 +18,6 @@ public:
     NetworkTest() {}
     virtual ~NetworkTest() {}
 
-    void flushEvents()
-    {
-        while (QCoreApplication::hasPendingEvents())
-        {
-            QCoreApplication::processEvents(QEventLoop::AllEvents);
-            QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
-        }
-    }
-
     void SetUp()
     {
         _byteArray.clear();
@@ -66,7 +57,7 @@ public:
     QByteArray _byteArray;
 };
 
-TEST(NetworkNoFixtureTest, networkConstructorSetsTimerSingleShotTrue_Test)
+TEST(NetworkNoFixtureTest, networkConstructorSetsAutoReconnectTimerSingleShotTrue_Test)
 {
     SocketMock* socketMock = new SocketMock;
     TimerMock* timerMock = new TimerMock;
@@ -75,7 +66,7 @@ TEST(NetworkNoFixtureTest, networkConstructorSetsTimerSingleShotTrue_Test)
     QMQTT::Network network(socketMock, timerMock);
 }
 
-TEST(NetworkNoFixtureTest, networkConstructorSetsTimerInterval_Test)
+TEST(NetworkNoFixtureTest, networkConstructorSetsAutoReconnectTimerInterval_Test)
 {
     SocketMock* socketMock = new SocketMock;
     TimerMock* timerMock = new TimerMock;

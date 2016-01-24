@@ -17,11 +17,6 @@ SOURCES += \
     frametest.cpp \
     sockettest.cpp
 
-# to be ported to gtest or deleted
-#	routedmessagetests.cpp \
-#	routertests.cpp \
-#	routesubscriptiontests.cpp \
-
 HEADERS += \
     tcpserver.h \
     customprinter.h \
@@ -34,7 +29,7 @@ INCLUDEPATH += \
     ../gtest/googletest/googlemock/include
 LIBS += -L../gtest -lgtest
 
-!NO_RUN_UNIT_TESTS: {
+unix:!NO_UNIT_TESTS:!NO_RUN_UNIT_TESTS: {
     unit_tests.target = all
     unit_tests.commands = \
         LD_LIBRARY_PATH=$${OUT_PWD}/../gtest:$${OUT_PWD}/../src \
