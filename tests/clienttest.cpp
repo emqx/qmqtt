@@ -38,7 +38,9 @@ public:
         , _client(new QMQTT::Client(_networkMock))
     {
     }
-    virtual ~ClientTest() {}
+    virtual ~ClientTest()
+    {
+    }
 
     NetworkMock* _networkMock;
     QSharedPointer<QMQTT::Client> _client;
@@ -196,6 +198,24 @@ TEST_F(ClientTest, autoReconnectIsFalseIfNetworkAutoReconnectIsFalse_Test)
 {
     EXPECT_CALL(*_networkMock, autoReconnect()).WillOnce(Return(false));
     EXPECT_FALSE(_client->autoReconnect());
+}
+
+TEST_F(ClientTest, setAutoReconnectSetsNetworkAutoReconnect_Test)
+{
+    EXPECT_CALL(*_networkMock, setAutoReconnect(true));
+    _client->setAutoReconnect(true);
+}
+
+TEST_F(ClientTest, setAutoReconnectIntervalSetsNetworkAutoReconnectInterval_Test)
+{
+    EXPECT_CALL(*_networkMock, setAutoReconnectInterval(10000));
+    _client->setAutoReconnectInterval(10000);
+}
+
+TEST_F(ClientTest, autoReconnectIntervalIsValueOfNetworkAutoReconnect_Test)
+{
+    EXPECT_CALL(*_networkMock, autoReconnectInterval()).WillOnce(Return(10000));
+    EXPECT_TRUE(_client->autoReconnectInterval());
 }
 
 TEST_F(ClientTest, willTopicDefaultsToNull_Test)

@@ -89,7 +89,9 @@ public:
     void handlePublish(const Message& message);
     void handlePuback(const quint8 type, const quint16 msgid);
     bool autoReconnect() const;
-    void setAutoReconnect(const bool value);
+    void setAutoReconnect(const bool autoReconnect);
+    bool autoReconnectInterval() const;
+    void setAutoReconnectInterval(const int autoReconnectInterval);
     bool isConnectedToHost() const;
     QMQTT::ConnectionState connectionState() const;
     void setCleanSession(const bool cleanSession);

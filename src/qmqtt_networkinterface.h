@@ -49,7 +49,9 @@ public:
     virtual void sendFrame(Frame& frame) = 0;
     virtual bool isConnectedToHost() const = 0;
     virtual bool autoReconnect() const = 0;
-    virtual void setAutoReconnect(const bool value) = 0;
+    virtual void setAutoReconnect(const bool autoReconnect) = 0;
+    virtual int autoReconnectInterval() const = 0;
+    virtual void setAutoReconnectInterval(const int autoReconnectInterval) = 0;
     virtual QAbstractSocket::SocketState state() const = 0;
 
 public slots:

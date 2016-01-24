@@ -154,6 +154,18 @@ void QMQTT::Client::setAutoReconnect(const bool value)
     d->setAutoReconnect(value);
 }
 
+int QMQTT::Client::autoReconnectInterval() const
+{
+    Q_D(const Client);
+    return d->autoReconnectInterval();
+}
+
+void QMQTT::Client::setAutoReconnectInterval(const int autoReconnectInterval)
+{
+    Q_D(Client);
+    d->setAutoReconnectInterval(autoReconnectInterval);
+}
+
 QString QMQTT::Client::willTopic() const
 {
     Q_D(const Client);

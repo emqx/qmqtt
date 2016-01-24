@@ -11,6 +11,8 @@ public:
     MOCK_CONST_METHOD0(isConnectedToHost, bool());
     MOCK_CONST_METHOD0(autoReconnect, bool());
     MOCK_METHOD1(setAutoReconnect, void(const bool));
+    MOCK_CONST_METHOD0(autoReconnectInterval, int());
+    MOCK_METHOD1(setAutoReconnectInterval, void(const int));
     MOCK_CONST_METHOD0(state, QAbstractSocket::SocketState());
     MOCK_METHOD2(connectToHost, void(const QHostAddress&, const quint16));
     MOCK_METHOD0(disconnectFromHost, void());    

@@ -110,6 +110,7 @@ public:
     int keepAlive() const;
     bool cleanSession() const;
     bool autoReconnect() const;
+    int autoReconnectInterval() const;
     ConnectionState connectionState() const;
     QString willTopic() const;
     quint8 willQos() const;
@@ -124,9 +125,10 @@ public slots:
     void setClientId(const QString& clientId);
     void setUsername(const QString& username);
     void setPassword(const QString& password);
-    void setKeepAlive(int keepAlive);
-    void setCleanSession(const bool cleansess);
-    void setAutoReconnect(bool value);
+    void setKeepAlive(const int keepAlive);
+    void setCleanSession(const bool cleanSession);
+    void setAutoReconnect(const bool value);
+    void setAutoReconnectInterval(const int autoReconnectInterval);
     void setWillTopic(const QString& willTopic);
     void setWillQos(const quint8 willQos);
     void setWillRetain(const bool willRetain);

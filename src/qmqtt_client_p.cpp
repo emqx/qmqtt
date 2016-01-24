@@ -372,9 +372,19 @@ bool QMQTT::ClientPrivate::autoReconnect() const
     return _network->autoReconnect();
 }
 
-void QMQTT::ClientPrivate::setAutoReconnect(const bool value)
+void QMQTT::ClientPrivate::setAutoReconnect(const bool autoReconnect)
 {
-    _network->setAutoReconnect(value);
+    _network->setAutoReconnect(autoReconnect);
+}
+
+bool QMQTT::ClientPrivate::autoReconnectInterval() const
+{
+    return _network->autoReconnectInterval();
+}
+
+void QMQTT::ClientPrivate::setAutoReconnectInterval(const int autoReconnectInterval)
+{
+    _network->setAutoReconnectInterval(autoReconnectInterval);
 }
 
 bool QMQTT::ClientPrivate::isConnectedToHost() const
