@@ -80,6 +80,6 @@ Contributors
 Author
 ======
 
-Feng Lee <feng@emqtt.io>
-wguynes <wguynes@gmail.com>
+Feng Lee <feng@emqtt.io>   
+wguynes <wguynes@gmail.com>   
 wuming123057 <huacai123057@163.com>
