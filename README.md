@@ -50,8 +50,6 @@ Signals
 
     void connected();
     void disconnected();
-
-    // for pending MQTT protocol errors
     void error(const QMQTT::ClientError error);
 
     // todo: should emit on server suback (or is that only at specific QoS levels?)
@@ -82,5 +80,5 @@ Author
 ======
 
 Feng Lee <feng@emqtt.io>   
-wguynes <wguynes@gmail.com>   
+William Guynes <wguynes@gmail.com>
 wuming123057 <huacai123057@163.com>

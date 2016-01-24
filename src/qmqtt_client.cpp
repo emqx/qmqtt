@@ -279,3 +279,9 @@ void QMQTT::Client::onNetworkDisconnected()
     Q_D(Client);
     d->onNetworkDisconnected();
 }
+
+void QMQTT::Client::onNetworkError(QAbstractSocket::SocketError error)
+{
+    Q_D(Client);
+    d->onNetworkError(error);
+}

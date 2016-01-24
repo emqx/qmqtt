@@ -37,10 +37,9 @@ public:
         : _networkMock(new NetworkMock)
         , _client(new QMQTT::Client(_networkMock))
     {
+        qRegisterMetaType<QMQTT::ClientError>("QMQTT::ClientError");
     }
-    virtual ~ClientTest()
-    {
-    }
+    virtual ~ClientTest() {}
 
     NetworkMock* _networkMock;
     QSharedPointer<QMQTT::Client> _client;
@@ -428,4 +427,13 @@ TEST_F(ClientTest, networkDisconnectedEmitsDisconnectedSignal_Test)
     emit _networkMock->disconnected();
 
     EXPECT_EQ(1, spy.count());
+}
+
+TEST_F(ClientTest, clientEmitsErrorWhenNetworkEmitsError_Test)
+{
+    QSignalSpy spy(_client.data(), &QMQTT::Client::error);
+    emit _networkMock->error(QAbstractSocket::ConnectionRefusedError);
+    EXPECT_EQ(1, spy.count());
+    EXPECT_EQ(QMQTT::SocketConnectionRefusedError,
+              spy.at(0).at(0).value<QMQTT::ClientError>());
 }

@@ -62,6 +62,7 @@ public:
     quint8 _willQos;
     bool _willRetain;
     QString _willMessage;
+    QHash<QAbstractSocket::SocketError, ClientError> _socketErrorHash;
 
     Client* const q_ptr;
 
@@ -116,6 +117,8 @@ public:
     quint8 willQos() const;
     bool willRetain() const;
     QString willMessage() const;
+    void initializeErrorHash();
+    void onNetworkError(QAbstractSocket::SocketError error);
 
     Q_DECLARE_PUBLIC(Client)
 };

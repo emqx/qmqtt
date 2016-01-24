@@ -65,6 +65,30 @@ enum ConnectionState
 
 enum ClientError
 {
+    UnknownError = 0,
+    SocketConnectionRefusedError,
+    SocketRemoteHostClosedError,
+    SocketHostNotFoundError,
+    SocketAccessError,
+    SocketResourceError,
+    SocketTimeoutError,
+    SocketDatagramTooLargeError,
+    SocketNetworkError,
+    SocketAddressInUseError,
+    SocketAddressNotAvailableError,
+    SocketUnsupportedSocketOperationError,
+    SocketUnfinishedSocketOperationError,
+    SocketProxyAuthenticationRequiredError,
+    SocketSslHandshakeFailedError,
+    SocketProxyConnectionRefusedError,
+    SocketProxyConnectionClosedError,
+    SocketProxyConnectionTimeoutError,
+    SocketProxyNotFoundError,
+    SocketProxyProtocolError,
+    SocketOperationError,
+    SocketSslInternalError,
+    SocketSslInvalidUserDataError,
+    SocketTemporaryError
 };
 
 class ClientPrivate;
@@ -82,6 +106,7 @@ class QMQTTSHARED_EXPORT Client : public QObject
     Q_PROPERTY(QString _password READ password WRITE setPassword)
     Q_PROPERTY(int _keepAlive READ keepAlive WRITE setKeepAlive)
     Q_PROPERTY(bool _autoReconnect READ autoReconnect WRITE setAutoReconnect)
+    Q_PROPERTY(int _autoReconnectInterval READ autoReconnectInterval WRITE setAutoReconnectInterval)
     Q_PROPERTY(bool _cleanSession READ cleanSession WRITE setCleanSession)
     Q_PROPERTY(QString _willTopic READ willTopic WRITE setWillTopic)
     Q_PROPERTY(quint8 _willQos READ willQos WRITE setWillQos)
@@ -145,8 +170,6 @@ public slots:
 signals:
     void connected();
     void disconnected();
-
-    // for pending MQTT protocol errors
     void error(const QMQTT::ClientError error);
 
     // todo: should emit on server suback (or is that only at specific QoS levels?)
@@ -163,6 +186,7 @@ protected slots:
     void onNetworkDisconnected();
     void onNetworkReceived(const QMQTT::Frame& frame);
     void onTimerPingReq();
+    void onNetworkError(QAbstractSocket::SocketError error);
 
 protected:
     QScopedPointer<ClientPrivate> d_ptr;
@@ -173,5 +197,7 @@ private:
 };
 
 } // namespace QMQTT
+
+Q_DECLARE_METATYPE(QMQTT::ClientError);
 
 #endif // QMQTT_CLIENT_H
