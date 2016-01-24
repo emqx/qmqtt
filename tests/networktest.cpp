@@ -40,7 +40,12 @@ public:
         qint64 actualLength = qMin(requestedLength, static_cast<qint64>(_byteArray.size()));
         if(actualLength > 0)
         {
-            memcpy(data, _byteArray.constData(), static_cast<std::size_t>(actualLength));
+            QBuffer buffer(&_byteArray);
+            buffer.open(QIODevice::ReadWrite);
+            QDataStream in(&buffer);
+            in.readRawData(data, actualLength);
+            buffer.close();
+
             _byteArray.remove(0, actualLength);
         }
         return actualLength;
