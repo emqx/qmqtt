@@ -61,10 +61,15 @@ public:
     bool autoReconnect() const;
     void setAutoReconnect(const bool autoReconnect);
     QAbstractSocket::SocketState state() const;
+    int autoReconnectInterval() const;
+    void setAutoReonnectInterval(const int autoReconnectInterval);
 
 public slots:
     void connectToHost(const QHostAddress& host, const quint16 port);
     void disconnectFromHost();
+
+protected slots:
+    void onSocketError(QAbstractSocket::SocketError socketError);
 
 protected:
     void initialize();
@@ -74,6 +79,7 @@ protected:
     QHostAddress _host;
     QBuffer _buffer;
     bool _autoReconnect;
+    int _autoReconnectInterval;
     SocketInterface* _socket;
     TimerInterface* _autoReconnectTimer;
 

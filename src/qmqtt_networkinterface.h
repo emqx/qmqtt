@@ -60,6 +60,7 @@ signals:
     void connected();
     void disconnected();
     void received(const QMQTT::Frame& frame);
+    void error(QAbstractSocket::SocketError error);
 };
 
 } // namespace QMQTT

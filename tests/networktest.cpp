@@ -23,10 +23,10 @@ public:
         _byteArray.clear();
         _socketMock = new SocketMock;
         _timerMock = new TimerMock;
-        EXPECT_CALL(*_timerMock, setSingleShot(_)).WillRepeatedly(Return());
-        EXPECT_CALL(*_timerMock, setInterval(_)).WillRepeatedly(Return());
+//        EXPECT_CALL(*_timerMock, setSingleShot(_)).WillRepeatedly(Return());
+//        EXPECT_CALL(*_timerMock, setInterval(_)).WillRepeatedly(Return());
         _network.reset(new QMQTT::Network(_socketMock, _timerMock));
-        Mock::VerifyAndClearExpectations(_socketMock);
+//        Mock::VerifyAndClearExpectations(_socketMock);
     }
 
     void TearDown()
@@ -62,22 +62,10 @@ public:
     QByteArray _byteArray;
 };
 
-TEST(NetworkNoFixtureTest, networkConstructorSetsAutoReconnectTimerSingleShotTrue_Test)
+TEST_F(NetworkTest, networkConstructorDefaultValues_Test)
 {
-    SocketMock* socketMock = new SocketMock;
-    TimerMock* timerMock = new TimerMock;
-    EXPECT_CALL(*timerMock, setSingleShot(true)).WillOnce(Return());
-    EXPECT_CALL(*timerMock, setInterval(_)).WillRepeatedly(Return());
-    QMQTT::Network network(socketMock, timerMock);
-}
-
-TEST(NetworkNoFixtureTest, networkConstructorSetsAutoReconnectTimerInterval_Test)
-{
-    SocketMock* socketMock = new SocketMock;
-    TimerMock* timerMock = new TimerMock;
-    EXPECT_CALL(*timerMock, setSingleShot(_)).WillRepeatedly(Return());
-    EXPECT_CALL(*timerMock, setInterval(5000)).WillOnce(Return());
-    QMQTT::Network network(socketMock, timerMock);
+    EXPECT_FALSE(_network->autoReconnect());
+    EXPECT_EQ(5000, _network->autoReconnectInterval());
 }
 
 TEST_F(NetworkTest, networkIsConnectedReturnsFalseWhenSocketStateIsUnconnectedState_Test)
@@ -120,11 +108,6 @@ TEST_F(NetworkTest, networkStateCallsSocketState_Test)
 {
     EXPECT_CALL(*_socketMock, state()).WillOnce(Return(QAbstractSocket::ConnectedState));
     EXPECT_EQ(QAbstractSocket::ConnectedState, _network->state());
-}
-
-TEST_F(NetworkTest, networkAutoReconnectDefaultsToFalse_Test)
-{
-    EXPECT_FALSE(_network->autoReconnect());
 }
 
 TEST_F(NetworkTest, networkSetAutoReconnectTrueSetsAutoReconnectTrue_Test)
@@ -176,8 +159,8 @@ TEST_F(NetworkTest, networkEmitsReceivedSignalOnceAFrameIsReceived_Test)
     out << static_cast<quint8>(0x30); // publish header
     out << static_cast<quint8>(0x81); // remaining length most-signficant 7 bits
     out << static_cast<quint8>(0x01); // remaining Length least-significant 7 bits
+    out.writeRawData(payload.constData(), payload.size());
     buffer.close();
-    _byteArray += payload;
     EXPECT_EQ(132, _byteArray.size());
 
     EXPECT_CALL(*_socketMock, atEnd())
@@ -191,7 +174,7 @@ TEST_F(NetworkTest, networkEmitsReceivedSignalOnceAFrameIsReceived_Test)
     EXPECT_EQ(payload, spy.at(0).at(0).value<QMQTT::Frame>().data());
 }
 
-TEST_F(NetworkTest, autoReconnectWillAttemptToReconnectOnDisconnectionIfAutoReconnectIsTrue_Test)
+TEST_F(NetworkTest, networkWillAttemptToReconnectOnDisconnectionIfAutoReconnectIsTrue_Test)
 {
     EXPECT_CALL(*_timerMock, start()).WillRepeatedly(DoAll(
         Invoke(_timerMock, &QMQTT::TimerInterface::timeout),
@@ -202,7 +185,7 @@ TEST_F(NetworkTest, autoReconnectWillAttemptToReconnectOnDisconnectionIfAutoReco
     emit _socketMock->disconnected();
 }
 
-TEST_F(NetworkTest, autoReconnectWillNotAttemptToReconnectOnDisconnectionIfAutoReconnectIsFalse_Test)
+TEST_F(NetworkTest, networkWillNotAttemptToReconnectOnDisconnectionIfAutoReconnectIsFalse_Test)
 {
     EXPECT_CALL(*_timerMock, start()).WillRepeatedly(DoAll(
         Invoke(_timerMock, &QMQTT::TimerInterface::timeout),
@@ -211,4 +194,39 @@ TEST_F(NetworkTest, autoReconnectWillNotAttemptToReconnectOnDisconnectionIfAutoR
 
     EXPECT_CALL(*_socketMock, connectToHost(_, _)).Times(0);
     emit _socketMock->disconnected();
+}
+
+TEST_F(NetworkTest, networkWillAttemptToReconnectOnConnectionErrorIfAutoReconnectIsTrue_Test)
+{
+    EXPECT_CALL(*_timerMock, start()).WillRepeatedly(DoAll(
+        Invoke(_timerMock, &QMQTT::TimerInterface::timeout),
+        Return()));
+    _network->setAutoReconnect(true);
+
+    EXPECT_CALL(*_socketMock, connectToHost(_, _));
+    _socketMock->error(QAbstractSocket::ConnectionRefusedError);
+}
+
+TEST_F(NetworkTest, networkWillNotAttemptToReconnectOnConnectionErrorIfAutoReconnectIsFalse_Test)
+{
+    EXPECT_CALL(*_timerMock, start()).WillRepeatedly(DoAll(
+        Invoke(_timerMock, &QMQTT::TimerInterface::timeout),
+        Return()));
+    _network->setAutoReconnect(false);
+
+    EXPECT_CALL(*_socketMock, connectToHost(_, _)).Times(0);
+    _socketMock->error(QAbstractSocket::ConnectionRefusedError);
+}
+
+TEST_F(NetworkTest, networkWillEmitErrorOnSocketError_Test)
+{
+    EXPECT_CALL(*_timerMock, start()).WillRepeatedly(DoAll(
+        Invoke(_timerMock, &QMQTT::TimerInterface::timeout),
+        Return()));
+
+    QSignalSpy spy(_network.data(), &QMQTT::NetworkInterface::error);
+    _socketMock->error(QAbstractSocket::ConnectionRefusedError);
+    EXPECT_EQ(1, spy.count());
+    EXPECT_EQ(QAbstractSocket::ConnectionRefusedError,
+              spy.at(0).at(0).value<QAbstractSocket::SocketError>());
 }
