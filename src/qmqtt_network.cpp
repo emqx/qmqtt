@@ -145,7 +145,7 @@ int QMQTT::Network::autoReconnectInterval() const
     return _autoReconnectInterval;
 }
 
-void QMQTT::Network::setAutoReonnectInterval(const int autoReconnectInterval)
+void QMQTT::Network::setAutoReconnectInterval(const int autoReconnectInterval)
 {
     _autoReconnectInterval = autoReconnectInterval;
 }

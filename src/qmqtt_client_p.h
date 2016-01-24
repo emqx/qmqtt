@@ -62,6 +62,7 @@ public:
     quint8 _willQos;
     bool _willRetain;
     QString _willMessage;
+    QHash<QAbstractSocket::SocketError, ClientError> _socketErrorHash;
 
     Client* const q_ptr;
 
@@ -89,7 +90,9 @@ public:
     void handlePublish(const Message& message);
     void handlePuback(const quint8 type, const quint16 msgid);
     bool autoReconnect() const;
-    void setAutoReconnect(const bool value);
+    void setAutoReconnect(const bool autoReconnect);
+    bool autoReconnectInterval() const;
+    void setAutoReconnectInterval(const int autoReconnectInterval);
     bool isConnectedToHost() const;
     QMQTT::ConnectionState connectionState() const;
     void setCleanSession(const bool cleanSession);
@@ -114,6 +117,8 @@ public:
     quint8 willQos() const;
     bool willRetain() const;
     QString willMessage() const;
+    void initializeErrorHash();
+    void onNetworkError(QAbstractSocket::SocketError error);
 
     Q_DECLARE_PUBLIC(Client)
 };

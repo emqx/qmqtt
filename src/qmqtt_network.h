@@ -62,7 +62,7 @@ public:
     void setAutoReconnect(const bool autoReconnect);
     QAbstractSocket::SocketState state() const;
     int autoReconnectInterval() const;
-    void setAutoReonnectInterval(const int autoReconnectInterval);
+    void setAutoReconnectInterval(const int autoReconnectInterval);
 
 public slots:
     void connectToHost(const QHostAddress& host, const quint16 port);

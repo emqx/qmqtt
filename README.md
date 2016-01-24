@@ -9,7 +9,7 @@ Usage
 
 	#include "qmqtt.h"
 
-	QMQTT::Client *client = new QMQTT::Client("localhost", 1883);
+        QMQTT::Client *client = new QMQTT::Client(QHostAddress::LocalHost, 1883);
 
 	client->setClientId("clientId");
 
@@ -28,9 +28,10 @@ Slots
     void setClientId(const QString& clientId);
     void setUsername(const QString& username);
     void setPassword(const QString& password);
-    void setKeepAlive(int keepAlive);
+    void setKeepAlive(const int keepAlive);
     void setCleanSession(const bool cleansess);
-    void setAutoReconnect(bool value);
+    void setAutoReconnect(const bool value);
+    void setAutoReconnectInterval(const int autoReconnectInterval);
     void setWillTopic(const QString& willTopic);
     void setWillQos(const quint8 willQos);
     void setWillRetain(const bool willRetain);
@@ -49,8 +50,6 @@ Signals
 
     void connected();
     void disconnected();
-
-    // for pending MQTT protocol errors
     void error(const QMQTT::ClientError error);
 
     // todo: should emit on server suback (or is that only at specific QoS levels?)
@@ -81,5 +80,5 @@ Author
 ======
 
 Feng Lee <feng@emqtt.io>   
-wguynes <wguynes@gmail.com>   
+William Guynes <wguynes@gmail.com>
 wuming123057 <huacai123057@163.com>

@@ -65,6 +65,30 @@ enum ConnectionState
 
 enum ClientError
 {
+    UnknownError = 0,
+    SocketConnectionRefusedError,
+    SocketRemoteHostClosedError,
+    SocketHostNotFoundError,
+    SocketAccessError,
+    SocketResourceError,
+    SocketTimeoutError,
+    SocketDatagramTooLargeError,
+    SocketNetworkError,
+    SocketAddressInUseError,
+    SocketAddressNotAvailableError,
+    SocketUnsupportedSocketOperationError,
+    SocketUnfinishedSocketOperationError,
+    SocketProxyAuthenticationRequiredError,
+    SocketSslHandshakeFailedError,
+    SocketProxyConnectionRefusedError,
+    SocketProxyConnectionClosedError,
+    SocketProxyConnectionTimeoutError,
+    SocketProxyNotFoundError,
+    SocketProxyProtocolError,
+    SocketOperationError,
+    SocketSslInternalError,
+    SocketSslInvalidUserDataError,
+    SocketTemporaryError
 };
 
 class ClientPrivate;
@@ -82,6 +106,7 @@ class QMQTTSHARED_EXPORT Client : public QObject
     Q_PROPERTY(QString _password READ password WRITE setPassword)
     Q_PROPERTY(int _keepAlive READ keepAlive WRITE setKeepAlive)
     Q_PROPERTY(bool _autoReconnect READ autoReconnect WRITE setAutoReconnect)
+    Q_PROPERTY(int _autoReconnectInterval READ autoReconnectInterval WRITE setAutoReconnectInterval)
     Q_PROPERTY(bool _cleanSession READ cleanSession WRITE setCleanSession)
     Q_PROPERTY(QString _willTopic READ willTopic WRITE setWillTopic)
     Q_PROPERTY(quint8 _willQos READ willQos WRITE setWillQos)
@@ -110,6 +135,7 @@ public:
     int keepAlive() const;
     bool cleanSession() const;
     bool autoReconnect() const;
+    int autoReconnectInterval() const;
     ConnectionState connectionState() const;
     QString willTopic() const;
     quint8 willQos() const;
@@ -124,9 +150,10 @@ public slots:
     void setClientId(const QString& clientId);
     void setUsername(const QString& username);
     void setPassword(const QString& password);
-    void setKeepAlive(int keepAlive);
-    void setCleanSession(const bool cleansess);
-    void setAutoReconnect(bool value);
+    void setKeepAlive(const int keepAlive);
+    void setCleanSession(const bool cleanSession);
+    void setAutoReconnect(const bool value);
+    void setAutoReconnectInterval(const int autoReconnectInterval);
     void setWillTopic(const QString& willTopic);
     void setWillQos(const quint8 willQos);
     void setWillRetain(const bool willRetain);
@@ -143,8 +170,6 @@ public slots:
 signals:
     void connected();
     void disconnected();
-
-    // for pending MQTT protocol errors
     void error(const QMQTT::ClientError error);
 
     // todo: should emit on server suback (or is that only at specific QoS levels?)
@@ -161,6 +186,7 @@ protected slots:
     void onNetworkDisconnected();
     void onNetworkReceived(const QMQTT::Frame& frame);
     void onTimerPingReq();
+    void onNetworkError(QAbstractSocket::SocketError error);
 
 protected:
     QScopedPointer<ClientPrivate> d_ptr;
@@ -171,5 +197,7 @@ private:
 };
 
 } // namespace QMQTT
+
+Q_DECLARE_METATYPE(QMQTT::ClientError);
 
 #endif // QMQTT_CLIENT_H

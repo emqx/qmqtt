@@ -66,7 +66,7 @@ void QMQTT::ClientPrivate::init(const QHostAddress& host, const quint16 port, Ne
 
     _host = host;
     _port = port;
-    if(NULL == network)
+    if(network == NULL)
     {
         _network.reset(new Network);
     }
@@ -75,14 +75,44 @@ void QMQTT::ClientPrivate::init(const QHostAddress& host, const quint16 port, Ne
         _network.reset(network);
     }
 
-    QObject::connect(&_timer, &QTimer::timeout, q, &Client::onTimerPingReq);
+    initializeErrorHash();
 
+    QObject::connect(&_timer, &QTimer::timeout, q, &Client::onTimerPingReq);
     QObject::connect(_network.data(), &Network::connected,
                      q, &Client::onNetworkConnected);
     QObject::connect(_network.data(), &Network::disconnected,
                      q, &Client::onNetworkDisconnected);
     QObject::connect(_network.data(), &Network::received,
                      q, &Client::onNetworkReceived);
+    QObject::connect(_network.data(), &Network::error,
+                     q, &Client::onNetworkError);
+}
+
+void QMQTT::ClientPrivate::initializeErrorHash()
+{
+    _socketErrorHash.insert(QAbstractSocket::ConnectionRefusedError, SocketConnectionRefusedError);
+    _socketErrorHash.insert(QAbstractSocket::RemoteHostClosedError, SocketRemoteHostClosedError);
+    _socketErrorHash.insert(QAbstractSocket::HostNotFoundError, SocketHostNotFoundError);
+    _socketErrorHash.insert(QAbstractSocket::SocketAccessError, SocketAccessError);
+    _socketErrorHash.insert(QAbstractSocket::SocketResourceError, SocketResourceError);
+    _socketErrorHash.insert(QAbstractSocket::SocketTimeoutError, SocketTimeoutError);
+    _socketErrorHash.insert(QAbstractSocket::DatagramTooLargeError, SocketDatagramTooLargeError);
+    _socketErrorHash.insert(QAbstractSocket::NetworkError, SocketNetworkError);
+    _socketErrorHash.insert(QAbstractSocket::AddressInUseError, SocketAddressInUseError);
+    _socketErrorHash.insert(QAbstractSocket::SocketAddressNotAvailableError, SocketAddressNotAvailableError);
+    _socketErrorHash.insert(QAbstractSocket::UnsupportedSocketOperationError, SocketUnsupportedSocketOperationError);
+    _socketErrorHash.insert(QAbstractSocket::UnfinishedSocketOperationError, SocketUnfinishedSocketOperationError);
+    _socketErrorHash.insert(QAbstractSocket::ProxyAuthenticationRequiredError, SocketProxyAuthenticationRequiredError);
+    _socketErrorHash.insert(QAbstractSocket::SslHandshakeFailedError, SocketSslHandshakeFailedError);
+    _socketErrorHash.insert(QAbstractSocket::ProxyConnectionRefusedError, SocketProxyConnectionRefusedError);
+    _socketErrorHash.insert(QAbstractSocket::ProxyConnectionClosedError, SocketProxyConnectionClosedError);
+    _socketErrorHash.insert(QAbstractSocket::ProxyConnectionTimeoutError, SocketProxyConnectionTimeoutError);
+    _socketErrorHash.insert(QAbstractSocket::ProxyNotFoundError, SocketProxyNotFoundError);
+    _socketErrorHash.insert(QAbstractSocket::ProxyProtocolError, SocketProxyProtocolError);
+    _socketErrorHash.insert(QAbstractSocket::OperationError, SocketOperationError);
+    _socketErrorHash.insert(QAbstractSocket::SslInternalError, SocketSslInternalError);
+    _socketErrorHash.insert(QAbstractSocket::SslInvalidUserDataError, SocketSslInvalidUserDataError);
+    _socketErrorHash.insert(QAbstractSocket::TemporaryError, SocketTemporaryError);
 }
 
 void QMQTT::ClientPrivate::connectToHost()
@@ -372,9 +402,19 @@ bool QMQTT::ClientPrivate::autoReconnect() const
     return _network->autoReconnect();
 }
 
-void QMQTT::ClientPrivate::setAutoReconnect(const bool value)
+void QMQTT::ClientPrivate::setAutoReconnect(const bool autoReconnect)
 {
-    _network->setAutoReconnect(value);
+    _network->setAutoReconnect(autoReconnect);
+}
+
+bool QMQTT::ClientPrivate::autoReconnectInterval() const
+{
+    return _network->autoReconnectInterval();
+}
+
+void QMQTT::ClientPrivate::setAutoReconnectInterval(const int autoReconnectInterval)
+{
+    _network->setAutoReconnectInterval(autoReconnectInterval);
 }
 
 bool QMQTT::ClientPrivate::isConnectedToHost() const
@@ -502,4 +542,10 @@ QString QMQTT::ClientPrivate::willMessage() const
 void QMQTT::ClientPrivate::setWillMessage(const QString& willMessage)
 {
     _willMessage = willMessage;
+}
+
+void QMQTT::ClientPrivate::onNetworkError(QAbstractSocket::SocketError socketError)
+{
+    Q_Q(Client);
+    emit q->error(_socketErrorHash.value(socketError, UnknownError));
 }

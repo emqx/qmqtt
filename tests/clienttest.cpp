@@ -37,6 +37,7 @@ public:
         : _networkMock(new NetworkMock)
         , _client(new QMQTT::Client(_networkMock))
     {
+        qRegisterMetaType<QMQTT::ClientError>("QMQTT::ClientError");
     }
     virtual ~ClientTest() {}
 
@@ -196,6 +197,24 @@ TEST_F(ClientTest, autoReconnectIsFalseIfNetworkAutoReconnectIsFalse_Test)
 {
     EXPECT_CALL(*_networkMock, autoReconnect()).WillOnce(Return(false));
     EXPECT_FALSE(_client->autoReconnect());
+}
+
+TEST_F(ClientTest, setAutoReconnectSetsNetworkAutoReconnect_Test)
+{
+    EXPECT_CALL(*_networkMock, setAutoReconnect(true));
+    _client->setAutoReconnect(true);
+}
+
+TEST_F(ClientTest, setAutoReconnectIntervalSetsNetworkAutoReconnectInterval_Test)
+{
+    EXPECT_CALL(*_networkMock, setAutoReconnectInterval(10000));
+    _client->setAutoReconnectInterval(10000);
+}
+
+TEST_F(ClientTest, autoReconnectIntervalIsValueOfNetworkAutoReconnect_Test)
+{
+    EXPECT_CALL(*_networkMock, autoReconnectInterval()).WillOnce(Return(10000));
+    EXPECT_TRUE(_client->autoReconnectInterval());
 }
 
 TEST_F(ClientTest, willTopicDefaultsToNull_Test)
@@ -408,4 +427,13 @@ TEST_F(ClientTest, networkDisconnectedEmitsDisconnectedSignal_Test)
     emit _networkMock->disconnected();
 
     EXPECT_EQ(1, spy.count());
+}
+
+TEST_F(ClientTest, clientEmitsErrorWhenNetworkEmitsError_Test)
+{
+    QSignalSpy spy(_client.data(), &QMQTT::Client::error);
+    emit _networkMock->error(QAbstractSocket::ConnectionRefusedError);
+    EXPECT_EQ(1, spy.count());
+    EXPECT_EQ(QMQTT::SocketConnectionRefusedError,
+              spy.at(0).at(0).value<QMQTT::ClientError>());
 }
