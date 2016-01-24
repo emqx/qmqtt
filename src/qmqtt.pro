@@ -16,7 +16,8 @@ SOURCES += qmqtt_client.cpp \
     qmqtt_routesubscription.cpp \
     qmqtt_routedmessage.cpp \
     qmqtt_message_p.cpp \
-    qmqtt_socket.cpp
+    qmqtt_socket.cpp \
+    qmqtt_timer.cpp
 
 HEADERS += qmqtt_client.h\
     qmqtt_global.h \
@@ -31,7 +32,9 @@ HEADERS += qmqtt_client.h\
     qmqtt_networkinterface.h \
     qmqtt_message_p.h \
     qmqtt_socketinterface.h \
-    qmqtt_socket.h
+    qmqtt_socket.h \
+    qmqtt_timer.h \
+    qmqtt_timerinterface.h
 
 isEmpty(PREFIX) {
     contains(MEEGO_EDITION,harmattan) {

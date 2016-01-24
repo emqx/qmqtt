@@ -1,5 +1,5 @@
 /*
- * qmqtt_network.h - qmqtt network header
+ * qmqtt_timerinterface.h - qmqtt timer interface header
  *
  * Copyright (c) 2013  Ery Lee <ery.lee at gmail dot com>
  * All rights reserved.
@@ -29,69 +29,32 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#ifndef QMQTT_NETWORK_H
-#define QMQTT_NETWORK_H
+#ifndef QMQTT_TIMER_INTERFACE_H
+#define QMQTT_TIMER_INTERFACE_H
 
-#include "qmqtt_networkinterface.h"
-#include "qmqtt_frame.h"
 #include <QObject>
-#include <QTcpSocket>
-#include <QPointer>
-#include <QBuffer>
-#include <QByteArray>
-#include <QHostAddress>
 
 namespace QMQTT {
 
-class SocketInterface;
-class TimerInterface;
-
-class Network : public NetworkInterface
+class TimerInterface : public QObject
 {
     Q_OBJECT
-
 public:
-    Network(QObject* parent = NULL);
-    Network(SocketInterface* socketInterface, TimerInterface* timerInterface,
-            QObject* parent = NULL);
-    ~Network();
+    explicit TimerInterface(QObject* parent = NULL) : QObject(parent) {}
+    virtual ~TimerInterface() {}
 
-    void sendFrame(Frame& frame);
-    bool isConnectedToHost() const;
-    bool autoReconnect() const;
-    void setAutoReconnect(const bool autoReconnect);
-    QAbstractSocket::SocketState state() const;
-    int autoReconnectInterval() const;
-    void setAutoReonnectInterval(const int autoReconnectInterval);
+    virtual bool isSingleShot() const = 0;
+    virtual void setSingleShot(bool singleShot) = 0;
+    virtual int interval() const = 0;
+    virtual void setInterval(int msec) = 0;
+    virtual void start() = 0;
+    virtual void stop() = 0;
 
-public slots:
-    void connectToHost(const QHostAddress& host, const quint16 port);
-    void disconnectFromHost();
-
-protected slots:
-    void onSocketError(QAbstractSocket::SocketError socketError);
-
-protected:
-    void initialize();
-    int readRemainingLength(QDataStream &in);
-
-    quint16 _port;
-    QHostAddress _host;
-    QBuffer _buffer;
-    bool _autoReconnect;
-    int _autoReconnectInterval;
-    SocketInterface* _socket;
-    TimerInterface* _autoReconnectTimer;
-
-protected slots:
-    void onSocketReadReady();
-    void onDisconnected();
-    void connectToHost();
-
-private:
-    Q_DISABLE_COPY(Network)
+signals:
+    void timeout();
 };
 
-} // namespace QMQTT
+}
 
-#endif // QMQTT_NETWORK_H
+#endif // QMQTT_TIMER_INTERFACE_H
+
