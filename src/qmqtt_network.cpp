@@ -32,6 +32,7 @@
 #include <QDataStream>
 #include "qmqtt_network.h"
 #include "qmqtt_socket.h"
+#include "qmqtt_timer.h"
 
 const QHostAddress DEFAULT_HOST = QHostAddress::LocalHost;
 const quint16 DEFAULT_PORT = 1883;
@@ -41,18 +42,21 @@ QMQTT::Network::Network(QObject* parent)
     : NetworkInterface(parent)
     , _port(DEFAULT_PORT)
     , _host(DEFAULT_HOST)
-    , _socket(new QMQTT::Socket)
     , _autoReconnect(DEFAULT_AUTORECONNECT)
+    , _socket(new QMQTT::Socket)
+    , _autoReconnectTimer(new QMQTT::Timer)
 {
     initialize();
 }
 
-QMQTT::Network::Network(SocketInterface* socketInterface, QObject* parent)
+QMQTT::Network::Network(SocketInterface* socketInterface, TimerInterface* timerInterface,
+                        QObject* parent)
     : NetworkInterface(parent)
     , _port(DEFAULT_PORT)
     , _host(DEFAULT_HOST)
-    , _socket(socketInterface)
     , _autoReconnect(DEFAULT_AUTORECONNECT)
+    , _socket(socketInterface)
+    , _autoReconnectTimer(timerInterface)
 {
     initialize();
 }
@@ -60,11 +64,18 @@ QMQTT::Network::Network(SocketInterface* socketInterface, QObject* parent)
 void QMQTT::Network::initialize()
 {
     _socket->setParent(this);
+    _autoReconnectTimer->setParent(this);
     _buffer.open(QIODevice::ReadWrite);
 
     QObject::connect(_socket, &SocketInterface::connected, this, &Network::connected);
-    QObject::connect(_socket, &SocketInterface::disconnected, this, &Network::disconnected);
+    QObject::connect(_socket, &SocketInterface::disconnected, this, &Network::onDisconnected);
     QObject::connect(_socket, &SocketInterface::readyRead, this, &Network::onSocketReadReady);
+
+    _autoReconnectTimer->setSingleShot(true);
+    _autoReconnectTimer->setInterval(5000);
+    QObject::connect(
+        _autoReconnectTimer, &TimerInterface::timeout,
+        this, static_cast<void (Network::*)()>(&Network::connectToHost));
 }
 
 QMQTT::Network::~Network()
@@ -80,7 +91,12 @@ void QMQTT::Network::connectToHost(const QHostAddress& host, const quint16 port)
 {
     _host = host;
     _port = port;
-    _socket->connectToHost(host, port);
+    connectToHost();
+}
+
+void QMQTT::Network::connectToHost()
+{
+    _socket->connectToHost(_host, _port);
 }
 
 void QMQTT::Network::sendFrame(Frame& frame)
@@ -156,4 +172,13 @@ int QMQTT::Network::readRemainingLength(QDataStream &in)
      } while ((byte & 128) != 0);
 
      return length;
+}
+
+void QMQTT::Network::onDisconnected()
+{
+    emit disconnected();
+    if(_autoReconnect)
+    {
+        _autoReconnectTimer->start();
+    }
 }

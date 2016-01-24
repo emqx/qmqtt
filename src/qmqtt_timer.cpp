@@ -1,5 +1,5 @@
 /*
- * qmqtt_socketinterface.h - qmqtt socket interface header
+ * qmqtt_timer.cpp - qmqtt timer
  *
  * Copyright (c) 2013  Ery Lee <ery.lee at gmail dot com>
  * All rights reserved.
@@ -29,41 +29,44 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#ifndef QMQTT_SOCKET_INTERFACE_H
-#define QMQTT_SOCKET_INTERFACE_H
+#include "qmqtt_timer.h"
 
-#include <QHostAddress>
-#include <QIODevice>
-
-namespace QMQTT
+QMQTT::Timer::Timer(QObject* parent)
+    : TimerInterface(parent)
 {
-
-class SocketInterface : public QIODevice
-{
-    Q_OBJECT
-public:
-    explicit SocketInterface(QObject* parent = NULL) : QIODevice(parent)
-    {
-        setOpenMode(QIODevice::ReadWrite);
-    }
-    virtual	~SocketInterface() {}
-
-    virtual void connectToHost(const QHostAddress& address, quint16 port) = 0;
-    virtual void disconnectFromHost() = 0;
-    virtual QAbstractSocket::SocketState state() const = 0;
-    virtual bool atEnd() const = 0;
-    virtual bool waitForBytesWritten(int msecs) = 0;
-    virtual QAbstractSocket::SocketError error() const = 0;
-    virtual qint64 readData(char* data, qint64 maxlen) = 0;
-    virtual qint64 writeData(const char* data, qint64 len) = 0;
-
-signals:
-    void connected();
-    void disconnected();
-    void readyRead();
-    void error(QAbstractSocket::SocketError socketError);
-};
-
+    connect(&_timer, &QTimer::timeout, this, &TimerInterface::timeout);
 }
 
-#endif // QMQTT_SOCKET_INTERFACE_H
+QMQTT::Timer::~Timer()
+{
+}
+
+bool QMQTT::Timer::isSingleShot() const
+{
+    return _timer.isSingleShot();
+}
+
+void QMQTT::Timer::setSingleShot(bool singleShot)
+{
+    _timer.setSingleShot(singleShot);
+}
+
+int QMQTT::Timer::interval() const
+{
+    return _timer.interval();
+}
+
+void QMQTT::Timer::setInterval(int msec)
+{
+    _timer.setInterval(msec);
+}
+
+void QMQTT::Timer::start()
+{
+    _timer.start();
+}
+
+void QMQTT::Timer::stop()
+{
+    _timer.stop();
+}

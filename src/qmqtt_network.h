@@ -44,6 +44,7 @@
 namespace QMQTT {
 
 class SocketInterface;
+class TimerInterface;
 
 class Network : public NetworkInterface
 {
@@ -51,7 +52,8 @@ class Network : public NetworkInterface
 
 public:
     Network(QObject* parent = NULL);
-    Network(SocketInterface* socketInterface, QObject* parent = NULL);
+    Network(SocketInterface* socketInterface, TimerInterface* timerInterface,
+            QObject* parent = NULL);
     ~Network();
 
     void sendFrame(Frame& frame);
@@ -70,12 +72,15 @@ protected:
 
     quint16 _port;
     QHostAddress _host;
-    SocketInterface* _socket;
     QBuffer _buffer;
     bool _autoReconnect;
+    SocketInterface* _socket;
+    TimerInterface* _autoReconnectTimer;
 
 protected slots:
     void onSocketReadReady();
+    void onDisconnected();
+    void connectToHost();
 
 private:
     Q_DISABLE_COPY(Network)
