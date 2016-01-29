@@ -8,7 +8,8 @@ namespace QMQTT
 
 class ConnectPacket
 {
-    friend QDataStream& operator>>(QDataStream& stream, QMQTT::ConnectPacket& packet);
+    friend QDataStream& operator>>(QDataStream& stream, ConnectPacket& packet);
+    friend QDataStream& operator<<(QDataStream& stream, const ConnectPacket& packet);
 
 public:
     ConnectPacket();
@@ -17,46 +18,48 @@ public:
     QString protocol() const;
     quint8 protocolLevel() const;
     bool cleanSession() const;
-    bool willFlag() const;
+    QString willTopic() const;
+    QString willMessage() const;
     quint8 willQos() const;
     bool willRetain() const;
-    bool passwordFlag() const;
-    bool userNameFlag() const;
+    QString clientIdentifier() const;
+    QString userName() const;
+    QString password() const;
 
     void setProtocol(const QString& protocol);
     void setProtocolLevel(const quint8 protocolLevel);
     void setCleanSession(const bool cleanSession);
-    void setWillFlag(const bool willFlag);
+    void setWillTopic(const QString& willTopic);
+    void setWillMessage(const QString& willMessage);
     void setWillQos(const quint8 willQos);
     void setWillRetain(const bool willRetain);
-    void setPasswordFlag(const bool passwordFlag);
-    void setUserNameFlag(const bool userNameFlag);
+    void setClientIdentifier(const QString& clientIdentifier);
+    void setUserName(const QString& userName);
+    void setPassword(const QString& password);
+
+    bool isValid() const;
 
 protected:
     QString _protocol;
     quint8 _protocolLevel;
     quint8 _connectFlags;
+    bool _cleanSession;
+    QString _willTopic;
+    QString _willMessage;
+    quint8 _willQos;
+    bool _willRetain;
     quint16 _keepAlive;
+    QString _clientIdentifier;
+    QString _userName;
+    QString _password;
 };
 
+QString readStringWith16BitHeader(QDataStream& stream);
+void writeStringWith16BitHeader(QDataStream& stream, const QString& string);
+
+QDataStream& operator>>(QDataStream& stream, ConnectPacket& packet);
+QDataStream& operator<<(QDataStream& stream, const ConnectPacket& packet);
+
 } // end namespace QMQTT
-
-QString readStringWith16BitHeader(QDataStream& stream)
-{
-    quint16 length;
-    stream >> length;
-    QByteArray byteArray(length, '\0');
-    stream.readRawData(byteArray.data(), length);
-    return QString::fromUtf8(byteArray);
-}
-
-QDataStream& operator>>(QDataStream& stream, QMQTT::ConnectPacket& packet)
-{
-    packet._protocol = readStringWith16BitHeader(stream);
-    stream >> packet._protocolLevel;
-    stream >> packet._connectFlags;
-    stream >> packet._keepAlive;
-    return stream;
-}
 
 #endif // QMQTT_CONNECT_PACKET_H
