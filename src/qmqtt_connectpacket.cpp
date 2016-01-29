@@ -4,12 +4,13 @@ const QString SUPPORTED_PROTOCOL = QStringLiteral("MQTT");
 const quint8 SUPPORTED_PROTOCOL_LEVEL = 0x04;
 
 const quint8 NO_MASK = 0x00;
-const quint8 CLEAN_SESSION_MASK = 0x02;
-const quint8 WILL_FLAG_MASK = 0x04;
-const quint8 WILL_QOS_MASK = 0x18;
-const quint8 WILL_RETAIN_MASK = 0x20;
-const quint8 PASSWORD_MASK = 0x40;
-const quint8 USERNAME_MASK = 0x80;
+const quint8 CONNECT_FLAGS_RESERVED_MASK = 0x01;
+const quint8 CONNECT_FLAGS_CLEAN_SESSION_MASK = 0x02;
+const quint8 CONNECT_FLAGS_WILL_FLAG_MASK = 0x04;
+const quint8 CONNECT_FLAGS_WILL_QOS_MASK = 0x18;
+const quint8 CONNECT_FLAGS_WILL_RETAIN_MASK = 0x20;
+const quint8 CONNECT_FLAGS_PASSWORD_MASK = 0x40;
+const quint8 CONNECT_FLAGS_USERNAME_MASK = 0x80;
 const QString PROTOCOL = "MQTT";
 const quint8 PROTOCOL_LEVEL = 0x04;
 
@@ -140,8 +141,17 @@ bool QMQTT::ConnectPacket::isValid() const
         return false;
     }
 
-    if (_connectFlags)
+    if (_connectFlags & _CONNECT_FLAGS_RESERVED_MASK == _CONNECT_FLAGS_RESERVED_MASK)
     {
+        return false;
+    }
+
+    // CONNECT_FLAGS_CLEAN_SESSION_MASK can be anything
+    // CONNECT_FLAGS_WILL_FLAG_MASK, if true there must be topic and message fields in payload
+    if (_connectFlags & _CONNECT_FLAGS_RESERVED_MASK == _CONNECT_FLAGS_RESERVED_MASK)
+    {
+        // if true
+        return false;
     }
 
     QRegExp re("[\\da-zA-Z]{1,23}");
@@ -197,7 +207,7 @@ QDataStream& QMQTT::operator>>(QDataStream& stream, ConnectPacket& packet)
     quint8 connectFlags = 0;
     stream >> connectFlags;
 
-    packet._cleanSession = ((connectFlags & CLEAN_SESSION_MASK) == CLEAN_SESSION_MASK);
+    packet._cleanSession = ((connectFlags & CONNECT_FLAGS_CLEAN_SESSION_MASK) == CONNECT_FLAGS_CLEAN_SESSION_MASK);
 
     stream >> packet._keepAlive;
 
@@ -207,22 +217,22 @@ QDataStream& QMQTT::operator>>(QDataStream& stream, ConnectPacket& packet)
     packet._willMessage.clear();
     packet._willQos = 0;
     packet._willRetain = false;
-    if ((connectFlags & WILL_FLAG_MASK) == WILL_FLAG_MASK)
+    if ((connectFlags & CONNECT_FLAGS_WILL_FLAG_MASK) == CONNECT_FLAGS_WILL_FLAG_MASK)
     {
         packet._willTopic = readStringWith16BitHeader(stream);
         packet._willMessage = readStringWith16BitHeader(stream);
-        packet._willQos = ((connectFlags & WILL_QOS_MASK) >> 3);
-        packet._willRetain = ((connectFlags & WILL_RETAIN_MASK) == WILL_RETAIN_MASK);
+        packet._willQos = ((connectFlags & CONNECT_FLAGS_WILL_QOS_MASK) >> 3);
+        packet._willRetain = ((connectFlags & CONNECT_FLAGS_WILL_RETAIN_MASK) == CONNECT_FLAGS_WILL_RETAIN_MASK);
     }
 
     packet._userName.clear();
-    if ((connectFlags & USERNAME_MASK) == USERNAME_MASK)
+    if ((connectFlags & CONNECT_FLAGS_USERNAME_MASK) == CONNECT_FLAGS_USERNAME_MASK)
     {
         packet._userName = readStringWith16BitHeader(stream);
     }
 
     packet._password.clear();
-    if ((connectFlags & PASSWORD_MASK) == PASSWORD_MASK)
+    if ((connectFlags & CONNECT_FLAGS_PASSWORD_MASK) == CONNECT_FLAGS_PASSWORD_MASK)
     {
         packet._password = readStringWith16BitHeader(stream);
     }
@@ -243,15 +253,15 @@ QDataStream& QMQTT::operator<<(QDataStream& stream, const ConnectPacket& packet)
     stream << packet._protocolLevel;
 
     quint8 connectFlags = 0;
-    connectFlags |= (packet._cleanSession ? CLEAN_SESSION_MASK : NO_MASK);
+    connectFlags |= (packet._cleanSession ? CONNECT_FLAGS_CLEAN_SESSION_MASK : NO_MASK);
     if (!packet._willTopic.isEmpty())
     {
-        connectFlags |= WILL_FLAG_MASK;
-        connectFlags |= ((packet._willQos * 8) & WILL_QOS_MASK);
-        connectFlags |= (packet._willRetain ? WILL_RETAIN_MASK : NO_MASK);
+        connectFlags |= CONNECT_FLAGS_WILL_FLAG_MASK;
+        connectFlags |= ((packet._willQos * 8) & CONNECT_FLAGS_WILL_QOS_MASK);
+        connectFlags |= (packet._willRetain ? CONNECT_FLAGS_WILL_RETAIN_MASK : NO_MASK);
     }
-    connectFlags |= (packet._userName.isEmpty() ? NO_MASK : USERNAME_MASK);
-    connectFlags |= (packet._password.isEmpty() ? NO_MASK : PASSWORD_MASK);
+    connectFlags |= (packet._userName.isEmpty() ? NO_MASK : CONNECT_FLAGS_USERNAME_MASK);
+    connectFlags |= (packet._password.isEmpty() ? NO_MASK : CONNECT_FLAGS_PASSWORD_MASK);
     stream << connectFlags;
 
     stream << packet._keepAlive;
