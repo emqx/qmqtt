@@ -17,6 +17,7 @@ public:
 
     QString protocol() const;
     quint8 protocolLevel() const;
+
     bool cleanSession() const;
     QString willTopic() const;
     QString willMessage() const;
@@ -26,8 +27,6 @@ public:
     QString userName() const;
     QString password() const;
 
-    void setProtocol(const QString& protocol);
-    void setProtocolLevel(const quint8 protocolLevel);
     void setCleanSession(const bool cleanSession);
     void setWillTopic(const QString& willTopic);
     void setWillMessage(const QString& willMessage);
@@ -43,15 +42,20 @@ protected:
     QString _protocol;
     quint8 _protocolLevel;
     quint8 _connectFlags;
-    bool _cleanSession;
     QString _willTopic;
     QString _willMessage;
-    quint8 _willQos;
-    bool _willRetain;
     quint16 _keepAlive;
     QString _clientIdentifier;
     QString _userName;
     QString _password;
+
+    bool willFlag() const;
+    bool userNameFlag() const;
+    bool passwordFlag() const;
+
+    void setWillFlag(const bool willFlag);
+    void setUserNameFlag(const bool userNameFlag);
+    void setPasswordFlag(const bool passwordFlag);
 };
 
 QString readStringWith16BitHeader(QDataStream& stream);

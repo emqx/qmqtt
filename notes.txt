@@ -67,35 +67,35 @@ Similarly to [MQTT-2.3.1-6], SUBACK and UNSUBACK MUST contain the Packet
 Identifier that was used in the corresponding SUBSCRIBE and UNSUBSCRIBE Packet
 respectively.
 
-[MQTT-3.1.0-1]
+[MQTT-3.1.0-1] client behavior
 
 After a Network Connection is established by a Client to a Server, the first
 Packet sent from the Client to the Server MUST be a CONNECT Packet.
 
-[MQTT-3.1.0-2]
+[MQTT-3.1.0-2] server behavior
 
 The Server MUST process a second CONNECT Packet sent from a Client as a
 protocol violation and disconnect the Client.
 
-[MQTT-3.1.2-1]
+[MQTT-3.1.2-1] server behavior
 
 If the protocol name is incorrect the Server MAY disconnect the Client, or it
 MAY continue processing the CONNECT packet in accordance with some other
 specification. In the latter case, the Server MUST NOT continue to process the
 CONNECT packet in line with this specification.
 
-[MQTT-3.1.2-2]
+[MQTT-3.1.2-2] server behavior
 
 The Server MUST respond to the CONNECT Packet with a CONNACK return code 0x01
 (unacceptable protocol level) and then disconnect the Client if the Protocol
 Level is not supported by the Server.
 
-[MQTT-3.1.2-3]
+[MQTT-3.1.2-3] server behavior
 
 The Server MUST validate that the reserved flag in the CONNECT Control Packet
 is set to zero and disconnect the Client if it is not zero.
 
-[MQTT-3.1.2-4]
+[MQTT-3.1.2-4] server and client behavior
 
 If CleanSession is set to 0, the Server MUST resume communications with the
 Client based on state from the current Session (as identified by the Client
@@ -103,7 +103,7 @@ identifier). If there is no Session associated with the Client identifier the
 Server MUST create a new Session. The Client and Server MUST store the Session
 after the Client and Server are disconnected.
 
-[MQTT-3.1.2-5]
+[MQTT-3.1.2-5] server behavior
 
 After the disconnection of a Session that had CleanSession set to 0, the
 Server MUST store further QoS 1 and QoS 2 messages that match any
@@ -148,16 +148,16 @@ If the Will Flag is set to 0 the Will QoS and Will Retain fields in the
 Connect Flags MUST be set to zero and the Will Topic and Will Message fields
 MUST NOT be present in the payload.
 
-[MQTT-3.1.2-12]
+[MQTT-3.1.2-12] server behavior
 
 If the Will Flag is set to 0, a Will Message MUST NOT be published when this
 Network Connection ends.
 
-[MQTT-3.1.2-13]
+[MQTT-3.1.2-13] connect packet
 
 If the Will Flag is set to 0, then the Will QoS MUST be set to 0 (0x00).
 
-[MQTT-3.1.2-14]
+[MQTT-3.1.2-14] connect packet
 
 If the Will Flag is set to 1, the value of Will QoS can be 0 (0x00), 1 (0x01),
 or 2 (0x02). It MUST NOT be 3 (0x03).
