@@ -2,6 +2,7 @@
 #define QMQTT_CONNECT_PACKET_H
 
 #include <QDataStream>
+#include <QString>
 
 namespace QMQTT
 {

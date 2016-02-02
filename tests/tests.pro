@@ -15,7 +15,8 @@ SOURCES += \
     networktest.cpp \
     messagetest.cpp \
     frametest.cpp \
-    sockettest.cpp
+    sockettest.cpp \
+    connectpackettest.cpp
 
 HEADERS += \
     tcpserver.h \

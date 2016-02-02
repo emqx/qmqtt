@@ -3,7 +3,7 @@
 
 const QString SUPPORTED_PROTOCOL = QStringLiteral("MQTT");
 const quint8 SUPPORTED_PROTOCOL_LEVEL = 0x04;
-
+const quint16 DEFAULT_KEEP_ALIVE_INTERVAL = 300;
 const quint8 NO_MASK = 0x00;
 const quint8 RESERVED_MASK = 0x01;
 const quint8 CLEAN_SESSION_MASK = 0x02;
@@ -16,8 +16,8 @@ const quint8 USERNAME_MASK = 0x80;
 QMQTT::ConnectPacket::ConnectPacket()
     : _protocol(SUPPORTED_PROTOCOL)
     , _protocolLevel(SUPPORTED_PROTOCOL_LEVEL)
-    , _connectFlags(0)
-    , _keepAlive(300)
+    , _connectFlags(NO_MASK)
+    , _keepAlive(DEFAULT_KEEP_ALIVE_INTERVAL)
 {
 }
 
