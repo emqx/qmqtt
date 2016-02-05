@@ -1,4 +1,5 @@
 #include "qmqtt_connectpacket.h"
+#include <QRegExp>
 #include <qmath.h>
 
 const QString SUPPORTED_PROTOCOL = QStringLiteral("MQTT");
