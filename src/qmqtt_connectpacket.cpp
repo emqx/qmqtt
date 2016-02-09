@@ -1,4 +1,5 @@
 #include "qmqtt_connectpacket.h"
+#include <QRegExp>
 #include <qmath.h>
 
 const quint8 DEFAULT_FIXED_HEADER = 0x10;
