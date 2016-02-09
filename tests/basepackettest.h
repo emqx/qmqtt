@@ -1,0 +1,5 @@
+#ifndef BASEPACKETTEST_H
+#define BASEPACKETTEST_H
+
+#endif // BASEPACKETTEST_H
+
