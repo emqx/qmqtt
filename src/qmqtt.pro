@@ -19,6 +19,7 @@ SOURCES += qmqtt_client.cpp \
     qmqtt_socket.cpp \
     qmqtt_timer.cpp \
     qmqtt_connectpacket.cpp \
+    qmqtt_connackpacket.cpp \
     qmqtt_abstractpacket.cpp
 
 HEADERS += qmqtt_client.h\
@@ -38,6 +39,7 @@ HEADERS += qmqtt_client.h\
     qmqtt_timer.h \
     qmqtt_timerinterface.h \
     qmqtt_connectpacket.h \
+    qmqtt_connackpacket.h \
     qmqtt_abstractpacket.h
 
 isEmpty(PREFIX) {

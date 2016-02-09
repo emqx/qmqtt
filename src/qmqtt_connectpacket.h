@@ -1,13 +1,14 @@
 #ifndef QMQTT_CONNECT_PACKET_H
 #define QMQTT_CONNECT_PACKET_H
 
+#include "qmqtt_abstractpacket.h"
 #include <QDataStream>
 #include <QString>
 
 namespace QMQTT
 {
 
-class ConnectPacket
+class ConnectPacket : public AbstractPacket
 {
     friend QDataStream& operator>>(QDataStream& stream, ConnectPacket& packet);
     friend QDataStream& operator<<(QDataStream& stream, const ConnectPacket& packet);
@@ -38,6 +39,8 @@ public:
     void setPassword(const QString& password);
 
     bool isValid() const;
+    PacketType type() const;
+    qint64 calculateRemainingLengthFromData() const;
 
 protected:
     QString _protocol;
@@ -53,14 +56,7 @@ protected:
     bool willFlag() const;
     bool userNameFlag() const;
     bool passwordFlag() const;
-
-    void setWillFlag(const bool willFlag);
-    void setUserNameFlag(const bool userNameFlag);
-    void setPasswordFlag(const bool passwordFlag);
 };
-
-QString readStringWith16BitHeader(QDataStream& stream);
-void writeStringWith16BitHeader(QDataStream& stream, const QString& string);
 
 QDataStream& operator>>(QDataStream& stream, ConnectPacket& packet);
 QDataStream& operator<<(QDataStream& stream, const ConnectPacket& packet);

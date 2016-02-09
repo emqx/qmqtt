@@ -16,14 +16,17 @@ SOURCES += \
     messagetest.cpp \
     frametest.cpp \
     sockettest.cpp \
-    connectpackettest.cpp
+    connectpackettest.cpp \
+    basepackettest.cpp \
+    connackpackettest.cpp
 
 HEADERS += \
     tcpserver.h \
     customprinter.h \
     networkmock.h \
     socketmock.h \
-    timermock.h
+    timermock.h \
+    basepackettest.h
 
 INCLUDEPATH += \
     ../gtest/googletest/googletest/include \
