@@ -17,6 +17,7 @@ public:
 
 TEST_F(ConnackPacketTest, defaultConstructorValues_Test)
 {
+    EXPECT_EQ(QMQTT::ConnackType, _packet.type());
     EXPECT_FALSE(_packet.sessionPresent());
     EXPECT_EQ(0, _packet.connectReturnCode());
 }
@@ -41,11 +42,16 @@ public:
 
     QMQTT::ConnackPacket _packet;
 
-    void streamIntoPacket(const quint8 connectAcknowledgeFlags,
-                          const quint8 connectReturnCode)
+    void streamIntoPacket(
+        const quint8 fixedHeader,
+        const qint64 remainingLength,
+        const quint8 connectAcknowledgeFlags,
+        const QMQTT::ConnackPacket::ConnectReturnCodeType connectReturnCode)
     {
+        _stream << fixedHeader;
+        writeRemainingLength(remainingLength);
         _stream << connectAcknowledgeFlags;
-        _stream << connectReturnCode;
+        _stream << static_cast<quint8>(connectReturnCode);
         _buffer.seek(0);
         _stream >> _packet;
     }
@@ -83,32 +89,30 @@ TEST_F(ConnackPacketTestWithStream, connectReturnCodeWritesToStream_Test)
               static_cast<int>(readUInt8(variableHeaderOffset() + 1)));
 }
 
-/*
-TEST_F(ConnackPacketTestWithStream, connectSessionPresentFromStream_Test)
+TEST_F(ConnackPacketTestWithStream, connectSessionPresentReadsFromStream_Test)
 {
-    streamIntoPacket(0x01, QMQTT::ConnackPacket::ConnectionAccepted);
+    streamIntoPacket(0x20, 2, 0x01, QMQTT::ConnackPacket::ConnectionAccepted);
 
     EXPECT_TRUE(_packet.sessionPresent());
 }
 
 TEST_F(ConnackPacketTestWithStream, connectReturnCodeReadsFromStream_Test)
 {
-    streamIntoPacket(0x00, QMQTT::ConnackPacket::ConnectionRefusedServerUnavailable);
+    streamIntoPacket(0x20, 2, 0x00, QMQTT::ConnackPacket::ConnectionRefusedServerUnavailable);
 
     EXPECT_EQ(QMQTT::ConnackPacket::ConnectionRefusedServerUnavailable, _packet.connectReturnCode());
 }
 
 TEST_F(ConnackPacketTestWithStream, connectAcknowledgeFlagsWithReservedBitTrueIsInvalid_Test)
 {
-    streamIntoPacket(0x02, QMQTT::ConnackPacket::ConnectionAccepted);
+    streamIntoPacket(0x20, 2, 0x02, QMQTT::ConnackPacket::ConnectionAccepted);
 
     EXPECT_FALSE(_packet.isValid());
 }
 
 TEST_F(ConnackPacketTestWithStream, sessionPresentFalseAndConnectReturnCodeNotZeroIsInvalid_Test)
 {
-    streamIntoPacket(0x00, QMQTT::ConnackPacket::ConnectionRefusedBadUserNameOrPassword);
+    streamIntoPacket(0x20, 2, 0x00, QMQTT::ConnackPacket::ConnectionRefusedBadUserNameOrPassword);
 
     EXPECT_FALSE(_packet.isValid());
 }
-*/

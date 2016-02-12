@@ -16,6 +16,7 @@ public:
 
 TEST_F(ConnectPacketTest, defaultConstructorValues_Test)
 {
+    EXPECT_EQ(QMQTT::ConnectType, _packet.type());
     EXPECT_EQ("MQTT", _packet.protocol());
     EXPECT_EQ(0x04, _packet.protocolLevel());
     EXPECT_FALSE(_packet.cleanSession());

@@ -32,11 +32,12 @@ public:
 
     bool isValid() const;
     PacketType type() const;
-    qint64 calculateRemainingLengthFromData() const;
 
 protected:
     quint8 _connectAcknowledgeFlags;
     ConnectReturnCodeType _connectReturnCode;
+
+    qint64 calculateRemainingLengthFromData() const;
 
 private:
     friend QDataStream& operator>>(QDataStream& stream, ConnackPacket& packet);

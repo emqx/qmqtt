@@ -18,7 +18,8 @@ SOURCES += \
     sockettest.cpp \
     connectpackettest.cpp \
     basepackettest.cpp \
-    connackpackettest.cpp
+    connackpackettest.cpp \
+    publishpackettest.cpp
 
 HEADERS += \
     tcpserver.h \

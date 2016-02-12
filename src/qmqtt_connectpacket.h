@@ -40,7 +40,6 @@ public:
 
     bool isValid() const;
     PacketType type() const;
-    qint64 calculateRemainingLengthFromData() const;
 
 protected:
     QString _protocol;
@@ -56,6 +55,7 @@ protected:
     bool willFlag() const;
     bool userNameFlag() const;
     bool passwordFlag() const;
+    qint64 calculateRemainingLengthFromData() const;
 };
 
 QDataStream& operator>>(QDataStream& stream, ConnectPacket& packet);

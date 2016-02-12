@@ -9,7 +9,8 @@ namespace QMQTT
 enum PacketType
 {
     ConnectType = 0x01,
-    ConnackType = 0x02
+    ConnackType = 0x02,
+    PublishType = 0x03
 };
 
 class AbstractPacket

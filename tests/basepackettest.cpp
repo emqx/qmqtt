@@ -45,10 +45,35 @@ QString BasePacketTest::readString(int offset)
     return QString::fromUtf8(array);
 }
 
+QByteArray BasePacketTest::readByteArray(int offset, int length)
+{
+    _buffer.seek(offset);
+
+    QByteArray array;
+    array.resize(length);
+    _stream.readRawData(array.data(), length);
+
+    return array;
+}
+
 void BasePacketTest::writeString(const QString& string)
 {
     _stream << static_cast<quint16>(string.size());
     _stream.writeRawData(string.toUtf8().constData(), string.size());
+}
+
+qint64 BasePacketTest::readRemainingLength()
+{
+    _buffer.seek(1);
+    int multiplier = 1;
+    qint64 remainingLength = 0;
+    quint8 encodedByte = 0;
+    do {
+        _stream >> encodedByte;
+        remainingLength += (encodedByte & 127) * multiplier;
+        multiplier *= 128;
+    } while ((encodedByte & 128) != 0);
+    return remainingLength;
 }
 
 void BasePacketTest::writeRemainingLength(qint64 remainingLength)
