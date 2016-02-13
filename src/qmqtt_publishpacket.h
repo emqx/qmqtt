@@ -1,5 +1,5 @@
-#ifndef PUBLISH_PACKET_H
-#define PUBLISH_PACKET_H
+#ifndef QMQTT_PUBLISH_PACKET_H
+#define QMQTT_PUBLISH_PACKET_H
 
 #include "qmqtt_abstractpacket.h"
 #include <QDataStream>
@@ -48,5 +48,4 @@ QDataStream& operator<<(QDataStream& stream, const PublishPacket& packet);
 
 } // end namespace QMQTT
 
-
-#endif // PUBLISH_PACKET_H
+#endif // QMQTT_PUBLISH_PACKET_H

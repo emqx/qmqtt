@@ -214,42 +214,42 @@ TEST_F(PublishPacketTestWithStream, fixedHeaderFlagsReadsPayloadFromStream_Test)
 
 TEST_F(PublishPacketTestWithStream, qosZeroWithDupFlagTrueIsInvalid_Test)
 {
-    streamIntoPacket(0x38, 0, "topic", 0, QString("payload").toUtf8());
+    streamIntoPacket(0x38, 16, "topic", 0, QString("payload").toUtf8());
 
     EXPECT_FALSE(_packet.isValid());
 }
 
 TEST_F(PublishPacketTestWithStream, qosThreeIsInvalid_Test)
 {
-    streamIntoPacket(0x36, 0, "topic", 0, QString("payload").toUtf8());
+    streamIntoPacket(0x36, 16, "topic", 0, QString("payload").toUtf8());
 
     EXPECT_FALSE(_packet.isValid());
 }
 
 TEST_F(PublishPacketTestWithStream, topicNameWithAsteriskIsInvalid_Test)
 {
-    streamIntoPacket(0x30, 0, "topic/*", 0, QString("payload").toUtf8());
+    streamIntoPacket(0x30, 18, "topic/*", 0, QString("payload").toUtf8());
 
     EXPECT_FALSE(_packet.isValid());
 }
 
 TEST_F(PublishPacketTestWithStream, topicNameWithQuestionMarkIsInvalid_Test)
 {
-    streamIntoPacket(0x30, 0, "topic?", 0, QString("payload").toUtf8());
+    streamIntoPacket(0x30, 17, "topic?", 0, QString("payload").toUtf8());
 
     EXPECT_FALSE(_packet.isValid());
 }
 
 TEST_F(PublishPacketTestWithStream, qosOneAndPacketIdentifierNotZeroIsInvalid_Test)
 {
-    streamIntoPacket(0x32, 0, "topic", 42, QString("payload").toUtf8());
+    streamIntoPacket(0x32, 16, "topic", 42, QString("payload").toUtf8());
 
     EXPECT_FALSE(_packet.isValid());
 }
 
 TEST_F(PublishPacketTestWithStream, qosTwoAndPacketIdentifierNotZeroIsInvalid_Test)
 {
-    streamIntoPacket(0x34, 0, "topic", 42, QString("payload").toUtf8());
+    streamIntoPacket(0x34, 16, "topic", 42, QString("payload").toUtf8());
 
     EXPECT_FALSE(_packet.isValid());
 }

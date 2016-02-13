@@ -2,7 +2,7 @@
 #include <QRegExp>
 #include <qmath.h>
 
-const quint8 DEFAULT_FIXED_HEADER = 0x10;
+const quint8 DEFAULT_FIXED_HEADER = QMQTT::ConnectType << 4;
 const QString SUPPORTED_PROTOCOL = QStringLiteral("MQTT");
 const quint8 SUPPORTED_PROTOCOL_LEVEL = 0x04;
 const quint16 DEFAULT_KEEP_ALIVE_INTERVAL = 300;

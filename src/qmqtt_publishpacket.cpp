@@ -2,7 +2,7 @@
 #include <QDataStream>
 #include <QDebug>
 
-const quint8 DEFAULT_FIXED_HEADER = 0x30;
+const quint8 DEFAULT_FIXED_HEADER = QMQTT::PublishType << 4;
 const quint8 DUP_FLAG_MASK = 0x08;
 const quint8 QOS_MASK = 0x06;
 const quint8 RETAIN_FLAG_MASK = 0x01;

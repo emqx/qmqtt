@@ -16,10 +16,12 @@ SOURCES += \
     messagetest.cpp \
     frametest.cpp \
     sockettest.cpp \
-    connectpackettest.cpp \
     basepackettest.cpp \
+    connectpackettest.cpp \
     connackpackettest.cpp \
-    publishpackettest.cpp
+    publishpackettest.cpp \
+    pubackpackettest.cpp \
+    pubrecpackettest.cpp
 
 HEADERS += \
     tcpserver.h \

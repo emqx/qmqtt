@@ -1,6 +1,6 @@
 #include "qmqtt_connackpacket.h"
 
-const quint8 DEFAULT_FIXED_HEADER = 0x20;
+const quint8 DEFAULT_FIXED_HEADER = QMQTT::ConnackType << 4;
 const quint8 NO_MASK = 0x00;
 const quint8 RESERVED_MASK = 0xfe;
 const quint8 SESSION_PRESENT_MASK = 0x01;
