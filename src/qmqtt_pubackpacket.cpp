@@ -25,6 +25,11 @@ qint64 QMQTT::PubackPacket::calculateRemainingLengthFromData() const
 
 bool QMQTT::PubackPacket::isValid() const
 {
+    if (_fixedHeader != DEFAULT_FIXED_HEADER)
+    {
+        return false;
+    }
+
     return true;
 }
 

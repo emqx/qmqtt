@@ -46,7 +46,7 @@ public:
     }
 };
 
-TEST_F(PubackPacketTestWithStream, fixedHeaderTypeWritesConnectTypeToStream_Test)
+TEST_F(PubackPacketTestWithStream, fixedHeaderTypeWritesPubackTypeToStream_Test)
 {
     _stream << _packet;
 
@@ -62,9 +62,9 @@ TEST_F(PubackPacketTestWithStream, packetIdentifierWritesToStream_Test)
     EXPECT_EQ(42, readUInt16(variableHeaderOffset()));
 }
 
-TEST_F(PubackPacketTestWithStream, fixedHeaderFlagsReadsPacketIdentifierFromStream_Test)
+TEST_F(PubackPacketTestWithStream, packetIdentifierReadsFromStream_Test)
 {
-    streamIntoPacket(0x40, 18, 42);
+    streamIntoPacket(QMQTT::PubackType << 4, 18, 42);
 
     EXPECT_EQ(42, _packet.packetIdentifier());
 }

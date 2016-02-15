@@ -57,7 +57,7 @@ public:
     }
 };
 
-TEST_F(ConnackPacketTestWithStream, fixedHeaderTypeWritesConnectTypeToStream_Test)
+TEST_F(ConnackPacketTestWithStream, fixedHeaderTypeWritesConnackTypeToStream_Test)
 {
     _stream << _packet;
 
@@ -91,28 +91,28 @@ TEST_F(ConnackPacketTestWithStream, connectReturnCodeWritesToStream_Test)
 
 TEST_F(ConnackPacketTestWithStream, connectSessionPresentReadsFromStream_Test)
 {
-    streamIntoPacket(0x20, 2, 0x01, QMQTT::ConnackPacket::ConnectionAccepted);
+    streamIntoPacket(QMQTT::ConnackType << 4, 2, 0x01, QMQTT::ConnackPacket::ConnectionAccepted);
 
     EXPECT_TRUE(_packet.sessionPresent());
 }
 
 TEST_F(ConnackPacketTestWithStream, connectReturnCodeReadsFromStream_Test)
 {
-    streamIntoPacket(0x20, 2, 0x00, QMQTT::ConnackPacket::ConnectionRefusedServerUnavailable);
+    streamIntoPacket(QMQTT::ConnackType << 4, 2, 0x00, QMQTT::ConnackPacket::ConnectionRefusedServerUnavailable);
 
     EXPECT_EQ(QMQTT::ConnackPacket::ConnectionRefusedServerUnavailable, _packet.connectReturnCode());
 }
 
 TEST_F(ConnackPacketTestWithStream, connectAcknowledgeFlagsWithReservedBitTrueIsInvalid_Test)
 {
-    streamIntoPacket(0x20, 2, 0x02, QMQTT::ConnackPacket::ConnectionAccepted);
+    streamIntoPacket(QMQTT::ConnackType << 4, 2, 0x02, QMQTT::ConnackPacket::ConnectionAccepted);
 
     EXPECT_FALSE(_packet.isValid());
 }
 
 TEST_F(ConnackPacketTestWithStream, sessionPresentFalseAndConnectReturnCodeNotZeroIsInvalid_Test)
 {
-    streamIntoPacket(0x20, 2, 0x00, QMQTT::ConnackPacket::ConnectionRefusedBadUserNameOrPassword);
+    streamIntoPacket(QMQTT::ConnackType << 4, 2, 0x00, QMQTT::ConnackPacket::ConnectionRefusedBadUserNameOrPassword);
 
     EXPECT_FALSE(_packet.isValid());
 }

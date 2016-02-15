@@ -21,7 +21,8 @@ SOURCES += \
     connackpackettest.cpp \
     publishpackettest.cpp \
     pubackpackettest.cpp \
-    pubrecpackettest.cpp
+    pubrecpackettest.cpp \
+    subscribepackettest.cpp
 
 HEADERS += \
     tcpserver.h \

@@ -235,82 +235,72 @@ TEST_F(ConnectPacketTestWithStream, passwordWritesToStream_Test)
     EXPECT_EQ("password", readString(variableHeaderOffset() + 22));
 }
 
-// read tests
-
-// todo: how to test that I can read fixedHeaderType and fixedHeaderFlags
-//TEST_F(ConnectPacketTestWithStream, fixedHeaderTypeReadsFromStream_Test)
-//{
-//    streamIntoPacket(0x10, 22, "MQTT", 4, 0, 300, "identifier", "", "", "", "");
-
-//    EXPECT_EQ(QMQTT::ConnectType, _packet.fixedHeaderType());
-//}
-
 TEST_F(ConnectPacketTestWithStream, protocolReadsFromStream_Test)
 {
-    streamIntoPacket(0x10, 22, "MQTT", 4, 0, 300, "identifier", "", "", "", "");
+    streamIntoPacket(QMQTT::ConnectType << 4, 22, "MQTT", 4, 0, 300, "identifier", "", "", "", "");
 
     EXPECT_EQ("MQTT", _packet.protocol());
 }
 
 TEST_F(ConnectPacketTestWithStream, protocolLevelReadsFromStream_Test)
 {
-    streamIntoPacket(0x10, 22, "MQTT", 4, 0, 300, "identifier", "", "", "", "");
+    streamIntoPacket(QMQTT::ConnectType << 4, 22, "MQTT", 4, 0, 300, "identifier", "", "", "", "");
 
     EXPECT_EQ(4, _packet.protocolLevel());
 }
 
 TEST_F(ConnectPacketTestWithStream, cleanSessionReadsFromStream_Test)
 {
-    streamIntoPacket(0x10, 22, "MQTT", 4, 0x02, 300, "identifier", "", "", "", "");
+    streamIntoPacket(QMQTT::ConnectType << 4, 22, "MQTT", 4, 0x02, 300, "identifier", "", "", "", "");
 
     EXPECT_TRUE(_packet.cleanSession());
 }
 
 TEST_F(ConnectPacketTestWithStream, willQosReadsFromStream_Test)
 {
-    streamIntoPacket(0x10, 22, "MQTT", 4, 0x10, 300, "identifier", "", "", "", "");
+    streamIntoPacket(QMQTT::ConnectType << 4, 22, "MQTT", 4, 0x10, 300, "identifier", "", "", "", "");
 
     EXPECT_EQ(2, _packet.willQos());
 }
 
 TEST_F(ConnectPacketTestWithStream, willRetainReadsFromStream_Test)
 {
-    streamIntoPacket(0x01, 22, "MQTT", 4, 0x20, 300, "identifier", "", "", "", "");
+    streamIntoPacket((QMQTT::ConnectType << 4) | 0x01, 22, "MQTT", 4, 0x20, 300, "identifier", "", "", "", "");
 
     EXPECT_TRUE(_packet.willRetain());
 }
 
 TEST_F(ConnectPacketTestWithStream, clientIdentifierReadsFromStream_Test)
 {
-    streamIntoPacket(0x01, 22, "MQTT", 4, 0, 300, "identifier", "", "", "", "");
+    streamIntoPacket((QMQTT::ConnectType << 4) | 0x01, 22, "MQTT", 4, 0, 300, "identifier", "", "", "", "");
 
     EXPECT_EQ("identifier", _packet.clientIdentifier());
 }
 
 TEST_F(ConnectPacketTestWithStream, willTopicReadsFromStream_Test)
 {
-    streamIntoPacket(0x01, 29, "MQTT", 4, 0x04, 300, "identifier", "topic", "", "", "");
+    streamIntoPacket((QMQTT::ConnectType << 4) | 0x01, 29, "MQTT", 4, 0x04, 300, "identifier", "topic", "", "", "");
 
     EXPECT_EQ("topic", _packet.willTopic());
 }
 
 TEST_F(ConnectPacketTestWithStream, willMessageReadsFromStream_Test)
 {
-    streamIntoPacket(0x01, 38, "MQTT", 4, 0x04, 300, "identifier", "topic", "message", "", "");
+    streamIntoPacket((QMQTT::ConnectType << 4) | 0x01, 38, "MQTT", 4, 0x04, 300, "identifier", "topic", "message", "", "");
 
     EXPECT_EQ("message", _packet.willMessage());
 }
 
 TEST_F(ConnectPacketTestWithStream, userNameReadsFromStream_Test)
 {
-    streamIntoPacket(0x01, 32, "MQTT", 4, 0x80, 300, "identifier", "", "", "username", "");
+    streamIntoPacket((QMQTT::ConnectType << 4) | 0x01, 32, "MQTT", 4, 0x80, 300, "identifier", "", "", "username", "");
 
     EXPECT_EQ("username", _packet.userName());
 }
 
 TEST_F(ConnectPacketTestWithStream, passwordReadsFromStream_Test)
 {
-    streamIntoPacket(0x01, 42, "MQTT", 4, 0xc0, 300, "identifier", "", "", "username", "password");
+    streamIntoPacket((QMQTT::ConnectType << 4) | 0x01, 42, "MQTT", 4, 0xc0, 300, "identifier", "", "", "username", "password");
 
     EXPECT_EQ("password", _packet.password());
 }
@@ -319,98 +309,98 @@ TEST_F(ConnectPacketTestWithStream, passwordReadsFromStream_Test)
 
 TEST_F(ConnectPacketTestWithStream, packetWithClientIdentifierIsValid_Test)
 {
-    streamIntoPacket(0x01, 22, "MQTT", 4, 0x00, 300, "identifier", "", "", "", "");
+    streamIntoPacket(QMQTT::ConnectType << 4, 22, "MQTT", 4, 0x00, 300, "identifier", "", "", "", "");
 
     EXPECT_TRUE(_packet.isValid());
 }
 
 TEST_F(ConnectPacketTestWithStream, packetWithoutClientIdentifierIsInvalid_Test)
 {
-    streamIntoPacket(0x01, 10, "MQTT", 4, 0x00, 300, "", "", "", "", "");
+    streamIntoPacket((QMQTT::ConnectType << 4) | 0x01, 10, "MQTT", 4, 0x00, 300, "", "", "", "", "");
 
     EXPECT_FALSE(_packet.isValid());
 }
 
 TEST_F(ConnectPacketTestWithStream, packetWithoutMQTTProtocolIsInvalid_Test)
 {
-    streamIntoPacket(0x01, 22, "XQTT", 4, 0x00, 300, "identifier", "", "", "", "");
+    streamIntoPacket((QMQTT::ConnectType << 4) | 0x01, 22, "XQTT", 4, 0x00, 300, "identifier", "", "", "", "");
 
     EXPECT_FALSE(_packet.isValid());
 }
 
 TEST_F(ConnectPacketTestWithStream, packetWithoutProtocolLevel4IsInvalid_Test)
 {
-    streamIntoPacket(0x01, 22, "MQTT", 5, 0x00, 300, "identifier", "", "", "", "");
+    streamIntoPacket((QMQTT::ConnectType << 4) | 0x01, 22, "MQTT", 5, 0x00, 300, "identifier", "", "", "", "");
 
     EXPECT_FALSE(_packet.isValid());
 }
 
 TEST_F(ConnectPacketTestWithStream, packetWithControlFlagsReservedBitTrueIsInvalid_Test)
 {
-    streamIntoPacket(0x00, 22, "MQTT", 4, 0x01, 300, "identifier", "", "", "", "");
+    streamIntoPacket(QMQTT::ConnectType << 4, 22, "MQTT", 4, 0x01, 300, "identifier", "", "", "", "");
 
     EXPECT_FALSE(_packet.isValid());
 }
 
 TEST_F(ConnectPacketTestWithStream, packetWithControlFlagsWillFlagTrueAndWillTopicEmptyIsInvalid_Test)
 {
-    streamIntoPacket(0x01, 22, "MQTT", 4, 0x04, 300, "identifier", "", "", "", "");
+    streamIntoPacket((QMQTT::ConnectType << 4) | 0x01, 22, "MQTT", 4, 0x04, 300, "identifier", "", "", "", "");
 
     EXPECT_FALSE(_packet.isValid());
 }
 
 TEST_F(ConnectPacketTestWithStream, packetWithControlFlagsWillFlagTrueAndWillQosGreaterThan2IsInvalid_Test)
 {
-    streamIntoPacket(0x01, 29, "MQTT", 4, 0x1c, 300, "identifier", "topic", "", "", "");
+    streamIntoPacket((QMQTT::ConnectType << 4) | 0x01, 29, "MQTT", 4, 0x1c, 300, "identifier", "topic", "", "", "");
 
     EXPECT_FALSE(_packet.isValid());
 }
 
 TEST_F(ConnectPacketTestWithStream, packetWithControlFlagsWillFlagFalseAndWillQosNotZeroIsInvalid_Test)
 {
-    streamIntoPacket(0x01, 22, "MQTT", 4, 0x08, 300, "identifier", "", "", "", "");
+    streamIntoPacket((QMQTT::ConnectType << 4) | 0x01, 22, "MQTT", 4, 0x08, 300, "identifier", "", "", "", "");
 
     EXPECT_FALSE(_packet.isValid());
 }
 
 TEST_F(ConnectPacketTestWithStream, packetWithControlFlagsWillFlagFalseAndWillRetainTrueIsInvalid_Test)
 {
-    streamIntoPacket(0x01, 22, "MQTT", 4, 0x20, 300, "identifier", "", "", "", "");
+    streamIntoPacket((QMQTT::ConnectType << 4) | 0x01, 22, "MQTT", 4, 0x20, 300, "identifier", "", "", "", "");
 
     EXPECT_FALSE(_packet.isValid());
 }
 
 TEST_F(ConnectPacketTestWithStream, packetWithControlFlagsUserNameFlagFalseAndEmptyUserNameIsInvalid_Test)
 {
-    streamIntoPacket(0x01, 22, "MQTT", 4, 0x80, 300, "identifier", "", "", "", "");
+    streamIntoPacket((QMQTT::ConnectType << 4) | 0x01, 22, "MQTT", 4, 0x80, 300, "identifier", "", "", "", "");
 
     EXPECT_FALSE(_packet.isValid());
 }
 
 TEST_F(ConnectPacketTestWithStream, packetWithControlFlagsUserNameFlagFalseAndPasswordFlagTrueIsInvalid_Test)
 {
-    streamIntoPacket(0x01, 22, "MQTT", 4, 0x40, 300, "identifier", "", "", "", "");
+    streamIntoPacket((QMQTT::ConnectType << 4) | 0x01, 22, "MQTT", 4, 0x40, 300, "identifier", "", "", "", "");
 
     EXPECT_FALSE(_packet.isValid());
 }
 
 TEST_F(ConnectPacketTestWithStream, packetWithControlFlagsPasswordFlagTrueAndPasswordEmptyIsInvalid_Test)
 {
-    streamIntoPacket(0x01, 22, "MQTT", 4, 0xc0, 300, "identifier", "", "", "username", "");
+    streamIntoPacket((QMQTT::ConnectType << 4) | 0x01, 22, "MQTT", 4, 0xc0, 300, "identifier", "", "", "username", "");
 
     EXPECT_FALSE(_packet.isValid());
 }
 
 TEST_F(ConnectPacketTestWithStream, packetWithInvalidCharacterInClientIdentifierIsInvalid_Test)
 {
-    streamIntoPacket(0x01, 30, "MQTT", 4, 0x00, 300, "identifier-invalid", "", "", "", "");
+    streamIntoPacket((QMQTT::ConnectType << 4) | 0x01, 30, "MQTT", 4, 0x00, 300, "identifier-invalid", "", "", "", "");
 
     EXPECT_FALSE(_packet.isValid());
 }
 
 TEST_F(ConnectPacketTestWithStream, packetWithTooLongClientIdentifierIsInvalid_Test)
 {
-    streamIntoPacket(0x01, 36, "MQTT", 4, 0x00, 300, "123456789012345678901234", "", "", "", "");
+    streamIntoPacket((QMQTT::ConnectType << 4) | 0x01, 36, "MQTT", 4, 0x00, 300, "123456789012345678901234", "", "", "", "");
 
     EXPECT_FALSE(_packet.isValid());
 }

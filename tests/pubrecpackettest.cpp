@@ -46,7 +46,7 @@ public:
     }
 };
 
-TEST_F(PubrecPacketTestWithStream, fixedHeaderTypeWritesConnectTypeToStream_Test)
+TEST_F(PubrecPacketTestWithStream, fixedHeaderTypeWritesPubrecTypeToStream_Test)
 {
     _stream << _packet;
 
@@ -62,9 +62,9 @@ TEST_F(PubrecPacketTestWithStream, packetIdentifierWritesToStream_Test)
     EXPECT_EQ(42, readUInt16(variableHeaderOffset()));
 }
 
-TEST_F(PubrecPacketTestWithStream, fixedHeaderFlagsReadsPacketIdentifierFromStream_Test)
+TEST_F(PubrecPacketTestWithStream, packetIdentifierReadsFromStream_Test)
 {
-    streamIntoPacket(0x40, 18, 42);
+    streamIntoPacket(QMQTT::PubrecType << 4, 18, 42);
 
     EXPECT_EQ(42, _packet.packetIdentifier());
 }

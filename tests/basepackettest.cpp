@@ -15,8 +15,10 @@ BasePacketTest::~BasePacketTest()
 
 quint8 BasePacketTest::readUInt8(int offset)
 {
-    _buffer.seek(offset);
-
+    if (offset >= 0)
+    {
+        _buffer.seek(offset);
+    }
     quint8 i = 0;
     _stream >> i;
     return i;
@@ -24,8 +26,10 @@ quint8 BasePacketTest::readUInt8(int offset)
 
 quint16 BasePacketTest::readUInt16(int offset)
 {
-    _buffer.seek(offset);
-
+    if (offset >= 0)
+    {
+        _buffer.seek(offset);
+    }
     quint16 i = 0;
     _stream >> i;
     return i;
@@ -33,14 +37,20 @@ quint16 BasePacketTest::readUInt16(int offset)
 
 QString BasePacketTest::readString(int offset)
 {
-    _buffer.seek(offset);
+    if (offset >= 0)
+    {
+        _buffer.seek(offset);
+    }
 
     quint16 length = 0;
     _stream >> length;
 
     QByteArray array;
-    array.resize(length);
-    _stream.readRawData(array.data(), length);
+    if (length > 0)
+    {
+        array.resize(length);
+        _stream.readRawData(array.data(), length);
+    }
 
     return QString::fromUtf8(array);
 }
@@ -48,18 +58,27 @@ QString BasePacketTest::readString(int offset)
 QByteArray BasePacketTest::readByteArray(int offset, int length)
 {
     _buffer.seek(offset);
+    return readByteArray(length);
+}
 
+QByteArray BasePacketTest::readByteArray(int length)
+{
     QByteArray array;
-    array.resize(length);
-    _stream.readRawData(array.data(), length);
-
+    if (length > 0)
+    {
+        array.resize(length);
+        _stream.readRawData(array.data(), length);
+    }
     return array;
 }
 
 void BasePacketTest::writeString(const QString& string)
 {
     _stream << static_cast<quint16>(string.size());
-    _stream.writeRawData(string.toUtf8().constData(), string.size());
+    if (string.size() > 0)
+    {
+        _stream.writeRawData(string.toUtf8().constData(), string.size());
+    }
 }
 
 qint64 BasePacketTest::readRemainingLength()

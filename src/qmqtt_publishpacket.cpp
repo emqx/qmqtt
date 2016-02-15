@@ -34,6 +34,11 @@ qint64 QMQTT::PublishPacket::calculateRemainingLengthFromData() const
 
 bool QMQTT::PublishPacket::isValid() const
 {
+    if (_fixedHeader != DEFAULT_FIXED_HEADER)
+    {
+        return false;
+    }
+
     if (qos() == 0 && dupFlag())
     {
         return false;

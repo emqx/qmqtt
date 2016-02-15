@@ -12,7 +12,8 @@ enum PacketType
     ConnackType = 0x02,
     PublishType = 0x03,
     PubackType  = 0x04,
-    PubrecType  = 0x05
+    PubrecType  = 0x05,
+    SubscribeType = 0x06
 };
 
 class AbstractPacket

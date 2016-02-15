@@ -165,6 +165,11 @@ void QMQTT::ConnectPacket::setPassword(const QString& password)
 
 bool QMQTT::ConnectPacket::isValid() const
 {
+    if (_fixedHeader != DEFAULT_FIXED_HEADER)
+    {
+        return false;
+    }
+
     if (protocol() != SUPPORTED_PROTOCOL)
     {
         return false;

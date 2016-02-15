@@ -52,6 +52,11 @@ void QMQTT::ConnackPacket::setConnectReturnCode(const ConnectReturnCodeType conn
 
 bool QMQTT::ConnackPacket::isValid() const
 {
+    if (_fixedHeader != DEFAULT_FIXED_HEADER)
+    {
+        return false;
+    }
+
     if ((_connectAcknowledgeFlags & RESERVED_MASK) != 0)
     {
         return false;
