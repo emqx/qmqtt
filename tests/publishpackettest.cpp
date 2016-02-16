@@ -212,6 +212,20 @@ TEST_F(PublishPacketTestWithStream, payloadReadsFromStream_Test)
     EXPECT_EQ("payload", _packet.payload());
 }
 
+TEST_F(PublishPacketTestWithStream, typePublishedIsValid_Test)
+{
+    streamIntoPacket(QMQTT::PublishType << 4, 16, "topic", 0, QString("payload").toUtf8());
+
+    EXPECT_TRUE(_packet.isValid());
+}
+
+TEST_F(PublishPacketTestWithStream, typeNotPublishedIsInvalid_Test)
+{
+    streamIntoPacket(QMQTT::ConnectType << 4, 16, "topic", 0, QString("payload").toUtf8());
+
+    EXPECT_FALSE(_packet.isValid());
+}
+
 TEST_F(PublishPacketTestWithStream, qosZeroWithDupFlagTrueIsInvalid_Test)
 {
     streamIntoPacket((QMQTT::PublishType << 4) | 0x08, 16, "topic", 0, QString("payload").toUtf8());

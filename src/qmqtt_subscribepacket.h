@@ -2,19 +2,11 @@
 #define QMQTT_SUBSCRIBE_PACKET_H
 
 #include "qmqtt_abstractpacket.h"
+#include "qmqtt_subscription.h"
 #include <QDataStream>
 
 namespace QMQTT
 {
-
-class Topic
-{
-public:
-    QString _name;
-    quint8 _requestedQos;
-};
-
-typedef QList<Topic> TopicList;
 
 class SubscribePacket : public AbstractPacket
 {
@@ -28,12 +20,12 @@ public:
     quint16 packetIdentifier() const;
     void setPacketIdentifier(const quint16 packetIdentifier);
 
-    TopicList topicList() const;
-    void setTopicList(const TopicList topicList);
+    SubscriptionList subscriptionList() const;
+    void setSubscriptionList(const SubscriptionList subscriptionList);
 
 protected:
     quint16 _packetIdentifier;
-    TopicList _topicList;
+    SubscriptionList _subscriptionList;
 
     qint64 calculateRemainingLengthFromData() const;
 

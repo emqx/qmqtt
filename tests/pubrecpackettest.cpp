@@ -64,7 +64,28 @@ TEST_F(PubrecPacketTestWithStream, packetIdentifierWritesToStream_Test)
 
 TEST_F(PubrecPacketTestWithStream, packetIdentifierReadsFromStream_Test)
 {
-    streamIntoPacket(QMQTT::PubrecType << 4, 18, 42);
+    streamIntoPacket(QMQTT::PubrecType << 4, 2, 42);
 
     EXPECT_EQ(42, _packet.packetIdentifier());
+}
+
+TEST_F(PubrecPacketTestWithStream, typePubrecAndFixedHeaderFlagsZeroIsValid_Test)
+{
+    streamIntoPacket(QMQTT::PubrecType << 4, 2, 42);
+
+    EXPECT_TRUE(_packet.isValid());
+}
+
+TEST_F(PubrecPacketTestWithStream, typeNotPubrecAndFixedHeaderFlagsZeroIsInvalid_Test)
+{
+    streamIntoPacket(QMQTT::ConnectType << 4, 2, 42);
+
+    EXPECT_FALSE(_packet.isValid());
+}
+
+TEST_F(PubrecPacketTestWithStream, typePubrecAndFixedHeaderFlagsNotZeroIsInvalid_Test)
+{
+    streamIntoPacket((QMQTT::PubrecType << 4) | 0x01, 2, 42);
+
+    EXPECT_FALSE(_packet.isValid());
 }

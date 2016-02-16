@@ -22,7 +22,15 @@ SOURCES += \
     publishpackettest.cpp \
     pubackpackettest.cpp \
     pubrecpackettest.cpp \
-    subscribepackettest.cpp
+    subscribepackettest.cpp \
+    pubrelpackettest.cpp \
+    pubcomppackettest.cpp \
+    subackpackettest.cpp \
+    unsubscribepackettest.cpp \
+    unsubackpackettest.cpp \
+    pingreqpackettest.cpp \
+    pingresppackettest.cpp \
+    disconnectpackettest.cpp
 
 HEADERS += \
     tcpserver.h \

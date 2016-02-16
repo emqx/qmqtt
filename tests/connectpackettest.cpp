@@ -307,6 +307,27 @@ TEST_F(ConnectPacketTestWithStream, passwordReadsFromStream_Test)
 
 // isValid tests
 
+TEST_F(ConnectPacketTestWithStream, typeConnectAndFixedHeaderFlagsZeroIsValid_Test)
+{
+    streamIntoPacket(QMQTT::ConnectType << 4, 22, "MQTT", 4, 0x00, 300, "identifier", "", "", "", "");
+
+    EXPECT_TRUE(_packet.isValid());
+}
+
+TEST_F(ConnectPacketTestWithStream, typeNotConnectAndFixedHeaderFlagsZeroIsInvalid_Test)
+{
+    streamIntoPacket(QMQTT::ConnackType << 4, 22, "MQTT", 4, 0x00, 300, "identifier", "", "", "", "");
+
+    EXPECT_FALSE(_packet.isValid());
+}
+
+TEST_F(ConnectPacketTestWithStream, typeConnectAndFixedHeaderFlagsNotZeroIsInvalid_Test)
+{
+    streamIntoPacket((QMQTT::ConnackType << 4) | 0x01, 22, "MQTT", 4, 0x00, 300, "identifier", "", "", "", "");
+
+    EXPECT_FALSE(_packet.isValid());
+}
+
 TEST_F(ConnectPacketTestWithStream, packetWithClientIdentifierIsValid_Test)
 {
     streamIntoPacket(QMQTT::ConnectType << 4, 22, "MQTT", 4, 0x00, 300, "identifier", "", "", "", "");

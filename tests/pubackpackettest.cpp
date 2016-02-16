@@ -64,7 +64,28 @@ TEST_F(PubackPacketTestWithStream, packetIdentifierWritesToStream_Test)
 
 TEST_F(PubackPacketTestWithStream, packetIdentifierReadsFromStream_Test)
 {
-    streamIntoPacket(QMQTT::PubackType << 4, 18, 42);
+    streamIntoPacket(QMQTT::PubackType << 4, 2, 42);
 
     EXPECT_EQ(42, _packet.packetIdentifier());
+}
+
+TEST_F(PubackPacketTestWithStream, typePubackAndFixedHeaderFlagsZeroIsValid_Test)
+{
+    streamIntoPacket(QMQTT::PubackType << 4, 2, 42);
+
+    EXPECT_TRUE(_packet.isValid());
+}
+
+TEST_F(PubackPacketTestWithStream, typeNotPubackAndFixedHeaderFlagsZeroIsInvalid_Test)
+{
+    streamIntoPacket(QMQTT::ConnectType << 4, 2, 42);
+
+    EXPECT_FALSE(_packet.isValid());
+}
+
+TEST_F(PubackPacketTestWithStream, typePubackAndFixedHeaderFlagsNotZeroIsInvalid_Test)
+{
+    streamIntoPacket((QMQTT::PubackType << 4) | 0x01, 2, 42);
+
+    EXPECT_FALSE(_packet.isValid());
 }

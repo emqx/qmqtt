@@ -4,32 +4,32 @@
 
 using namespace testing;
 
-class SubscribePacket : public Test
+class SubscribePacketTest : public Test
 {
 public:
-    SubscribePacket() {}
-    virtual ~SubscribePacket() {}
+    SubscribePacketTest() {}
+    virtual ~SubscribePacketTest() {}
 
     QMQTT::SubscribePacket _packet;
 };
 
-TEST_F(SubscribePacket, defaultConstructorValues_Test)
+TEST_F(SubscribePacketTest, defaultConstructorValues_Test)
 {
     EXPECT_EQ(QMQTT::SubscribeType, _packet.type());
     EXPECT_EQ(0, _packet.packetIdentifier());
 }
 
-TEST_F(SubscribePacket, setPacketIdentifier_Test)
+TEST_F(SubscribePacketTest, setPacketIdentifier_Test)
 {
     _packet.setPacketIdentifier(42);
     EXPECT_EQ(42, _packet.packetIdentifier());
 }
 
-class SubscribePacketWithStream : public BasePacketTest
+class SubscribePacketTestWithStream : public BasePacketTest
 {
 public:
-    SubscribePacketWithStream() {}
-    virtual ~SubscribePacketWithStream() {}
+    SubscribePacketTestWithStream() {}
+    virtual ~SubscribePacketTestWithStream() {}
 
     QMQTT::SubscribePacket _packet;
 
@@ -61,7 +61,7 @@ public:
     }
 };
 
-TEST_F(SubscribePacketWithStream, fixedHeaderTypeWritesSubscribeTypeToStream_Test)
+TEST_F(SubscribePacketTestWithStream, fixedHeaderTypeWritesSubscribeTypeToStream_Test)
 {
     _stream << _packet;
 
@@ -69,14 +69,14 @@ TEST_F(SubscribePacketWithStream, fixedHeaderTypeWritesSubscribeTypeToStream_Tes
               static_cast<QMQTT::PacketType>((readUInt8(0) & 0xf0) >> 4));
 }
 
-TEST_F(SubscribePacketWithStream, fixedHeaderFlagsWritesHexTwoToStream_Test)
+TEST_F(SubscribePacketTestWithStream, fixedHeaderFlagsWritesHexTwoToStream_Test)
 {
     _stream << _packet;
 
     EXPECT_EQ(0x02, readUInt8(0) & 0x0f);
 }
 
-TEST_F(SubscribePacketWithStream, packetIdentifierWritesToStream_Test)
+TEST_F(SubscribePacketTestWithStream, packetIdentifierWritesToStream_Test)
 {
     _packet.setPacketIdentifier(42);
     _stream << _packet;
@@ -84,16 +84,16 @@ TEST_F(SubscribePacketWithStream, packetIdentifierWritesToStream_Test)
     EXPECT_EQ(42, readUInt16(variableHeaderOffset()));
 }
 
-TEST_F(SubscribePacketWithStream, topicListWritesToStream_Test)
+TEST_F(SubscribePacketTestWithStream, topicListWritesToStream_Test)
 {
     _packet.setPacketIdentifier(42);
-    QMQTT::Topic first;
-    first._name = "first";
+    QMQTT::Subscription first;
+    first._topicFilter = "first";
     first._requestedQos = 1;
-    QMQTT::Topic second;
-    second._name = "second";
+    QMQTT::Subscription second;
+    second._topicFilter = "second";
     second._requestedQos = 2;
-    _packet.setTopicList(QMQTT::TopicList() << first << second);
+    _packet.setSubscriptionList(QMQTT::SubscriptionList() << first << second);
     _stream << _packet;
 
     EXPECT_EQ("first", readString(variableHeaderOffset() + 2));
@@ -102,54 +102,61 @@ TEST_F(SubscribePacketWithStream, topicListWritesToStream_Test)
     EXPECT_EQ(2, readUInt8());
 }
 
-TEST_F(SubscribePacketWithStream, packetIdentifierReadsFromStream_Test)
+TEST_F(SubscribePacketTestWithStream, packetIdentifierReadsFromStream_Test)
 {
     streamIntoPacket(QMQTT::SubscribeType << 4, 10, 42, "first", 1);
 
     EXPECT_EQ(42, _packet.packetIdentifier());
 }
 
-TEST_F(SubscribePacketWithStream, topicListReadsFromStream_Test)
+TEST_F(SubscribePacketTestWithStream, topicListReadsFromStream_Test)
 {
     streamIntoPacket(QMQTT::SubscribeType << 4, 17, 42, "first", 1, "second", 2);
 
     EXPECT_EQ(21, _byteArray.size());
-    EXPECT_EQ(2, _packet.topicList().size());
-    EXPECT_EQ("first", _packet.topicList().at(0)._name);
-    EXPECT_EQ(1, _packet.topicList().at(0)._requestedQos);
-    EXPECT_EQ("second", _packet.topicList().at(1)._name);
-    EXPECT_EQ(2, _packet.topicList().at(1)._requestedQos);
+    EXPECT_EQ(2, _packet.subscriptionList().size());
+    EXPECT_EQ("first", _packet.subscriptionList().at(0)._topicFilter);
+    EXPECT_EQ(1, _packet.subscriptionList().at(0)._requestedQos);
+    EXPECT_EQ("second", _packet.subscriptionList().at(1)._topicFilter);
+    EXPECT_EQ(2, _packet.subscriptionList().at(1)._requestedQos);
 }
 
-TEST_F(SubscribePacketWithStream, WrongTypeIsInvalid_Test)
+TEST_F(SubscribePacketTestWithStream, typeSubscribeAndFixedHeaderFlagsTwoIsValid_Test)
 {
-    streamIntoPacket(QMQTT::ConnectType << 4, 17, 42, "first", 1, "second", 2);
+    streamIntoPacket((QMQTT::SubscribeType << 4) | 0x02, 17, 42, "first", 1, "second", 2);
+
+    EXPECT_TRUE(_packet.isValid());
+}
+
+TEST_F(SubscribePacketTestWithStream, typeNotSubscribeAndFixedHeaderFlagsTwoIsInvalid_Test)
+{
+    streamIntoPacket((QMQTT::ConnectType << 4) | 0x02, 17, 42, "first", 1, "second", 2);
 
     EXPECT_FALSE(_packet.isValid());
 }
 
-TEST_F(SubscribePacketWithStream, FixedHeaderReserverNotTwoIsInvalid_Test)
+TEST_F(SubscribePacketTestWithStream, typeSubscribeAndFixedHeaderFlagsNotTwoIsInvalid_Test)
 {
     streamIntoPacket((QMQTT::SubscribeType << 4) | 0x01, 17, 42, "first", 1, "second", 2);
 
     EXPECT_FALSE(_packet.isValid());
 }
 
-TEST_F(SubscribePacketWithStream, EmptyTopicListIsInvalid_Test)
+TEST_F(SubscribePacketTestWithStream, emptyTopicListIsInvalid_Test)
 {
     streamIntoPacket((QMQTT::SubscribeType << 4) | 0x02, 2, 42);
 
     EXPECT_FALSE(_packet.isValid());
 }
 
-TEST_F(SubscribePacketWithStream, RequestQosThreeIsInvalid_Test)
+TEST_F(SubscribePacketTestWithStream, requestQosThreeIsInvalid_Test)
 {
     streamIntoPacket((QMQTT::SubscribeType << 4) | 0x02, 10, 42, "first", 3);
 
     EXPECT_FALSE(_packet.isValid());
 }
 
-TEST_F(SubscribePacketWithStream, EmptyTopicNameIsInvalid_Test)
+TEST_F(SubscribePacketTestWithStream, emptyTopicNameIsInvalid_Test)
 {
     streamIntoPacket((QMQTT::SubscribeType << 4) | 0x02, 10, 42, "", 0);
 

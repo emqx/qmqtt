@@ -21,9 +21,9 @@ QMQTT::PacketType QMQTT::SubscribePacket::type() const
 qint64 QMQTT::SubscribePacket::calculateRemainingLengthFromData() const
 {
     quint64 remainingLength = 2;
-    foreach (const Topic& topic, _topicList)
+    foreach (const Subscription& subscription, _subscriptionList)
     {
-        remainingLength += topic._name.size() + 3;
+        remainingLength += subscription._topicFilter.size() + 3;
     }
     return remainingLength;
 }
@@ -37,19 +37,19 @@ bool QMQTT::SubscribePacket::isValid() const
 
     // todo: re-check all wildcards
 
-    if (_topicList.isEmpty())
+    if (_subscriptionList.isEmpty())
     {
         return false;
     }
 
-    foreach (const Topic& topic, _topicList)
+    foreach (const Subscription& subscription, _subscriptionList)
     {
-        if (topic._name.isEmpty())
+        if (subscription._topicFilter.isEmpty())
         {
             return false;
         }
 
-        if (topic._requestedQos > 2)
+        if (subscription._requestedQos > 2)
         {
             return false;
         }
@@ -68,14 +68,14 @@ void QMQTT::SubscribePacket::setPacketIdentifier(const quint16 packetIdentifier)
     _packetIdentifier = packetIdentifier;
 }
 
-QMQTT::TopicList QMQTT::SubscribePacket::topicList() const
+QMQTT::SubscriptionList QMQTT::SubscribePacket::subscriptionList() const
 {
-    return _topicList;
+    return _subscriptionList;
 }
 
-void QMQTT::SubscribePacket::setTopicList(const TopicList subscriptionList)
+void QMQTT::SubscribePacket::setSubscriptionList(const SubscriptionList subscriptionList)
 {
-    _topicList = subscriptionList;
+    _subscriptionList = subscriptionList;
 }
 
 QDataStream& QMQTT::operator>>(QDataStream& stream, SubscribePacket& packet)
@@ -84,15 +84,15 @@ QDataStream& QMQTT::operator>>(QDataStream& stream, SubscribePacket& packet)
     qint64 remainingLength = packet.readRemainingLength(stream);
     stream >> packet._packetIdentifier;
     remainingLength -= 2;
-    packet._topicList.clear();
+    packet._subscriptionList.clear();
     while (remainingLength > 0)
     {
-        Topic topic;
-        topic._name = packet.readString(stream);
-        stream >> topic._requestedQos;
+        Subscription subscription;
+        subscription._topicFilter = packet.readString(stream);
+        stream >> subscription._requestedQos;
 
-        packet._topicList.append(topic);
-        remainingLength -= topic._name.size() + 3;
+        packet._subscriptionList.append(subscription);
+        remainingLength -= subscription._topicFilter.size() + 3;
     }
     return stream;
 }
@@ -102,10 +102,10 @@ QDataStream& QMQTT::operator<<(QDataStream& stream, const SubscribePacket& packe
     stream << packet._fixedHeader;
     packet.writeRemainingLength(stream);
     stream << packet._packetIdentifier;
-    foreach (const Topic& topic, packet._topicList)
+    foreach (const Subscription& subscription, packet._subscriptionList)
     {
-        packet.writeString(stream, topic._name);
-        stream << topic._requestedQos;
+        packet.writeString(stream, subscription._topicFilter);
+        stream << subscription._requestedQos;
     }
     return stream;
 }

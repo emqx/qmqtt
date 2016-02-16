@@ -103,6 +103,27 @@ TEST_F(ConnackPacketTestWithStream, connectReturnCodeReadsFromStream_Test)
     EXPECT_EQ(QMQTT::ConnackPacket::ConnectionRefusedServerUnavailable, _packet.connectReturnCode());
 }
 
+TEST_F(ConnackPacketTestWithStream, typeConnackAndFixedHeaderFlagsZeroIsValid_Test)
+{
+    streamIntoPacket(QMQTT::ConnackType << 4, 2, 0, QMQTT::ConnackPacket::ConnectionAccepted);
+
+    EXPECT_TRUE(_packet.isValid());
+}
+
+TEST_F(ConnackPacketTestWithStream, typeNotConnackAndFixedHeaderFlagsZeroIsInvalid_Test)
+{
+    streamIntoPacket(QMQTT::ConnectType << 4, 2, 0, QMQTT::ConnackPacket::ConnectionAccepted);
+
+    EXPECT_FALSE(_packet.isValid());
+}
+
+TEST_F(ConnackPacketTestWithStream, typeConnectAndFixedHeaderFlagsNotZeroIsInvalid_Test)
+{
+    streamIntoPacket((QMQTT::ConnackType << 4) | 0x01, 2, 0, QMQTT::ConnackPacket::ConnectionAccepted);
+
+    EXPECT_FALSE(_packet.isValid());
+}
+
 TEST_F(ConnackPacketTestWithStream, connectAcknowledgeFlagsWithReservedBitTrueIsInvalid_Test)
 {
     streamIntoPacket(QMQTT::ConnackType << 4, 2, 0x02, QMQTT::ConnackPacket::ConnectionAccepted);

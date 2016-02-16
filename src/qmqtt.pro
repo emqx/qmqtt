@@ -24,7 +24,15 @@ SOURCES += qmqtt_client.cpp \
     qmqtt_publishpacket.cpp \
     qmqtt_pubackpacket.cpp \
     qmqtt_pubrecpacket.cpp \
-    qmqtt_subscribepacket.cpp
+    qmqtt_subscribepacket.cpp \
+    qmqtt_pubrelpacket.cpp \
+    qmqtt_pubcomppacket.cpp \
+    qmqtt_subackpacket.cpp \
+    qmqtt_unsubscribepacket.cpp \
+    qmqtt_unsubackpacket.cpp \
+    qmqtt_pingreqpacket.cpp \
+    qmqtt_pingresppacket.cpp \
+    qmqtt_disconnectpacket.cpp
 
 HEADERS += qmqtt_client.h\
     qmqtt_global.h \
@@ -48,7 +56,16 @@ HEADERS += qmqtt_client.h\
     qmqtt_publishpacket.h \
     qmqtt_pubackpacket.h \
     qmqtt_pubrecpacket.h \
-    qmqtt_subscribepacket.h
+    qmqtt_subscribepacket.h \
+    qmqtt_pubrelpacket.h \
+    qmqtt_pubcomppacket.h \
+    qmqtt_subackpacket.h \
+    qmqtt_unsubscribepacket.h \
+    qmqtt_subscription.h \
+    qmqtt_unsubackpacket.h \
+    qmqtt_pingreqpacket.h \
+    qmqtt_pingresppacket.h \
+    qmqtt_disconnectpacket.h
 
 isEmpty(PREFIX) {
     contains(MEEGO_EDITION,harmattan) {
