@@ -120,8 +120,9 @@ void Frame::writeInt(int i)
 
 void Frame::writeString(const QString &string)
 {
-    writeInt(string.size());
-    _data.append(string);
+    QByteArray data = string.toUtf8();
+    writeInt(data.size());
+    _data.append(data);
 }
 
 void Frame::writeChar(const quint8 c)
