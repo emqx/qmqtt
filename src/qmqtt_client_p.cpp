@@ -135,7 +135,7 @@ void QMQTT::ClientPrivate::sendConnect()
     quint8 flags = 0;
 
     //header
-    Frame frame(SETQOS(header, QOS1));
+    Frame frame(header);
 
     //flags
     flags = FLAG_CLEANSESS(flags, _cleanSession ? 1 : 0 );
