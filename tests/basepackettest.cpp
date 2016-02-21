@@ -63,21 +63,22 @@ QByteArray BasePacketTest::readByteArray(int offset, int length)
 
 QByteArray BasePacketTest::readByteArray(int length)
 {
-    QByteArray array;
+    QByteArray byteArray;
     if (length > 0)
     {
-        array.resize(length);
-        _stream.readRawData(array.data(), length);
+        byteArray.resize(length);
+        _stream.readRawData(byteArray.data(), length);
     }
-    return array;
+    return byteArray;
 }
 
 void BasePacketTest::writeString(const QString& string)
 {
-    _stream << static_cast<quint16>(string.size());
-    if (string.size() > 0)
+    QByteArray byteArray(string.toUtf8());
+    _stream << static_cast<quint16>(byteArray.size());
+    if (byteArray.size() > 0)
     {
-        _stream.writeRawData(string.toUtf8().constData(), string.size());
+        _stream.writeRawData(byteArray.constData(), byteArray.size());
     }
 }
 

@@ -7,7 +7,8 @@ TEMPLATE = lib
 
 DEFINES += QMQTT_LIBRARY
 
-SOURCES += qmqtt_client.cpp \
+SOURCES += \
+    qmqtt_client.cpp \
     qmqtt_network.cpp \
     qmqtt_frame.cpp \
     qmqtt_client_p.cpp \
@@ -34,7 +35,8 @@ SOURCES += qmqtt_client.cpp \
     qmqtt_pingresppacket.cpp \
     qmqtt_disconnectpacket.cpp
 
-HEADERS += qmqtt_client.h\
+HEADERS += \
+    qmqtt_client.h\
     qmqtt_global.h \
     qmqtt_network.h \
     qmqtt_frame.h \

@@ -29,7 +29,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
-
 #include "qmqtt_client.h"
 #include "qmqtt_client_p.h"
 
