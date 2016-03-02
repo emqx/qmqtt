@@ -58,6 +58,8 @@ QMQTT::ClientPrivate::ClientPrivate(Client* qq_ptr)
 
 QMQTT::ClientPrivate::~ClientPrivate()
 {
+    if (_ownNetwork)
+        delete _network;
 }
 
 void QMQTT::ClientPrivate::init(const QHostAddress& host, const quint16 port, NetworkInterface* network)
@@ -66,25 +68,27 @@ void QMQTT::ClientPrivate::init(const QHostAddress& host, const quint16 port, Ne
 
     _host = host;
     _port = port;
-    if(network == NULL)
+    if (network == NULL)
     {
-        _network.reset(new Network);
+        _ownNetwork = true;
+        _network = new Network();
     }
     else
     {
-        _network.reset(network);
+        _ownNetwork = false;
+        _network = network;
     }
 
     initializeErrorHash();
 
     QObject::connect(&_timer, &QTimer::timeout, q, &Client::onTimerPingReq);
-    QObject::connect(_network.data(), &Network::connected,
+    QObject::connect(_network, &Network::connected,
                      q, &Client::onNetworkConnected);
-    QObject::connect(_network.data(), &Network::disconnected,
+    QObject::connect(_network, &Network::disconnected,
                      q, &Client::onNetworkDisconnected);
-    QObject::connect(_network.data(), &Network::received,
+    QObject::connect(_network, &Network::received,
                      q, &Client::onNetworkReceived);
-    QObject::connect(_network.data(), &Network::error,
+    QObject::connect(_network, &Network::error,
                      q, &Client::onNetworkError);
 }
 

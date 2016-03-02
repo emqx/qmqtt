@@ -33,7 +33,6 @@
 #define QMQTT_CLIENT_P_H
 
 #include "qmqtt_client.h"
-#include "qmqtt_client_p.h"
 #include "qmqtt_network.h"
 #include <QTimer>
 
@@ -56,7 +55,8 @@ public:
     bool _cleanSession;
     int _keepAlive;
     ConnectionState _connectionState;
-    QScopedPointer<NetworkInterface> _network;
+    bool _ownNetwork;
+    NetworkInterface *_network;
     QTimer _timer;
     QString _willTopic;
     quint8 _willQos;
