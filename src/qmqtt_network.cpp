@@ -45,6 +45,7 @@ QMQTT::Network::Network(QObject* parent)
     , _host(DEFAULT_HOST)
     , _autoReconnect(DEFAULT_AUTORECONNECT)
     , _autoReconnectInterval(DEFAULT_AUTORECONNECT_INTERVAL_MS)
+    , _ownSocketTimer(true)
     , _socket(new QMQTT::Socket)
     , _autoReconnectTimer(new QMQTT::Timer)
 {
@@ -58,6 +59,7 @@ QMQTT::Network::Network(SocketInterface* socketInterface, TimerInterface* timerI
     , _host(DEFAULT_HOST)
     , _autoReconnect(DEFAULT_AUTORECONNECT)
     , _autoReconnectInterval(DEFAULT_AUTORECONNECT_INTERVAL_MS)
+    , _ownSocketTimer(false)
     , _socket(socketInterface)
     , _autoReconnectTimer(timerInterface)
 {
@@ -83,6 +85,11 @@ void QMQTT::Network::initialize()
 
 QMQTT::Network::~Network()
 {
+    if (_ownSocketTimer)
+    {
+        delete _socket;
+        delete _autoReconnectTimer;
+    }
 }
 
 bool QMQTT::Network::isConnectedToHost() const
