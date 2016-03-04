@@ -22,15 +22,16 @@ SOURCES += \
     publishpackettest.cpp \
     pubackpackettest.cpp \
     pubrecpackettest.cpp \
-    subscribepackettest.cpp \
     pubrelpackettest.cpp \
     pubcomppackettest.cpp \
+    subscribepackettest.cpp \
     subackpackettest.cpp \
     unsubscribepackettest.cpp \
     unsubackpackettest.cpp \
     pingreqpackettest.cpp \
     pingresppackettest.cpp \
-    disconnectpackettest.cpp
+    disconnectpackettest.cpp \
+    testutils.cpp
 
 HEADERS += \
     tcpserver.h \
@@ -38,7 +39,8 @@ HEADERS += \
     networkmock.h \
     socketmock.h \
     timermock.h \
-    basepackettest.h
+    basepackettest.h \
+    testutils.h
 
 INCLUDEPATH += \
     ../gtest/googletest/googletest/include \

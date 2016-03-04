@@ -1,4 +1,3 @@
-#include "basepackettest.h"
 #include <qmqtt_pingreqpacket.h>
 #include <gtest/gtest.h>
 
@@ -18,51 +17,38 @@ TEST_F(PingreqPacketTest, defaultConstructorValues_Test)
     EXPECT_EQ(QMQTT::PingreqType, _packet.type());
 }
 
-class PingreqPacketTestWithStream : public BasePacketTest
+TEST_F(PingreqPacketTest, toFrame_Test)
 {
-public:
-    PingreqPacketTestWithStream() {}
-    virtual ~PingreqPacketTestWithStream() {}
+    QMQTT::Frame frame = _packet.toFrame();
 
-    QMQTT::PingreqPacket _packet;
+    EXPECT_EQ(QMQTT::PingreqType, static_cast<QMQTT::PacketType>(frame._header >> 4));
 
-    void streamIntoPacket(
-        const quint8 fixedHeader,
-        const qint64 remainingLength)
-    {
-        _stream << fixedHeader;
-        writeRemainingLength(remainingLength);
-        _buffer.seek(0);
-        _stream >> _packet;
-    }
-};
-
-TEST_F(PingreqPacketTestWithStream, fixedHeaderTypeWritesPingreqTypeToStream_Test)
-{
-    _stream << _packet;
-
-    EXPECT_EQ(QMQTT::PingreqType,
-              static_cast<QMQTT::PacketType>((readUInt8(0) & 0xf0) >> 4));
+    ASSERT_EQ(0, frame._data.size());
 }
 
-TEST_F(PingreqPacketTestWithStream, typePingreqAndFixedHeaderFlagsZeroIsValid_Test)
+TEST_F(PingreqPacketTest, fromFrame_Test)
 {
-    streamIntoPacket(QMQTT::PingreqType << 4, 0);
+    QMQTT::Frame frame;
 
+    frame._header = QMQTT::PingreqType << 4;
+
+    QMQTT::PingreqPacket packet = QMQTT::PingreqPacket::fromFrame(frame);
+
+    EXPECT_EQ(QMQTT::PingreqType, packet.type());
+}
+
+TEST_F(PingreqPacketTest, defaultIsValid_Test)
+{
     EXPECT_TRUE(_packet.isValid());
 }
 
-TEST_F(PingreqPacketTestWithStream, typeNotPingreqAndFixedHeaderFlagsZeroIsInvalid_Test)
+TEST_F(PingreqPacketTest, headerReservedBitsNotZeroIsInvalid_Test)
 {
-    streamIntoPacket(QMQTT::ConnectType << 4, 0);
+    ASSERT_TRUE(_packet.isValid());
+
+    QMQTT::Frame frame = _packet.toFrame();
+    frame._header |= 0x01;
+    _packet = QMQTT::PingreqPacket::fromFrame(frame);
 
     EXPECT_FALSE(_packet.isValid());
 }
-
-TEST_F(PingreqPacketTestWithStream, typePingreqAndFixedHeaderFlagsNotZeroIsInvalid_Test)
-{
-    streamIntoPacket((QMQTT::PingreqType << 4) | 0x01, 0);
-
-    EXPECT_FALSE(_packet.isValid());
-}
-

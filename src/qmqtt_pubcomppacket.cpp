@@ -30,13 +30,11 @@
  *
  */
 #include "qmqtt_pubcomppacket.h"
-#include <QDataStream>
-
-const quint8 DEFAULT_FIXED_HEADER = QMQTT::PubcompType << 4;
+#include <QBuffer>
 
 QMQTT::PubcompPacket::PubcompPacket()
-    : AbstractPacket(DEFAULT_FIXED_HEADER)
-    , _packetIdentifier(0)
+    : _packetIdentifier(0)
+    , _headerReservedBitsValid(true)
 {
 }
 
@@ -49,14 +47,9 @@ QMQTT::PacketType QMQTT::PubcompPacket::type() const
     return QMQTT::PubcompType;
 }
 
-qint64 QMQTT::PubcompPacket::calculateRemainingLengthFromData() const
-{
-    return 2;
-}
-
 bool QMQTT::PubcompPacket::isValid() const
 {
-    if (_fixedHeader != DEFAULT_FIXED_HEADER)
+    if (!_headerReservedBitsValid)
     {
         return false;
     }
@@ -74,20 +67,32 @@ void QMQTT::PubcompPacket::setPacketIdentifier(const quint16 packetIdentifier)
     _packetIdentifier = packetIdentifier;
 }
 
-QDataStream& QMQTT::operator>>(QDataStream& stream, PubcompPacket& packet)
+QMQTT::Frame QMQTT::PubcompPacket::toFrame() const
 {
-    stream >> packet._fixedHeader;
-    packet.readRemainingLength(stream);
-    stream >> packet._packetIdentifier;
+    Frame frame;
 
-    return stream;
+    frame._header = (static_cast<quint8>(type()) << 4) | 0x02;
+
+    QBuffer buffer(&frame._data);
+    buffer.open(QIODevice::WriteOnly);
+    QDataStream stream(&buffer);
+    stream << _packetIdentifier;
+    buffer.close();
+
+    return frame;
 }
 
-QDataStream& QMQTT::operator<<(QDataStream& stream, const PubcompPacket& packet)
+QMQTT::PubcompPacket QMQTT::PubcompPacket::fromFrame(Frame& frame)
 {
-    stream << packet._fixedHeader;
-    packet.writeRemainingLength(stream);
-    stream << packet._packetIdentifier;
+    PubcompPacket packet;
 
-    return stream;
+    packet._headerReservedBitsValid = (frame._header & 0x0f) == 0x02;
+
+    QBuffer buffer(&frame._data);
+    buffer.open(QIODevice::ReadOnly);
+    QDataStream stream(&buffer);
+    stream >> packet._packetIdentifier;
+    buffer.close();
+
+    return packet;
 }

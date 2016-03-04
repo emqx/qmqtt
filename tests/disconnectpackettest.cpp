@@ -1,4 +1,3 @@
-#include "basepackettest.h"
 #include <qmqtt_disconnectpacket.h>
 #include <gtest/gtest.h>
 
@@ -18,50 +17,38 @@ TEST_F(DisconnectPacketTest, defaultConstructorValues_Test)
     EXPECT_EQ(QMQTT::DisconnectType, _packet.type());
 }
 
-class DisconnectPacketTestWithStream : public BasePacketTest
+TEST_F(DisconnectPacketTest, toFrame_Test)
 {
-public:
-    DisconnectPacketTestWithStream() {}
-    virtual ~DisconnectPacketTestWithStream() {}
+    QMQTT::Frame frame = _packet.toFrame();
 
-    QMQTT::DisconnectPacket _packet;
+    EXPECT_EQ(QMQTT::DisconnectType, static_cast<QMQTT::PacketType>(frame._header >> 4));
 
-    void streamIntoPacket(
-        const quint8 fixedHeader,
-        const qint64 remainingLength)
-    {
-        _stream << fixedHeader;
-        writeRemainingLength(remainingLength);
-        _buffer.seek(0);
-        _stream >> _packet;
-    }
-};
-
-TEST_F(DisconnectPacketTestWithStream, fixedHeaderTypeWritesDisconnectTypeToStream_Test)
-{
-    _stream << _packet;
-
-    EXPECT_EQ(QMQTT::DisconnectType,
-              static_cast<QMQTT::PacketType>((readUInt8(0) & 0xf0) >> 4));
+    ASSERT_EQ(0, frame._data.size());
 }
 
-TEST_F(DisconnectPacketTestWithStream, typeDisconnectAndFixedHeaderFlagsZeroIsValid_Test)
+TEST_F(DisconnectPacketTest, fromFrame_Test)
 {
-    streamIntoPacket(QMQTT::DisconnectType << 4, 0);
+    QMQTT::Frame frame;
 
+    frame._header = QMQTT::DisconnectType << 4;
+
+    QMQTT::DisconnectPacket packet = QMQTT::DisconnectPacket::fromFrame(frame);
+
+    EXPECT_EQ(QMQTT::DisconnectType, packet.type());
+}
+
+TEST_F(DisconnectPacketTest, defaultIsValid_Test)
+{
     EXPECT_TRUE(_packet.isValid());
 }
 
-TEST_F(DisconnectPacketTestWithStream, typeNotDisconnectAndFixedHeaderFlagsZeroIsInvalid_Test)
+TEST_F(DisconnectPacketTest, headerReservedBitsNotZeroIsInvalid_Test)
 {
-    streamIntoPacket(QMQTT::ConnectType << 4, 0);
+    ASSERT_TRUE(_packet.isValid());
 
-    EXPECT_FALSE(_packet.isValid());
-}
-
-TEST_F(DisconnectPacketTestWithStream, typeDisconnectAndFixedHeaderFlagsNotZeroIsInvalid_Test)
-{
-    streamIntoPacket((QMQTT::DisconnectType << 4) | 0x01, 0);
+    QMQTT::Frame frame = _packet.toFrame();
+    frame._header |= 0x01;
+    _packet = QMQTT::DisconnectPacket::fromFrame(frame);
 
     EXPECT_FALSE(_packet.isValid());
 }

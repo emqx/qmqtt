@@ -149,19 +149,17 @@ TEST_F(NetworkTest, networkEmitsDisconnectedSignalWhenSocketEmitsDisconnectedSig
 }
 
 TEST_F(NetworkTest, networkEmitsReceivedSignalOnceAFrameIsReceived_Test)
-{
-    QByteArray payload(129, 'a');
-
+{    
     QBuffer buffer(&_byteArray);
     buffer.open(QIODevice::WriteOnly);
-
     QDataStream out(&buffer);
-    out << static_cast<quint8>(0x30); // publish header
-    out << static_cast<quint8>(0x81); // remaining length most-signficant 7 bits
-    out << static_cast<quint8>(0x01); // remaining Length least-significant 7 bits
-    out.writeRawData(payload.constData(), payload.size());
+    QMQTT::Frame frame;
+    frame._header = 42;
+    frame._data = QString("data").toUtf8();
+    out << frame;
     buffer.close();
-    EXPECT_EQ(132, _byteArray.size());
+
+    ASSERT_EQ(6, _byteArray.size());
 
     EXPECT_CALL(*_socketMock, atEnd())
         .WillRepeatedly(Invoke(this, &NetworkTest::fixtureByteArrayIsEmpty));
@@ -170,8 +168,8 @@ TEST_F(NetworkTest, networkEmitsReceivedSignalOnceAFrameIsReceived_Test)
 
     QSignalSpy spy(_network.data(), &QMQTT::Network::received);
     emit _socketMock->readyRead();
-    EXPECT_EQ(1, spy.count());
-    EXPECT_EQ(payload, spy.at(0).at(0).value<QMQTT::Frame>().data());
+    ASSERT_EQ(1, spy.count());
+    EXPECT_EQ(frame, spy.at(0).at(0).value<QMQTT::Frame>());
 }
 
 TEST_F(NetworkTest, networkWillAttemptToReconnectOnDisconnectionIfAutoReconnectIsTrue_Test)

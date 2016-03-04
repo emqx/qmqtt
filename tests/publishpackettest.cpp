@@ -1,6 +1,6 @@
-#include "basepackettest.h"
+#include "testutils.h"
 #include <qmqtt_publishpacket.h>
-#include <QByteArray>
+#include <QBuffer>
 #include <gtest/gtest.h>
 
 using namespace testing;
@@ -23,249 +23,141 @@ TEST_F(PublishPacketTest, defaultConstructorValues_Test)
     EXPECT_TRUE(_packet.topicName().isEmpty());
     EXPECT_EQ(0, _packet.packetIdentifier());
     EXPECT_TRUE(_packet.payload().isEmpty());
+    EXPECT_TRUE(_packet.isValid());
 }
 
 TEST_F(PublishPacketTest, setDupFlag_Test)
 {
     _packet.setDupFlag(true);
+
     EXPECT_TRUE(_packet.dupFlag());
 }
 
 TEST_F(PublishPacketTest, setQos_Test)
 {
-    _packet.setQos(2);
-    EXPECT_EQ(2, _packet.qos());
+    _packet.setQos(QMQTT::Qos2);
+
+    EXPECT_EQ(QMQTT::Qos2, _packet.qos());
 }
 
 TEST_F(PublishPacketTest, setRetainFlag_Test)
 {
     _packet.setRetainFlag(true);
+
     EXPECT_TRUE(_packet.retainFlag());
 }
 
 TEST_F(PublishPacketTest, setTopicName_Test)
 {
     _packet.setTopicName("topic");
+
     EXPECT_EQ("topic", _packet.topicName());
 }
 
 TEST_F(PublishPacketTest, setPacketIdentifier_Test)
 {
     _packet.setPacketIdentifier(42);
+
     EXPECT_EQ(42, _packet.packetIdentifier());
 }
 
 TEST_F(PublishPacketTest, setPayload_Test)
 {
-    _packet.setPayload(QStringLiteral("payload").toUtf8());
-    EXPECT_EQ(QStringLiteral("payload"), QString::fromUtf8(_packet.payload()));
+    _packet.setPayload(QString("payload").toUtf8());
+
+    EXPECT_EQ("payload", QString::fromUtf8(_packet.payload()));
 }
 
-class PublishPacketTestWithStream : public BasePacketTest
-{
-public:
-    PublishPacketTestWithStream() {}
-    virtual ~PublishPacketTestWithStream() {}
-
-    QMQTT::PublishPacket _packet;
-
-    void streamIntoPacket(
-        const quint8 fixedHeader,
-        const qint64 remainingLength,
-        const QString& topicName,
-        const quint16 packetIdentifier,
-        const QByteArray& payload)
-    {
-        _stream << fixedHeader;
-        writeRemainingLength(remainingLength);
-        writeString(topicName);
-        if ((fixedHeader & 0x06) != 0)
-        {
-            _stream << packetIdentifier;
-        }
-        _stream.writeRawData(payload.constData(), payload.size());
-        _buffer.seek(0);
-        _stream >> _packet;
-    }
-};
-
-TEST_F(PublishPacketTestWithStream, fixedHeaderTypeWritesPublishTypeToStream_Test)
-{
-    _stream << _packet;
-
-    EXPECT_EQ(QMQTT::PublishType,
-              static_cast<QMQTT::PacketType>((readUInt8(0) & 0xf0) >> 4));
-}
-
-TEST_F(PublishPacketTestWithStream, fixedHeaderFlagsWritesDupFlagFalseByDefaultToStream_Test)
-{
-    _stream << _packet;
-
-    EXPECT_EQ(0, readUInt8(0) & 0x08);
-}
-
-TEST_F(PublishPacketTestWithStream, fixedHeaderFlagsWritesDupFlagTrueWhenDupFlagTrueToStream_Test)
+TEST_F(PublishPacketTest, toFrame_Test)
 {
     _packet.setDupFlag(true);
-    _stream << _packet;
-
-    EXPECT_NE(0, readUInt8(0) & 0x08);
-}
-
-TEST_F(PublishPacketTestWithStream, fixedHeaderFlagsWritesQosZeroByDefaultToStream_Test)
-{
-    _stream << _packet;
-
-    EXPECT_EQ(0, (readUInt8(0) & 0x06) >> 1);
-}
-
-TEST_F(PublishPacketTestWithStream, fixedHeaderFlagsWritesQosTwoWhenQosTwoToStream_Test)
-{
-    _packet.setQos(2);
-    _stream << _packet;
-
-    EXPECT_EQ(2, (readUInt8(0) & 0x06) >> 1);
-}
-
-TEST_F(PublishPacketTestWithStream, fixedHeaderFlagsWritesRetainFlagFalseByDefaultToStream_Test)
-{
-    _stream << _packet;
-
-    EXPECT_EQ(0, readUInt8(0) & 0x01);
-}
-
-TEST_F(PublishPacketTestWithStream, fixedHeaderFlagsWritesRetainFlagTrueWhenRetainFlagTrueToStream_Test)
-{
+    _packet.setQos(QMQTT::Qos2);
     _packet.setRetainFlag(true);
-    _stream << _packet;
-
-    EXPECT_NE(0, readUInt8(0) & 0x01);
-}
-
-TEST_F(PublishPacketTestWithStream, topicNameWritesToStream_Test)
-{
     _packet.setTopicName("topic");
-    _stream << _packet;
-
-    EXPECT_EQ("topic", readString(variableHeaderOffset()));
-}
-
-TEST_F(PublishPacketTestWithStream, packetIdentifierWritesToStream_Test)
-{
-    _packet.setQos(1);
     _packet.setPacketIdentifier(42);
-    _stream << _packet;
+    _packet.setPayload(QString("payload").toUtf8());
 
-    quint16 topicLength = readUInt16(variableHeaderOffset());
-    EXPECT_EQ(42, readUInt16(variableHeaderOffset() + topicLength + 2));
+    QMQTT::Frame frame = _packet.toFrame();
+
+    EXPECT_EQ(QMQTT::PublishType, static_cast<QMQTT::PacketType>(frame._header >> 4));
+    EXPECT_NE(0, frame._header & 0x08);
+    EXPECT_EQ(QMQTT::Qos2, static_cast<QMQTT::QosType>((frame._header & 0x06) >> 1));
+    EXPECT_NE(0, frame._header & 0x01);
+
+    ASSERT_EQ(16, frame._data.size());
+    EXPECT_EQ(0, frame._data.at(0));
+    EXPECT_EQ(5, frame._data.at(1));
+    EXPECT_EQ("topic", QString::fromUtf8(frame._data.mid(2, 5)));
+    EXPECT_EQ(0, frame._data.at(7));
+    EXPECT_EQ(42, frame._data.at(8));
+    EXPECT_EQ("payload", QString::fromUtf8(frame._data.mid(9, 7)));
 }
 
-TEST_F(PublishPacketTestWithStream, payloadWritesToStream_Test)
+TEST_F(PublishPacketTest, fromFrame_Test)
 {
-    _packet.setPayload(QStringLiteral("payload").toUtf8());
-    _stream << _packet;
+    QMQTT::Frame frame;
+    frame._header = (QMQTT::PublishType << 4) | 0x0d;
 
-    qint64 payloadLength = readRemainingLength() - _packet.topicName().size() - 2;
-    EXPECT_EQ("payload",
-              readByteArray(variableHeaderOffset() + _packet.topicName().size() + 2, payloadLength));
+    QBuffer buffer(&frame._data);
+    buffer.open(QIODevice::WriteOnly);
+    QDataStream stream(&buffer);
+
+    TestUtils::writeString(stream, "topic");
+    stream << static_cast<quint16>(42);
+    QByteArray array(QString("payload").toUtf8());
+    stream.writeRawData(array.constData(), array.size());
+
+    buffer.close();
+
+    QMQTT::PublishPacket packet = QMQTT::PublishPacket::fromFrame(frame);
+
+    EXPECT_EQ(QMQTT::PublishType, packet.type());
+    EXPECT_TRUE(packet.dupFlag());
+    EXPECT_EQ(QMQTT::Qos2, packet.qos());
+    EXPECT_TRUE(packet.retainFlag());
+    EXPECT_EQ("topic",  packet.topicName());
+    EXPECT_EQ(42, packet.packetIdentifier());
+    EXPECT_EQ("payload", QString::fromUtf8(packet.payload()));
 }
 
-TEST_F(PublishPacketTestWithStream, fixedHeaderFlagsReadsDupFlagTrueFromStream_Test)
+TEST_F(PublishPacketTest, defaultIsValid_Test)
 {
-    streamIntoPacket((QMQTT::PublishType << 4) | 0x0a, 16, "topic", 0, QString("payload").toUtf8());
-
-    EXPECT_TRUE(_packet.dupFlag());
-}
-
-TEST_F(PublishPacketTestWithStream, fixedHeaderFlagsReadsQosFromStream_Test)
-{
-    streamIntoPacket((QMQTT::PublishType << 4) | 0x04, 16, "topic", 0, QString("payload").toUtf8());
-
-    EXPECT_EQ(2, _packet.qos());
-}
-
-TEST_F(PublishPacketTestWithStream, fixedHeaderFlagsReadsRetainFlagFromStream_Test)
-{
-    streamIntoPacket((QMQTT::PublishType << 4) | 0x01, 16, "topic", 0, QString("payload").toUtf8());
-
-    EXPECT_EQ(1, _packet.retainFlag());
-}
-
-TEST_F(PublishPacketTestWithStream, fixedHeaderFlagsReadsTopicNameFromStream_Test)
-{
-    streamIntoPacket(QMQTT::PublishType << 4, 16, "topic", 0, QString("payload").toUtf8());
-
-    EXPECT_EQ("topic", _packet.topicName());
-}
-
-TEST_F(PublishPacketTestWithStream, packetIdentifierReadsFromStream_Test)
-{
-    streamIntoPacket((QMQTT::PublishType << 4) | 0x02, 18, "topic", 42, QString("payload").toUtf8());
-
-    EXPECT_EQ(42, _packet.packetIdentifier());
-}
-
-TEST_F(PublishPacketTestWithStream, payloadReadsFromStream_Test)
-{
-    streamIntoPacket(QMQTT::PublishType << 4, 16, "topic", 0, QString("payload").toUtf8());
-
-    EXPECT_EQ("payload", _packet.payload());
-}
-
-TEST_F(PublishPacketTestWithStream, typePublishedIsValid_Test)
-{
-    streamIntoPacket(QMQTT::PublishType << 4, 16, "topic", 0, QString("payload").toUtf8());
-
     EXPECT_TRUE(_packet.isValid());
 }
 
-TEST_F(PublishPacketTestWithStream, typeNotPublishedIsInvalid_Test)
+TEST_F(PublishPacketTest, qosZeroAndDupFlagTrueIsInvalid_Test)
 {
-    streamIntoPacket(QMQTT::ConnectType << 4, 16, "topic", 0, QString("payload").toUtf8());
+    _packet.setDupFlag(true);
+    EXPECT_FALSE(_packet.isValid());
+}
+
+TEST_F(PublishPacketTest, qosThreeIsInvalid_Test)
+{
+    QMQTT::Frame frame = _packet.toFrame();
+    frame._header |= 0x06;
+    _packet = QMQTT::PublishPacket::fromFrame(frame);
 
     EXPECT_FALSE(_packet.isValid());
 }
 
-TEST_F(PublishPacketTestWithStream, qosZeroWithDupFlagTrueIsInvalid_Test)
+TEST_F(PublishPacketTest, topicNameWithHashMarkIsInvalid_Test)
 {
-    streamIntoPacket((QMQTT::PublishType << 4) | 0x08, 16, "topic", 0, QString("payload").toUtf8());
+    _packet.setTopicName("#");
 
     EXPECT_FALSE(_packet.isValid());
 }
 
-TEST_F(PublishPacketTestWithStream, qosThreeIsInvalid_Test)
+TEST_F(PublishPacketTest, topicNameWithPlusSignIsInvalid_Test)
 {
-    streamIntoPacket((QMQTT::PublishType << 4) | 0x06, 16, "topic", 0, QString("payload").toUtf8());
+    _packet.setTopicName("+");
 
     EXPECT_FALSE(_packet.isValid());
 }
 
-// todo: wildcard wrong
-TEST_F(PublishPacketTestWithStream, topicNameWithAsteriskIsInvalid_Test)
+TEST_F(PublishPacketTest, qosNotZeroWithPacketIdentifierZeroIsInvalid_Test)
 {
-    streamIntoPacket(QMQTT::PublishType << 4, 18, "topic/*", 0, QString("payload").toUtf8());
-
-    EXPECT_FALSE(_packet.isValid());
-}
-
-// todo: wildcard wrong
-TEST_F(PublishPacketTestWithStream, topicNameWithQuestionMarkIsInvalid_Test)
-{
-    streamIntoPacket(QMQTT::PublishType << 4, 17, "topic?", 0, QString("payload").toUtf8());
-
-    EXPECT_FALSE(_packet.isValid());
-}
-
-TEST_F(PublishPacketTestWithStream, qosOneAndPacketIdentifierNotZeroIsInvalid_Test)
-{
-    streamIntoPacket((QMQTT::PublishType << 4) | 0x02, 16, "topic", 42, QString("payload").toUtf8());
-
-    EXPECT_FALSE(_packet.isValid());
-}
-
-TEST_F(PublishPacketTestWithStream, qosTwoAndPacketIdentifierNotZeroIsInvalid_Test)
-{
-    streamIntoPacket((QMQTT::PublishType << 4) | 0x04, 16, "topic", 42, QString("payload").toUtf8());
+    _packet.setQos(QMQTT::Qos2);
+    ASSERT_EQ(0, _packet.packetIdentifier());
 
     EXPECT_FALSE(_packet.isValid());
 }

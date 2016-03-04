@@ -1,5 +1,7 @@
 #include "basepackettest.h"
 
+// todo: delete this file
+
 using namespace testing;
 
 BasePacketTest::BasePacketTest()

@@ -243,7 +243,7 @@ quint16 QMQTT::Client::publish(const Message& message)
     return d->publish(message);
 }
 
-quint16 QMQTT::Client::subscribe(const QString& topic, const quint8 qos)
+quint16 QMQTT::Client::subscribe(const QString& topic, const QosType qos)
 {
     Q_D(Client);
     return d->subscribe(topic, qos);
@@ -267,7 +267,7 @@ void QMQTT::Client::disconnectFromHost()
     d->disconnectFromHost();
 }
 
-void QMQTT::Client::onNetworkReceived(const QMQTT::Frame& frame)
+void QMQTT::Client::onNetworkReceived(const Frame& frame)
 {
     Q_D(Client);
     d->onNetworkReceived(frame);

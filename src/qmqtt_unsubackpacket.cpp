@@ -31,12 +31,11 @@
  */
 #include "qmqtt_unsubackpacket.h"
 #include <QDataStream>
-
-const quint8 DEFAULT_FIXED_HEADER = QMQTT::UnsubackType << 4;
+#include <QBuffer>
 
 QMQTT::UnsubackPacket::UnsubackPacket()
-    : AbstractPacket(DEFAULT_FIXED_HEADER)
-    , _packetIdentifier(0)
+    : _packetIdentifier(0)
+    , _headerReservedBitsValid(true)
 {
 }
 
@@ -49,14 +48,9 @@ QMQTT::PacketType QMQTT::UnsubackPacket::type() const
     return QMQTT::UnsubackType;
 }
 
-qint64 QMQTT::UnsubackPacket::calculateRemainingLengthFromData() const
-{
-    return 2;
-}
-
 bool QMQTT::UnsubackPacket::isValid() const
 {
-    if (_fixedHeader != DEFAULT_FIXED_HEADER)
+    if (!_headerReservedBitsValid)
     {
         return false;
     }
@@ -74,20 +68,32 @@ void QMQTT::UnsubackPacket::setPacketIdentifier(const quint16 packetIdentifier)
     _packetIdentifier = packetIdentifier;
 }
 
-QDataStream& QMQTT::operator>>(QDataStream& stream, UnsubackPacket& packet)
+QMQTT::Frame QMQTT::UnsubackPacket::toFrame() const
 {
-    stream >> packet._fixedHeader;
-    packet.readRemainingLength(stream);
-    stream >> packet._packetIdentifier;
+    Frame frame;
 
-    return stream;
+    frame._header = static_cast<quint8>(type()) << 4;
+
+    QBuffer buffer(&frame._data);
+    buffer.open(QIODevice::WriteOnly);
+    QDataStream stream(&buffer);
+    stream << _packetIdentifier;
+    buffer.close();
+
+    return frame;
 }
 
-QDataStream& QMQTT::operator<<(QDataStream& stream, const UnsubackPacket& packet)
+QMQTT::UnsubackPacket QMQTT::UnsubackPacket::fromFrame(Frame& frame)
 {
-    stream << packet._fixedHeader;
-    packet.writeRemainingLength(stream);
-    stream << packet._packetIdentifier;
+    UnsubackPacket packet;
 
-    return stream;
+    packet._headerReservedBitsValid = (frame._header & 0x0f) == 0;
+
+    QBuffer buffer(&frame._data);
+    buffer.open(QIODevice::ReadOnly);
+    QDataStream stream(&buffer);
+    stream >> packet._packetIdentifier;
+    buffer.close();
+
+    return packet;
 }

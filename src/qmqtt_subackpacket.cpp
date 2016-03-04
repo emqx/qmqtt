@@ -30,14 +30,11 @@
  *
  */
 #include "qmqtt_subackpacket.h"
-#include <QDataStream>
-
-const quint8 DEFAULT_FIXED_HEADER = QMQTT::SubackType << 4;
+#include <QBuffer>
 
 QMQTT::SubackPacket::SubackPacket()
-    : AbstractPacket(DEFAULT_FIXED_HEADER)
-    , _packetIdentifier(0)
-    , _returnCode(SubackSuccessMaximumQoS0)
+    : _packetIdentifier(0)
+    , _headerReservedBitsValid(true)
 {
 }
 
@@ -50,21 +47,20 @@ QMQTT::PacketType QMQTT::SubackPacket::type() const
     return QMQTT::SubackType;
 }
 
-qint64 QMQTT::SubackPacket::calculateRemainingLengthFromData() const
-{
-    return 2;
-}
-
 bool QMQTT::SubackPacket::isValid() const
 {
-    if (_fixedHeader != DEFAULT_FIXED_HEADER)
+    if (_returnCodeList.isEmpty())
     {
         return false;
     }
 
-    if (_returnCode > 0x02 && _returnCode != 0x80)
+    foreach (const SubackReturnCodeType& returnCode, _returnCodeList)
     {
-        return false;
+        if (static_cast<quint8>(returnCode > 0x02)
+            && static_cast<quint8>(returnCode != 0x80))
+        {
+            return false;
+        }
     }
 
     return true;
@@ -80,34 +76,47 @@ void QMQTT::SubackPacket::setPacketIdentifier(const quint16 packetIdentifier)
     _packetIdentifier = packetIdentifier;
 }
 
-QMQTT::SubackReturnCodeType QMQTT::SubackPacket::returnCode() const
+QMQTT::SubackReturnCodeList& QMQTT::SubackPacket::returnCodeList()
 {
-    return _returnCode;
+    return _returnCodeList;
 }
 
-void QMQTT::SubackPacket::setReturnCode(const SubackReturnCodeType returnCode)
+QMQTT::Frame QMQTT::SubackPacket::toFrame() const
 {
-    _returnCode = returnCode;
+    Frame frame;
+
+    frame._header = static_cast<quint8>(type()) << 4;
+
+    QBuffer buffer(&frame._data);
+    buffer.open(QIODevice::WriteOnly);
+    QDataStream stream(&buffer);
+    stream << _packetIdentifier;
+    foreach (const SubackReturnCodeType& returnCode, _returnCodeList)
+    {
+        stream << static_cast<quint8>(returnCode);
+    }
+    buffer.close();
+
+    return frame;
 }
 
-QDataStream& QMQTT::operator>>(QDataStream& stream, SubackPacket& packet)
+QMQTT::SubackPacket QMQTT::SubackPacket::fromFrame(Frame& frame)
 {
-    stream >> packet._fixedHeader;
-    packet.readRemainingLength(stream);
+    SubackPacket packet;
+
+    packet._headerReservedBitsValid = (frame._header & 0x0f) == 0;
+
+    QBuffer buffer(&frame._data);
+    buffer.open(QIODevice::ReadOnly);
+    QDataStream stream(&buffer);
     stream >> packet._packetIdentifier;
-    quint8 i = 0;
-    stream >> i;
-    packet._returnCode = static_cast<SubackReturnCodeType>(i);
+    while (buffer.pos() < buffer.size())
+    {
+        quint8 i = 0;
+        stream >> i;
+        packet._returnCodeList << static_cast<SubackReturnCodeType>(i);
+    }
+    buffer.close();
 
-    return stream;
-}
-
-QDataStream& QMQTT::operator<<(QDataStream& stream, const SubackPacket& packet)
-{
-    stream << packet._fixedHeader;
-    packet.writeRemainingLength(stream);
-    stream << packet._packetIdentifier;
-    stream << static_cast<quint8>(packet._returnCode);
-
-    return stream;
+    return packet;
 }

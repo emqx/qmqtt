@@ -2,6 +2,8 @@
 #include <qmqtt_client.h>
 #include <qmqtt_message.h>
 #include <qmqtt_frame.h>
+#include <qmqtt_connackpacket.h>
+#include <qmqtt_publishpacket.h>
 #include <QSharedPointer>
 #include <QSignalSpy>
 #include <QCoreApplication>
@@ -10,23 +12,6 @@
 
 using namespace testing;
 
-const quint8 CONNECT_TYPE = 0x10;
-const quint8 CONNACK_TYPE = 0x20;
-const quint8 PUBLISH_TYPE = 0x30;
-const quint8 PUBACK_TYPE = 0x40;
-const quint8 PUBREC_TYPE = 0x50;
-const quint8 PUBREL_TYPE = 0x60;
-const quint8 PUBCOMP_TYPE = 0x70;
-const quint8 SUBSCRIBE_TYPE = 0x80;
-const quint8 SUBACK_TYPE = 0x90;
-const quint8 UNSUBSCRIBE_TYPE = 0xA0;
-const quint8 UNSUBACK_TYPE = 0xB0;
-const quint8 PINGREQ_TYPE = 0xC0;
-const quint8 PINGRESP_TYPE = 0xD0;
-const quint8 DISCONNECT_TYPE = 0xE0;
-const quint8 QOS0 = 0x00;
-const quint8 QOS1 = 0x02;
-const quint8 QOS2 = 0x04;
 const QHostAddress HOST_ADDRESS = QHostAddress("8.8.8.8");
 const quint16 PORT = 8883;
 
@@ -282,7 +267,7 @@ TEST_F(ClientTest, connectSendsConnectMessage_Test)
 
     emit _networkMock->connected();
 
-    EXPECT_EQ(CONNECT_TYPE, frame.header() & CONNECT_TYPE);
+    EXPECT_EQ(QMQTT::ConnectType, frame._header >> 4);
 }
 
 TEST_F(ClientTest, publishSendsPublishMessage_Test)
@@ -293,7 +278,7 @@ TEST_F(ClientTest, publishSendsPublishMessage_Test)
     QMQTT::Message message(222, "topic", QByteArray("payload"));
     _client->publish(message);
 
-    EXPECT_EQ(PUBLISH_TYPE, getHeaderType(frame.header()));
+    EXPECT_EQ(QMQTT::PublishType, frame._header >> 4);
 }
 
 TEST_F(ClientTest, subscribeSendsSubscribeMessage_Test)
@@ -301,9 +286,9 @@ TEST_F(ClientTest, subscribeSendsSubscribeMessage_Test)
     QMQTT::Frame frame;
     EXPECT_CALL(*_networkMock, sendFrame(_)).WillOnce(SaveArg<0>(&frame));
 
-    _client->subscribe("topic", QOS2);
+    _client->subscribe("topic", QMQTT::Qos2);
 
-    EXPECT_EQ(SUBSCRIBE_TYPE, getHeaderType(frame.header()));
+    EXPECT_EQ(QMQTT::SubscribeType, frame._header >> 4);
 }
 
 // todo: these are internal, test them as we can (all are puback types?)
@@ -320,7 +305,7 @@ TEST_F(ClientTest, unsubscribeSendsUnsubscribeMessage_Test)
 
     _client->unsubscribe("topic");
 
-    EXPECT_EQ(UNSUBSCRIBE_TYPE, getHeaderType(frame.header()));
+    EXPECT_EQ(QMQTT::UnsubscribeType, frame._header >> 4);
     // todo: test the topic
 }
 
@@ -332,7 +317,7 @@ TEST_F(ClientTest, disconnectSendsDisconnectMessageAndNetworkDisconnect_Test)
 
     _client->disconnectFromHost();
 
-    EXPECT_EQ(DISCONNECT_TYPE, getHeaderType(frame.header()));
+    EXPECT_EQ(QMQTT::DisconnectType, frame._header >> 4);
 }
 
 // todo: verify pingreq sent from client, will require timer interface and mock
@@ -352,8 +337,8 @@ TEST_F(ClientTest, networkReceivedSendsConnackDoesNotEmitConnectedSignal_Test)
 {
     QSignalSpy spy(_client.data(), &QMQTT::Client::connected);
 
-    QMQTT::Frame frame(CONNACK_TYPE, QByteArray(2, 0x00));
-    emit _networkMock->received(frame);
+    QMQTT::ConnackPacket packet;
+    emit _networkMock->received(packet.toFrame());
 
     EXPECT_EQ(0, spy.count());
 }
@@ -386,7 +371,7 @@ TEST_F(ClientTest, networkReceivedSendsPublishEmitsReceivedSignal_Test)
 {
     QSignalSpy spy(_client.data(), &QMQTT::Client::received);
 
-    QMQTT::Frame frame(PUBLISH_TYPE, QByteArray(2, 0x00));
+    QMQTT::Frame frame = QMQTT::PublishPacket().toFrame();
     emit _networkMock->received(frame);
 
     EXPECT_EQ(1, spy.count());
@@ -398,7 +383,7 @@ TEST_F(ClientTest, subscribeEmitsSubscribedSignal_Test)
     EXPECT_CALL(*_networkMock, sendFrame(_));
     QSignalSpy spy(_client.data(), &QMQTT::Client::subscribed);
 
-    _client->subscribe("topic", QOS2);
+    _client->subscribe("topic", QMQTT::Qos2);
 
     EXPECT_EQ(1, spy.count());
     EXPECT_EQ("topic", spy.at(0).at(0).toString());

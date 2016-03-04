@@ -31,27 +31,27 @@
  */
 #include "qmqtt_connectpacket.h"
 #include <QRegExp>
-#include <qmath.h>
+#include <QBuffer>
 
-const quint8 DEFAULT_FIXED_HEADER = QMQTT::ConnectType << 4;
-const QString SUPPORTED_PROTOCOL = QStringLiteral("MQTT");
-const quint8 SUPPORTED_PROTOCOL_LEVEL = 0x04;
-const quint16 DEFAULT_KEEP_ALIVE_INTERVAL = 300;
-const quint8 NO_MASK = 0x00;
-const quint8 RESERVED_MASK = 0x01;
-const quint8 CLEAN_SESSION_MASK = 0x02;
-const quint8 WILL_FLAG_MASK = 0x04;
-const quint8 WILL_QOS_MASK = 0x18;
-const quint8 WILL_RETAIN_MASK = 0x20;
-const quint8 PASSWORD_MASK = 0x40;
-const quint8 USERNAME_MASK = 0x80;
+namespace
+{
+    const quint8 DEFAULT_HEADER = QMQTT::ConnectType << 4;
+    const QString SUPPORTED_PROTOCOL = QStringLiteral("MQTT");
+    const quint8 SUPPORTED_PROTOCOL_LEVEL = 0x04;
+    const bool DEFAULT_CLEAN_SESSION = false;
+    const QMQTT::QosType DEFAULT_WILL_QOS_TYPE = QMQTT::Qos0;
+    const bool DEFAULT_WILL_RETAIN = false;
+    const quint16 DEFAULT_KEEP_ALIVE_INTERVAL = 300;
+}
 
 QMQTT::ConnectPacket::ConnectPacket()
-    : AbstractPacket(DEFAULT_FIXED_HEADER)
-    , _protocol(SUPPORTED_PROTOCOL)
+    : _protocol(SUPPORTED_PROTOCOL)
     , _protocolLevel(SUPPORTED_PROTOCOL_LEVEL)
-    , _connectFlags(NO_MASK)
+    , _cleanSession(DEFAULT_CLEAN_SESSION)
+    , _willQos(DEFAULT_WILL_QOS_TYPE)
+    , _willRetain(DEFAULT_WILL_RETAIN)
     , _keepAlive(DEFAULT_KEEP_ALIVE_INTERVAL)
+    , _headerReservedBitsValid(true)
 {
 }
 
@@ -74,58 +74,44 @@ quint8 QMQTT::ConnectPacket::protocolLevel() const
     return _protocolLevel;
 }
 
+quint16 QMQTT::ConnectPacket::keepAlive() const
+{
+    return _keepAlive;
+}
+
+void QMQTT::ConnectPacket::setKeepAlive(const quint16 keepAlive)
+{
+    _keepAlive = keepAlive;
+}
+
 bool QMQTT::ConnectPacket::cleanSession() const
 {
-    return (_connectFlags & CLEAN_SESSION_MASK) != 0;
+    return _cleanSession;
 }
 
 void QMQTT::ConnectPacket::setCleanSession(const bool cleanSession)
 {
-    _connectFlags &= ~CLEAN_SESSION_MASK;
-    if (cleanSession)
-    {
-        _connectFlags |= CLEAN_SESSION_MASK;
-    }
+    _cleanSession = cleanSession;
 }
 
-bool QMQTT::ConnectPacket::willFlag() const
+QMQTT::QosType QMQTT::ConnectPacket::willQos() const
 {
-    return (_connectFlags & WILL_FLAG_MASK) != 0;
+    return _willQos;
 }
 
-quint8 QMQTT::ConnectPacket::willQos() const
+void QMQTT::ConnectPacket::setWillQos(const QosType willQos)
 {
-    return (_connectFlags & WILL_QOS_MASK) >> 3;
-}
-
-void QMQTT::ConnectPacket::setWillQos(const quint8 willQos)
-{
-    _connectFlags &= ~WILL_QOS_MASK;
-    _connectFlags |= (qMin(static_cast<quint8>(2), willQos) << 3);
+    _willQos = willQos;
 }
 
 bool QMQTT::ConnectPacket::willRetain() const
 {
-    return (_connectFlags & WILL_RETAIN_MASK) != 0;
+    return _willRetain;
 }
 
 void QMQTT::ConnectPacket::setWillRetain(const bool willRetain)
 {
-    _connectFlags &= ~WILL_RETAIN_MASK;
-    if (willRetain)
-    {
-        _connectFlags |= WILL_RETAIN_MASK;
-    }
-}
-
-bool QMQTT::ConnectPacket::passwordFlag() const
-{
-    return (_connectFlags & PASSWORD_MASK) != 0;
-}
-
-bool QMQTT::ConnectPacket::userNameFlag() const
-{
-    return (_connectFlags & USERNAME_MASK) != 0;
+    _willRetain = willRetain;
 }
 
 QString QMQTT::ConnectPacket::willTopic() const
@@ -136,11 +122,6 @@ QString QMQTT::ConnectPacket::willTopic() const
 void QMQTT::ConnectPacket::setWillTopic(const QString& willTopic)
 {
     _willTopic = willTopic;
-    _connectFlags &= ~WILL_FLAG_MASK;
-    if (!_willTopic.isEmpty())
-    {
-        _connectFlags |= WILL_FLAG_MASK;
-    }
 }
 
 QString QMQTT::ConnectPacket::willMessage() const
@@ -171,11 +152,6 @@ QString QMQTT::ConnectPacket::userName() const
 void QMQTT::ConnectPacket::setUserName(const QString& userName)
 {
     _userName = userName;
-    _connectFlags &= ~USERNAME_MASK;
-    if (!_userName.isEmpty())
-    {
-        _connectFlags |= USERNAME_MASK;
-    }
 }
 
 QString QMQTT::ConnectPacket::password() const
@@ -186,62 +162,45 @@ QString QMQTT::ConnectPacket::password() const
 void QMQTT::ConnectPacket::setPassword(const QString& password)
 {
     _password = password;
-    _connectFlags &= ~PASSWORD_MASK;
-    if (!_password.isEmpty())
-    {
-        _connectFlags |= PASSWORD_MASK;
-    }
-
 }
 
 bool QMQTT::ConnectPacket::isValid() const
 {
-    if (_fixedHeader != DEFAULT_FIXED_HEADER)
+    if (!_headerReservedBitsValid)
     {
         return false;
     }
 
-    if (protocol() != SUPPORTED_PROTOCOL)
+    if (_protocol != SUPPORTED_PROTOCOL)
     {
         return false;
     }
 
-    if (protocolLevel() != SUPPORTED_PROTOCOL_LEVEL)
+    if (_protocolLevel != SUPPORTED_PROTOCOL_LEVEL)
     {
         return false;
     }
 
-    if ((_connectFlags & RESERVED_MASK) != 0)
+    if (!_willTopic.isEmpty())
     {
-        return false;
-    }
-
-    if (willFlag())
-    {
-        if (willTopic().isEmpty() || willQos() > 2)
+        if (static_cast<quint8>(_willQos) > 2)
         {
             return false;
         }
     }
     else
     {
-        if (willQos() != 0 || willRetain())
+        if (_willQos != Qos0)
+        {
+            return false;
+        }
+        if (_willRetain)
         {
             return false;
         }
     }
 
-    if (userNameFlag() == userName().isEmpty())
-    {
-        return false;
-    }
-
-    if (!userNameFlag() && passwordFlag())
-    {
-        return false;
-    }
-
-    if (passwordFlag() == password().isEmpty())
+    if (_userName.isEmpty() && !_password.isEmpty())
     {
         return false;
     }
@@ -255,80 +214,93 @@ bool QMQTT::ConnectPacket::isValid() const
     return true;
 }
 
-qint64 QMQTT::ConnectPacket::calculateRemainingLengthFromData() const
+QMQTT::ConnectPacket QMQTT::ConnectPacket::fromFrame(Frame& frame)
 {
-    qint64 remainingLength = 12 + _clientIdentifier.size();
-    if (willFlag())
-    {
-        remainingLength += 4 + _willTopic.size() + _willMessage.size();
-    }
-    if (userNameFlag())
-    {
-        remainingLength += 2 + _userName.size();
-    }
-    if (passwordFlag())
-    {
-        remainingLength += 2 + _password.size();
-    }
-    return remainingLength;
-}
+    ConnectPacket packet;
 
-QDataStream& QMQTT::operator>>(QDataStream& stream, ConnectPacket& packet)
-{
-    stream >> packet._fixedHeader;
-    packet.readRemainingLength(stream);
+    packet._headerReservedBitsValid = (frame._header & 0x0f) == 0;
+
+    QBuffer buffer(&frame._data);
+    buffer.open(QIODevice::ReadOnly);
+    QDataStream stream(&buffer);
 
     packet._protocol = packet.readString(stream);
     stream >> packet._protocolLevel;
-    stream >> packet._connectFlags;
+
+    quint8 connectFlags = 0x00;
+    stream >> connectFlags;
+    packet._cleanSession = (connectFlags & 0x02) != 0;
+    bool willFlag = (connectFlags & 0x04) != 0;
+    packet._willQos = static_cast<QosType>((connectFlags & 0x18) >> 3);
+    packet._willRetain = (connectFlags & 0x20) != 0;
+    bool passwordFlag = (connectFlags & 0x40) != 0;
+    bool userNameFlag = (connectFlags & 0x80) != 0;
+
     stream >> packet._keepAlive;
 
     packet._clientIdentifier = packet.readString(stream);
     packet._willTopic.clear();
     packet._willMessage.clear();
-    if (packet.willFlag())
+    if (willFlag)
     {
         packet._willTopic = packet.readString(stream);
         packet._willMessage = packet.readString(stream);
     }
     packet._userName.clear();
-    if (packet.userNameFlag())
+    if (userNameFlag)
     {
         packet._userName = packet.readString(stream);
     }
     packet._password.clear();
-    if (packet.passwordFlag())
+    if (passwordFlag)
     {
         packet._password = packet.readString(stream);
     }
 
-    return stream;
+    buffer.close();
+
+    return packet;
 }
 
-QDataStream& QMQTT::operator<<(QDataStream& stream, const ConnectPacket& packet)
+QMQTT::Frame QMQTT::ConnectPacket::toFrame() const
 {
-    stream << packet._fixedHeader;
-    packet.writeRemainingLength(stream);
+    Frame frame;
 
-    packet.writeString(stream, packet._protocol);
-    stream << packet._protocolLevel;
-    stream << packet._connectFlags;
-    stream << packet._keepAlive;
+    frame._header = static_cast<quint8>(type()) << 4;
 
-    packet.writeString(stream, packet._clientIdentifier);
-    if (packet.willFlag())
+    QBuffer buffer(&frame._data);
+    buffer.open(QIODevice::WriteOnly);
+    QDataStream stream(&buffer);
+
+    writeString(stream, _protocol);
+    stream << _protocolLevel;
+
+    quint8 connectFlags = 0x00;
+    connectFlags |= (_cleanSession?1:0) << 1;
+    connectFlags |= (_willTopic.isEmpty()?0:1) << 2;
+    connectFlags |= _willQos << 3;
+    connectFlags |= (_willRetain?1:0) << 5;
+    connectFlags |= (_password.isEmpty()?0:1) << 6;
+    connectFlags |= (_userName.isEmpty()?0:1) << 7;
+    stream << connectFlags;
+
+    stream << _keepAlive;
+
+    writeString(stream, _clientIdentifier);
+    if (!_willTopic.isEmpty())
     {
-        packet.writeString(stream, packet._willTopic);
-        packet.writeString(stream, packet._willMessage);
+        writeString(stream, _willTopic);
+        writeString(stream, _willMessage);
     }
-    if (packet.userNameFlag())
+    if (!_userName.isEmpty())
     {
-        packet.writeString(stream, packet._userName);
+        writeString(stream, _userName);
     }
-    if (packet.passwordFlag())
+    if (!_password.isEmpty())
     {
-        packet.writeString(stream, packet._password);
+        writeString(stream, _password);
     }
 
-    return stream;
+    buffer.close();
+    return frame;
 }

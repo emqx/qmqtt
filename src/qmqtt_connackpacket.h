@@ -33,8 +33,7 @@
 #define QMQTT_CONNACK_PACKET_H
 
 #include "qmqtt_abstractpacket.h"
-#include <QDataStream>
-#include <qglobal.h>
+#include "qmqtt_frame.h"
 
 namespace QMQTT
 {
@@ -45,16 +44,6 @@ public:
     ConnackPacket();
     virtual ~ConnackPacket();
 
-    enum ConnectReturnCodeType
-    {
-        ConnectionAccepted = 0x00,
-        ConnectionRefusedUnacceptableProtocolVersion = 0x01,
-        ConnectionRefusedIdentifierRejected = 0x02,
-        ConnectionRefusedServerUnavailable = 0x03,
-        ConnectionRefusedBadUserNameOrPassword = 0x04,
-        ConnectionRefusedNotAuthorized = 0x05
-    };
-
     bool sessionPresent() const;
     ConnectReturnCodeType connectReturnCode() const;
 
@@ -64,19 +53,15 @@ public:
     bool isValid() const;
     PacketType type() const;
 
+    Frame toFrame() const;
+    static ConnackPacket fromFrame(Frame& frame);
+
 protected:
-    quint8 _connectAcknowledgeFlags;
+    bool _sessionPresent;
     ConnectReturnCodeType _connectReturnCode;
-
-    qint64 calculateRemainingLengthFromData() const;
-
-private:
-    friend QDataStream& operator>>(QDataStream& stream, ConnackPacket& packet);
-    friend QDataStream& operator<<(QDataStream& stream, const ConnackPacket& packet);
+    bool _headerReservedBitsValid;
+    bool _connectAcknowledgeBitsValid;
 };
-
-QDataStream& operator>>(QDataStream& stream, ConnackPacket& packet);
-QDataStream& operator<<(QDataStream& stream, const ConnackPacket& packet);
 
 } // end namespace QMQTT
 

@@ -59,7 +59,7 @@ public:
 public slots:
     void onConnected()
     {
-        subscribe(EXAMPLE_TOPIC, 0);
+        subscribe(EXAMPLE_TOPIC, QMQTT::Qos0);
         _timer.start(1000);
     }
 
@@ -104,7 +104,7 @@ public slots:
     void onConnected()
     {
         _qout << "connected" << endl;
-        subscribe(EXAMPLE_TOPIC, 0);
+        subscribe(EXAMPLE_TOPIC, QMQTT::Qos0);
     }
 
     void onSubscribed(const QString& topic)

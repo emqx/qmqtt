@@ -31,12 +31,13 @@
  */
 #include "qmqtt_pubackpacket.h"
 #include <QDataStream>
+#include <QBuffer>
 
 const quint8 DEFAULT_FIXED_HEADER = QMQTT::PubackType << 4;
 
 QMQTT::PubackPacket::PubackPacket()
-    : AbstractPacket(DEFAULT_FIXED_HEADER)
-    , _packetIdentifier(0)
+    : _packetIdentifier(0)
+    , _headerReservedBitsValid(true)
 {
 }
 
@@ -49,14 +50,9 @@ QMQTT::PacketType QMQTT::PubackPacket::type() const
     return QMQTT::PubackType;
 }
 
-qint64 QMQTT::PubackPacket::calculateRemainingLengthFromData() const
-{
-    return 2;
-}
-
 bool QMQTT::PubackPacket::isValid() const
 {
-    if (_fixedHeader != DEFAULT_FIXED_HEADER)
+    if (!_headerReservedBitsValid)
     {
         return false;
     }
@@ -74,20 +70,32 @@ void QMQTT::PubackPacket::setPacketIdentifier(const quint16 packetIdentifier)
     _packetIdentifier = packetIdentifier;
 }
 
-QDataStream& QMQTT::operator>>(QDataStream& stream, PubackPacket& packet)
+QMQTT::Frame QMQTT::PubackPacket::toFrame() const
 {
-    stream >> packet._fixedHeader;
-    packet.readRemainingLength(stream);
-    stream >> packet._packetIdentifier;
+    Frame frame;
 
-    return stream;
+    frame._header = static_cast<quint8>(type()) << 4;
+
+    QBuffer buffer(&frame._data);
+    buffer.open(QIODevice::WriteOnly);
+    QDataStream stream(&buffer);
+    stream << _packetIdentifier;
+    buffer.close();
+
+    return frame;
 }
 
-QDataStream& QMQTT::operator<<(QDataStream& stream, const PubackPacket& packet)
+QMQTT::PubackPacket QMQTT::PubackPacket::fromFrame(Frame& frame)
 {
-    stream << packet._fixedHeader;
-    packet.writeRemainingLength(stream);
-    stream << packet._packetIdentifier;
+    PubackPacket packet;
 
-    return stream;
+    packet._headerReservedBitsValid = (frame._header & 0x0f) == 0;
+
+    QBuffer buffer(&frame._data);
+    buffer.open(QIODevice::ReadOnly);
+    QDataStream stream(&buffer);
+    stream >> packet._packetIdentifier;
+    buffer.close();
+
+    return packet;
 }

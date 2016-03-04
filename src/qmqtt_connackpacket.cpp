@@ -30,16 +30,18 @@
  *
  */
 #include "qmqtt_connackpacket.h"
+#include <QBuffer>
 
-const quint8 DEFAULT_FIXED_HEADER = QMQTT::ConnackType << 4;
-const quint8 NO_MASK = 0x00;
-const quint8 RESERVED_MASK = 0xfe;
-const quint8 SESSION_PRESENT_MASK = 0x01;
+namespace
+{
+    const quint8 DEFAULT_HEADER = QMQTT::ConnackType << 4;
+}
 
 QMQTT::ConnackPacket::ConnackPacket()
-    : AbstractPacket(DEFAULT_FIXED_HEADER)
-    , _connectAcknowledgeFlags(NO_MASK)
+    : _sessionPresent(false)
     , _connectReturnCode(ConnectionAccepted)
+    , _headerReservedBitsValid(true)
+    , _connectAcknowledgeBitsValid(true)
 {
 }
 
@@ -49,29 +51,20 @@ QMQTT::ConnackPacket::~ConnackPacket()
 
 QMQTT::PacketType QMQTT::ConnackPacket::type() const
 {
-    return QMQTT::ConnackType;
-}
-
-qint64 QMQTT::ConnackPacket::calculateRemainingLengthFromData() const
-{
-    return 2;
+    return ConnackType;
 }
 
 bool QMQTT::ConnackPacket::sessionPresent() const
 {
-    return (_connectAcknowledgeFlags & SESSION_PRESENT_MASK) != 0;
+    return _sessionPresent;
 }
 
 void QMQTT::ConnackPacket::setSessionPresent(const bool sessionPresent)
 {
-    _connectAcknowledgeFlags &= ~SESSION_PRESENT_MASK;
-    if (sessionPresent)
-    {
-        _connectAcknowledgeFlags |= SESSION_PRESENT_MASK;
-    }
+    _sessionPresent = sessionPresent;
 }
 
-QMQTT::ConnackPacket::ConnectReturnCodeType QMQTT::ConnackPacket::connectReturnCode() const
+QMQTT::ConnectReturnCodeType QMQTT::ConnackPacket::connectReturnCode() const
 {
     return _connectReturnCode;
 }
@@ -83,19 +76,19 @@ void QMQTT::ConnackPacket::setConnectReturnCode(const ConnectReturnCodeType conn
 
 bool QMQTT::ConnackPacket::isValid() const
 {
-    if (_fixedHeader != DEFAULT_FIXED_HEADER)
+    if (!_headerReservedBitsValid)
     {
         return false;
     }
 
-    if ((_connectAcknowledgeFlags & RESERVED_MASK) != 0)
+    if (!_connectAcknowledgeBitsValid)
     {
         return false;
     }
 
-    if (!sessionPresent())
+    if (!_sessionPresent)
     {
-        if (connectReturnCode() != ConnectionAccepted)
+        if (_connectReturnCode != ConnectionAccepted)
         {
             return false;
         }
@@ -104,24 +97,41 @@ bool QMQTT::ConnackPacket::isValid() const
     return true;
 }
 
-QDataStream& QMQTT::operator>>(QDataStream& stream, ConnackPacket& packet)
+QMQTT::ConnackPacket QMQTT::ConnackPacket::fromFrame(Frame& frame)
 {
-    stream >> packet._fixedHeader;
-    packet.readRemainingLength(stream);
-    stream >> packet._connectAcknowledgeFlags;
+    ConnackPacket packet;
+
+    packet._headerReservedBitsValid = (frame._header & 0x0f) == 0;
+
+    QBuffer buffer(&frame._data);
+    buffer.open(QIODevice::ReadOnly);
+    QDataStream stream(&buffer);
+
     quint8 i = 0;
     stream >> i;
-    packet._connectReturnCode = static_cast<QMQTT::ConnackPacket::ConnectReturnCodeType>(i);
+    packet._sessionPresent = (i & 0x01) != 0;
+    packet._connectAcknowledgeBitsValid = (i & 0xfe) == 0;
 
-    return stream;
+    stream >> i;
+    packet._connectReturnCode = static_cast<ConnectReturnCodeType>(i);
+
+    buffer.close();
+
+    return packet;
 }
 
-QDataStream& QMQTT::operator<<(QDataStream& stream, const ConnackPacket& packet)
+QMQTT::Frame QMQTT::ConnackPacket::toFrame() const
 {
-    stream << packet._fixedHeader;
-    packet.writeRemainingLength(stream);
-    stream << packet._connectAcknowledgeFlags;
-    stream << static_cast<quint8>(packet._connectReturnCode);
+    Frame frame;
 
-    return stream;
+    frame._header = static_cast<quint8>(type()) << 4;
+
+    QBuffer buffer(&frame._data);
+    buffer.open(QIODevice::WriteOnly);
+    QDataStream stream(&buffer);
+    stream << static_cast<quint8>(_sessionPresent ? 1 : 0);
+    stream << static_cast<quint8>(_connectReturnCode);
+    buffer.close();
+
+    return frame;
 }

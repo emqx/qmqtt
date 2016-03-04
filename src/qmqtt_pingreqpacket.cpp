@@ -30,12 +30,10 @@
  *
  */
 #include "qmqtt_pingreqpacket.h"
-#include <QDataStream>
-
-const quint8 DEFAULT_FIXED_HEADER = QMQTT::PingreqType << 4;
+#include <QBuffer>
 
 QMQTT::PingreqPacket::PingreqPacket()
-    : AbstractPacket(DEFAULT_FIXED_HEADER)
+    : _headerReservedBitsValid(true)
 {
 }
 
@@ -48,14 +46,9 @@ QMQTT::PacketType QMQTT::PingreqPacket::type() const
     return QMQTT::PingreqType;
 }
 
-qint64 QMQTT::PingreqPacket::calculateRemainingLengthFromData() const
-{
-    return 0;
-}
-
 bool QMQTT::PingreqPacket::isValid() const
 {
-    if (_fixedHeader != DEFAULT_FIXED_HEADER)
+    if (!_headerReservedBitsValid)
     {
         return false;
     }
@@ -63,18 +56,20 @@ bool QMQTT::PingreqPacket::isValid() const
     return true;
 }
 
-QDataStream& QMQTT::operator>>(QDataStream& stream, PingreqPacket& packet)
+QMQTT::Frame QMQTT::PingreqPacket::toFrame() const
 {
-    stream >> packet._fixedHeader;
-    packet.readRemainingLength(stream);
+    Frame frame;
 
-    return stream;
+    frame._header = static_cast<quint8>(type()) << 4;
+
+    return frame;
 }
 
-QDataStream& QMQTT::operator<<(QDataStream& stream, const PingreqPacket& packet)
+QMQTT::PingreqPacket QMQTT::PingreqPacket::fromFrame(Frame& frame)
 {
-    stream << packet._fixedHeader;
-    packet.writeRemainingLength(stream);
+    PingreqPacket packet;
 
-    return stream;
+    packet._headerReservedBitsValid = (frame._header & 0x0f) == 0;
+
+    return packet;
 }

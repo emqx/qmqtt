@@ -30,13 +30,13 @@
  *
  */
 #include "qmqtt_unsubscribepacket.h"
-#include <QDataStream>
+#include <QBuffer>
 
 const quint8 DEFAULT_FIXED_HEADER = (QMQTT::UnsubscribeType << 4) | 0x02;
 
 QMQTT::UnsubscribePacket::UnsubscribePacket()
-    : AbstractPacket(DEFAULT_FIXED_HEADER)
-    , _packetIdentifier(0)
+    : _packetIdentifier(0)
+    , _headerReservedBitsValid(true)
 {
 }
 
@@ -49,24 +49,12 @@ QMQTT::PacketType QMQTT::UnsubscribePacket::type() const
     return QMQTT::UnsubscribeType;
 }
 
-qint64 QMQTT::UnsubscribePacket::calculateRemainingLengthFromData() const
-{
-    quint64 remainingLength = 2;
-    foreach (const QString& topicFilter, _topicFilterList)
-    {
-        remainingLength += topicFilter.size() + 2;
-    }
-    return remainingLength;
-}
-
 bool QMQTT::UnsubscribePacket::isValid() const
 {
-    if (_fixedHeader != DEFAULT_FIXED_HEADER)
+    if (!_headerReservedBitsValid)
     {
         return false;
     }
-
-    // todo: re-check all wildcards
 
     if (_topicFilterList.isEmpty())
     {
@@ -94,40 +82,45 @@ void QMQTT::UnsubscribePacket::setPacketIdentifier(const quint16 packetIdentifie
     _packetIdentifier = packetIdentifier;
 }
 
-QStringList QMQTT::UnsubscribePacket::topicFilterList() const
+QStringList& QMQTT::UnsubscribePacket::topicFilterList()
 {
     return _topicFilterList;
 }
 
-void QMQTT::UnsubscribePacket::setTopicFilterList(const QStringList& topicFilterList)
+QMQTT::Frame QMQTT::UnsubscribePacket::toFrame() const
 {
-    _topicFilterList = topicFilterList;
+    Frame frame;
+
+    frame._header = static_cast<quint8>(type()) << 4;
+
+    QBuffer buffer(&frame._data);
+    buffer.open(QIODevice::WriteOnly);
+    QDataStream stream(&buffer);
+    stream << _packetIdentifier;
+    foreach (const QString& topicFilter, _topicFilterList)
+    {
+        writeString(stream, topicFilter);
+    }
+    buffer.close();
+
+    return frame;
 }
 
-QDataStream& QMQTT::operator>>(QDataStream& stream, UnsubscribePacket& packet)
+QMQTT::UnsubscribePacket QMQTT::UnsubscribePacket::fromFrame(Frame& frame)
 {
-    stream >> packet._fixedHeader;
-    qint64 remainingLength = packet.readRemainingLength(stream);
+    UnsubscribePacket packet;
+
+    packet._headerReservedBitsValid = (frame._header & 0x0f) == 0;
+
+    QBuffer buffer(&frame._data);
+    buffer.open(QIODevice::ReadOnly);
+    QDataStream stream(&buffer);
     stream >> packet._packetIdentifier;
-    remainingLength -= 2;
-    packet._topicFilterList.clear();
-    while (remainingLength > 0)
+    while (buffer.pos() < buffer.size())
     {
-        QString topicFilter = packet.readString(stream);
-        packet._topicFilterList.append(topicFilter);
-        remainingLength -= topicFilter.size() + 2;
+        packet._topicFilterList << readString(stream);
     }
-    return stream;
-}
+    buffer.close();
 
-QDataStream& QMQTT::operator<<(QDataStream& stream, const UnsubscribePacket& packet)
-{
-    stream << packet._fixedHeader;
-    packet.writeRemainingLength(stream);
-    stream << packet._packetIdentifier;
-    foreach (const QString& topicFilter, packet._topicFilterList)
-    {
-        packet.writeString(stream, topicFilter);
-    }
-    return stream;
+    return packet;
 }

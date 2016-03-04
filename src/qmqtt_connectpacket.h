@@ -33,7 +33,7 @@
 #define QMQTT_CONNECT_PACKET_H
 
 #include "qmqtt_abstractpacket.h"
-#include <QDataStream>
+#include "qmqtt_frame.h"
 #include <QString>
 
 namespace QMQTT
@@ -41,9 +41,6 @@ namespace QMQTT
 
 class ConnectPacket : public AbstractPacket
 {
-    friend QDataStream& operator>>(QDataStream& stream, ConnectPacket& packet);
-    friend QDataStream& operator<<(QDataStream& stream, const ConnectPacket& packet);
-
 public:
     ConnectPacket();
     virtual ~ConnectPacket();
@@ -52,45 +49,45 @@ public:
     quint8 protocolLevel() const;
 
     bool cleanSession() const;
+    QosType willQos() const;
+    bool willRetain() const;
+    quint16 keepAlive() const;
+    QString clientIdentifier() const;
     QString willTopic() const;
     QString willMessage() const;
-    quint8 willQos() const;
-    bool willRetain() const;
-    QString clientIdentifier() const;
     QString userName() const;
     QString password() const;
 
     void setCleanSession(const bool cleanSession);
+    void setWillQos(const QosType willQos);
+    void setWillRetain(const bool willRetain);
+    void setKeepAlive(const quint16 keepAlive);
+    void setClientIdentifier(const QString& clientIdentifier);
     void setWillTopic(const QString& willTopic);
     void setWillMessage(const QString& willMessage);
-    void setWillQos(const quint8 willQos);
-    void setWillRetain(const bool willRetain);
-    void setClientIdentifier(const QString& clientIdentifier);
     void setUserName(const QString& userName);
     void setPassword(const QString& password);
 
     bool isValid() const;
     PacketType type() const;
 
+    Frame toFrame() const;
+    static ConnectPacket fromFrame(Frame& frame);
+
 protected:
     QString _protocol;
     quint8 _protocolLevel;
-    quint8 _connectFlags;
-    QString _willTopic;
-    QString _willMessage;
+    bool _cleanSession;
+    QosType _willQos;
+    bool _willRetain;
     quint16 _keepAlive;
     QString _clientIdentifier;
+    QString _willTopic;
+    QString _willMessage;
     QString _userName;
     QString _password;
-
-    bool willFlag() const;
-    bool userNameFlag() const;
-    bool passwordFlag() const;
-    qint64 calculateRemainingLengthFromData() const;
+    bool _headerReservedBitsValid;
 };
-
-QDataStream& operator>>(QDataStream& stream, ConnectPacket& packet);
-QDataStream& operator<<(QDataStream& stream, const ConnectPacket& packet);
 
 } // end namespace QMQTT
 

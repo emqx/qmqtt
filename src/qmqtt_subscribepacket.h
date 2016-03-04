@@ -33,8 +33,7 @@
 #define QMQTT_SUBSCRIBE_PACKET_H
 
 #include "qmqtt_abstractpacket.h"
-#include "qmqtt_subscription.h"
-#include <QDataStream>
+#include "qmqtt_frame.h"
 
 namespace QMQTT
 {
@@ -51,22 +50,16 @@ public:
     quint16 packetIdentifier() const;
     void setPacketIdentifier(const quint16 packetIdentifier);
 
-    SubscriptionList subscriptionList() const;
-    void setSubscriptionList(const SubscriptionList subscriptionList);
+    SubscriptionList& subscriptionList();
+
+    static SubscribePacket fromFrame(Frame& frame);
+    Frame toFrame() const;
 
 protected:
     quint16 _packetIdentifier;
     SubscriptionList _subscriptionList;
-
-    qint64 calculateRemainingLengthFromData() const;
-
-private:
-    friend QDataStream& operator>>(QDataStream& stream, SubscribePacket& packet);
-    friend QDataStream& operator<<(QDataStream& stream, const SubscribePacket& packet);
+    bool _headerReservedBitsValid;
 };
-
-QDataStream& operator>>(QDataStream& stream, SubscribePacket& packet);
-QDataStream& operator<<(QDataStream& stream, const SubscribePacket& packet);
 
 } // end namespace QMQTT
 

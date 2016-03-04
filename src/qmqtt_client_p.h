@@ -72,7 +72,7 @@ public:
     void sendConnect();
     void onTimerPingReq();
     quint16 sendUnsubscribe(const QString &topic);
-    quint16 sendSubscribe(const QString &topic, quint8 qos);
+    quint16 sendSubscribe(const QString &topic, const QosType qos);
     quint16 sendPublish(const Message &msg);
     void sendPuback(quint8 type, quint16 mid);
     void sendDisconnect();
@@ -83,11 +83,11 @@ public:
     void onNetworkDisconnected();
     quint16 publish(const Message& message);
     void puback(const quint8 type, const quint16 msgid);
-    quint16 subscribe(const QString& topic, const quint8 qos);
+    quint16 subscribe(const QString& topic, const QosType qos);
     void unsubscribe(const QString& topic);
-    void onNetworkReceived(const QMQTT::Frame& frame);
-    void handleConnack(const quint8 ack);
-    void handlePublish(const Message& message);
+    void onNetworkReceived(const Frame& frame);
+    void handleConnack(const Frame& frame);
+    void handlePublish(const Frame& frame);
     void handlePuback(const quint8 type, const quint16 msgid);
     bool autoReconnect() const;
     void setAutoReconnect(const bool autoReconnect);

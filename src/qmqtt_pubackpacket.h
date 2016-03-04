@@ -33,7 +33,7 @@
 #define QMQTT_PUBACK_PACKET_H
 
 #include "qmqtt_abstractpacket.h"
-#include <QDataStream>
+#include "qmqtt_frame.h"
 
 namespace QMQTT
 {
@@ -50,18 +50,13 @@ public:
     quint16 packetIdentifier() const;
     void setPacketIdentifier(const quint16 packetIdentifier);
 
+    static PubackPacket fromFrame(Frame& frame);
+    Frame toFrame() const;
+
 protected:
     quint16 _packetIdentifier;
-
-    qint64 calculateRemainingLengthFromData() const;
-
-private:
-    friend QDataStream& operator>>(QDataStream& stream, PubackPacket& packet);
-    friend QDataStream& operator<<(QDataStream& stream, const PubackPacket& packet);
+    bool _headerReservedBitsValid;
 };
-
-QDataStream& operator>>(QDataStream& stream, PubackPacket& packet);
-QDataStream& operator<<(QDataStream& stream, const PubackPacket& packet);
 
 } // end namespace QMQTT
 

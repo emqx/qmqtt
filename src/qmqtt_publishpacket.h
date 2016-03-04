@@ -33,8 +33,7 @@
 #define QMQTT_PUBLISH_PACKET_H
 
 #include "qmqtt_abstractpacket.h"
-#include <QDataStream>
-//#include <qglobal.h>
+#include "qmqtt_frame.h"
 #include <QString>
 
 namespace QMQTT
@@ -51,8 +50,8 @@ public:
 
     bool dupFlag() const;
     void setDupFlag(const bool dupFlag);
-    quint8 qos() const;
-    void setQos(const quint8 qos);
+    QosType qos() const;
+    void setQos(const QosType qos);
     bool retainFlag() const;
     void setRetainFlag(const bool retainFlag);
     QString topicName() const;
@@ -62,20 +61,17 @@ public:
     QByteArray payload() const;
     void setPayload(const QByteArray& payload);
 
+    static PublishPacket fromFrame(const Frame& frame);
+    Frame toFrame() const;
+
 protected:
     QString _topicName;
     quint16 _packetIdentifier;
     QByteArray _payload;
-
-    qint64 calculateRemainingLengthFromData() const;
-
-private:
-    friend QDataStream& operator>>(QDataStream& stream, PublishPacket& packet);
-    friend QDataStream& operator<<(QDataStream& stream, const PublishPacket& packet);
+    bool _dupFlag;
+    QosType _qos;
+    bool _retainFlag;
 };
-
-QDataStream& operator>>(QDataStream& stream, PublishPacket& packet);
-QDataStream& operator<<(QDataStream& stream, const PublishPacket& packet);
 
 } // end namespace QMQTT
 

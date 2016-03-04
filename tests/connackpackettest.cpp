@@ -1,7 +1,5 @@
 #include "basepackettest.h"
 #include <qmqtt_connackpacket.h>
-#include <QBuffer>
-#include <QDebug>
 #include <gtest/gtest.h>
 
 using namespace testing;
@@ -19,121 +17,88 @@ TEST_F(ConnackPacketTest, defaultConstructorValues_Test)
 {
     EXPECT_EQ(QMQTT::ConnackType, _packet.type());
     EXPECT_FALSE(_packet.sessionPresent());
-    EXPECT_EQ(0, _packet.connectReturnCode());
+    EXPECT_EQ(QMQTT::ConnectionAccepted, _packet.connectReturnCode());
 }
 
 TEST_F(ConnackPacketTest, setSessionPresent_Test)
 {
     _packet.setSessionPresent(true);
+
     EXPECT_TRUE(_packet.sessionPresent());
 }
 
 TEST_F(ConnackPacketTest, setConnectReturnCode_Test)
 {
-    _packet.setConnectReturnCode(QMQTT::ConnackPacket::ConnectionRefusedBadUserNameOrPassword);
-    EXPECT_EQ(QMQTT::ConnackPacket::ConnectionRefusedBadUserNameOrPassword, _packet.connectReturnCode());
+    _packet.setConnectReturnCode(QMQTT::ConnectionRefusedUnacceptableProtocolVersion);
+
+    EXPECT_EQ(QMQTT::ConnectionRefusedUnacceptableProtocolVersion, _packet.connectReturnCode());
 }
 
-class ConnackPacketTestWithStream : public BasePacketTest
-{
-public:
-    ConnackPacketTestWithStream() {}
-    virtual ~ConnackPacketTestWithStream() {}
-
-    QMQTT::ConnackPacket _packet;
-
-    void streamIntoPacket(
-        const quint8 fixedHeader,
-        const qint64 remainingLength,
-        const quint8 connectAcknowledgeFlags,
-        const QMQTT::ConnackPacket::ConnectReturnCodeType connectReturnCode)
-    {
-        _stream << fixedHeader;
-        writeRemainingLength(remainingLength);
-        _stream << connectAcknowledgeFlags;
-        _stream << static_cast<quint8>(connectReturnCode);
-        _buffer.seek(0);
-        _stream >> _packet;
-    }
-};
-
-TEST_F(ConnackPacketTestWithStream, fixedHeaderTypeWritesConnackTypeToStream_Test)
-{
-    _stream << _packet;
-
-    EXPECT_EQ(QMQTT::ConnackType,
-              static_cast<QMQTT::PacketType>((readUInt8(0) & 0xf0) >> 4));
-}
-
-TEST_F(ConnackPacketTestWithStream, fixedHeaderFlagsWritesAllBitsFalseToStream_Test)
-{
-    _stream << _packet;
-
-    EXPECT_EQ(0x00, readUInt8(0) & 0x0f);
-}
-
-TEST_F(ConnackPacketTestWithStream, connectSessionPresentWritesToStream_Test)
+TEST_F(ConnackPacketTest, toFrame_Test)
 {
     _packet.setSessionPresent(true);
-    _stream << _packet;
+    _packet.setConnectReturnCode(QMQTT::ConnectionRefusedUnacceptableProtocolVersion);
 
-    EXPECT_EQ(0x01, readUInt8(variableHeaderOffset()));
+    QMQTT::Frame frame = _packet.toFrame();
+
+    EXPECT_EQ(QMQTT::ConnackType << 4, frame._header);
+    ASSERT_EQ(2, frame._data.size());
+    EXPECT_EQ(1, frame._data.at(0));
+    EXPECT_EQ(static_cast<quint8>(QMQTT::ConnectionRefusedUnacceptableProtocolVersion), frame._data.at(1));
 }
 
-TEST_F(ConnackPacketTestWithStream, connectReturnCodeWritesToStream_Test)
+TEST_F(ConnackPacketTest, fromFrame_Test)
 {
-    _packet.setConnectReturnCode(QMQTT::ConnackPacket::ConnectionRefusedServerUnavailable);
-    _stream << _packet;
+    QMQTT::Frame frame;
+    frame._header = QMQTT::ConnackType << 4;
+    QBuffer buffer(&frame._data);
+    buffer.open(QIODevice::WriteOnly);
+    QDataStream stream(&buffer);
+    stream << static_cast<quint8>(1);
+    stream << static_cast<quint8>(QMQTT::ConnectionRefusedUnacceptableProtocolVersion);
+    buffer.close();
 
-    EXPECT_EQ(QMQTT::ConnackPacket::ConnectionRefusedServerUnavailable,
-              static_cast<int>(readUInt8(variableHeaderOffset() + 1)));
+    QMQTT::ConnackPacket packet = QMQTT::ConnackPacket::fromFrame(frame);
+
+    EXPECT_TRUE(packet.sessionPresent());
+    EXPECT_EQ(QMQTT::ConnectionRefusedUnacceptableProtocolVersion, packet.connectReturnCode());
 }
 
-TEST_F(ConnackPacketTestWithStream, connectSessionPresentReadsFromStream_Test)
+TEST_F(ConnackPacketTest, defaultIsValid_Test)
 {
-    streamIntoPacket(QMQTT::ConnackType << 4, 2, 0x01, QMQTT::ConnackPacket::ConnectionAccepted);
-
-    EXPECT_TRUE(_packet.sessionPresent());
-}
-
-TEST_F(ConnackPacketTestWithStream, connectReturnCodeReadsFromStream_Test)
-{
-    streamIntoPacket(QMQTT::ConnackType << 4, 2, 0x00, QMQTT::ConnackPacket::ConnectionRefusedServerUnavailable);
-
-    EXPECT_EQ(QMQTT::ConnackPacket::ConnectionRefusedServerUnavailable, _packet.connectReturnCode());
-}
-
-TEST_F(ConnackPacketTestWithStream, typeConnackAndFixedHeaderFlagsZeroIsValid_Test)
-{
-    streamIntoPacket(QMQTT::ConnackType << 4, 2, 0, QMQTT::ConnackPacket::ConnectionAccepted);
-
     EXPECT_TRUE(_packet.isValid());
 }
 
-TEST_F(ConnackPacketTestWithStream, typeNotConnackAndFixedHeaderFlagsZeroIsInvalid_Test)
+TEST_F(ConnackPacketTest, headerReservedBitsNotZeroIsInvalid_Test)
 {
-    streamIntoPacket(QMQTT::ConnectType << 4, 2, 0, QMQTT::ConnackPacket::ConnectionAccepted);
+    ASSERT_TRUE(_packet.isValid());
+
+    QMQTT::Frame frame = _packet.toFrame();
+    frame._header |= 0x01;
+    _packet = QMQTT::ConnackPacket::fromFrame(frame);
 
     EXPECT_FALSE(_packet.isValid());
 }
 
-TEST_F(ConnackPacketTestWithStream, typeConnectAndFixedHeaderFlagsNotZeroIsInvalid_Test)
+TEST_F(ConnackPacketTest, connectAcknowledgeFlagsReservedBitsNotZeroIsInvalid_Test)
 {
-    streamIntoPacket((QMQTT::ConnackType << 4) | 0x01, 2, 0, QMQTT::ConnackPacket::ConnectionAccepted);
+    ASSERT_TRUE(_packet.isValid());
+
+    QMQTT::Frame frame = _packet.toFrame();
+    frame._data[0] = frame._data.at(0) | 0x02;
+    _packet = QMQTT::ConnackPacket::fromFrame(frame);
 
     EXPECT_FALSE(_packet.isValid());
 }
 
-TEST_F(ConnackPacketTestWithStream, connectAcknowledgeFlagsWithReservedBitTrueIsInvalid_Test)
+TEST_F(ConnackPacketTest, sessionPresentFlagFalseAndConnectReturnCodeNotAcceptedIsInvalid_Test)
 {
-    streamIntoPacket(QMQTT::ConnackType << 4, 2, 0x02, QMQTT::ConnackPacket::ConnectionAccepted);
+    ASSERT_TRUE(_packet.isValid());
 
-    EXPECT_FALSE(_packet.isValid());
-}
-
-TEST_F(ConnackPacketTestWithStream, sessionPresentFalseAndConnectReturnCodeNotZeroIsInvalid_Test)
-{
-    streamIntoPacket(QMQTT::ConnackType << 4, 2, 0x00, QMQTT::ConnackPacket::ConnectionRefusedBadUserNameOrPassword);
+    QMQTT::Frame frame = _packet.toFrame();
+    ASSERT_EQ(0, frame._data.at(0));
+    frame._data[1] = QMQTT::ConnectionRefusedUnacceptableProtocolVersion;
+    _packet = QMQTT::ConnackPacket::fromFrame(frame);
 
     EXPECT_FALSE(_packet.isValid());
 }

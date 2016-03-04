@@ -31,6 +31,11 @@
  */
 #include "qmqtt_client_p.h"
 #include "qmqtt_message.h"
+#include "qmqtt_connectpacket.h"
+#include "qmqtt_publishpacket.h"
+#include "qmqtt_disconnectpacket.h"
+#include "qmqtt_unsubscribepacket.h"
+#include "qmqtt_subscribepacket.h"
 #include <QLoggingCategory>
 #include <QDateTime>
 #include <QUuid>
@@ -129,111 +134,139 @@ void QMQTT::ClientPrivate::onNetworkConnected()
 
 void QMQTT::ClientPrivate::sendConnect()
 {
-    QString magic(PROTOCOL_MAGIC);
-    quint8 header = CONNECT;
-    quint8 flags = 0;
+    ConnectPacket packet;
 
-    //header
-    Frame frame(SETQOS(header, QOS1));
+//    QString magic(PROTOCOL_MAGIC);
+//    quint8 header = CONNECT;
+//    quint8 flags = 0;
 
-    //flags
-    flags = FLAG_CLEANSESS(flags, _cleanSession ? 1 : 0 );
-    flags = FLAG_WILL(flags, willTopic().isEmpty() ? 0 : 1);
-    if (!willTopic().isEmpty())
+    packet.setCleanSession(_cleanSession);
+    packet.setWillTopic(_willTopic);
+    // todo: _willQos should be QosType
+    packet.setWillQos(static_cast<QosType>(_willQos));
+    packet.setWillRetain(_willRetain);
+    packet.setUserName(_username);
+    packet.setPassword(_password);
+    packet.setKeepAlive(_keepAlive);
+    packet.setClientIdentifier(_clientId);
+    if(_clientId.isEmpty())
     {
-        flags = FLAG_WILLQOS(flags, willQos());
-        flags = FLAG_WILLRETAIN(flags, willRetain() ? 1 : 0);
-    }
-    if (!username().isEmpty())
-    {
-        flags = FLAG_USERNAME(flags, 1);
-    }
-    if (!password().isEmpty())
-    {
-        flags = FLAG_PASSWD(flags, 1);
-    }
-
-    //payload
-    frame.writeString(magic);
-    frame.writeChar(PROTOCOL_VERSION_MAJOR);
-    frame.writeChar(flags);
-    frame.writeInt(_keepAlive);
-    if(_clientId.isEmpty()) {
         _clientId = randomClientId();
     }
-    frame.writeString(_clientId);
-    if(!willTopic().isEmpty())
+    packet.setClientIdentifier(_clientId);
+
+    //header
+
+    // todo: why does this have a qos setting?
+//    Frame frame(SETQOS(header, QOS1));
+//    //flags
+//    flags = FLAG_CLEANSESS(flags, _cleanSession ? 1 : 0 );
+//    flags = FLAG_WILL(flags, willTopic().isEmpty() ? 0 : 1);
+//    if (!willTopic().isEmpty())
+//    {
+//        flags = FLAG_WILLQOS(flags, willQos());
+//        flags = FLAG_WILLRETAIN(flags, willRetain() ? 1 : 0);
+//    }
+//    if (!username().isEmpty())
+//    {
+//        flags = FLAG_USERNAME(flags, 1);
+//    }
+//    if (!password().isEmpty())
+//    {
+//        flags = FLAG_PASSWD(flags, 1);
+//    }
+
+//    //payload
+//    frame.writeString(magic);
+//    frame.writeChar(PROTOCOL_VERSION_MAJOR);
+//    frame.writeChar(flags);
+//    frame.writeInt(_keepAlive);
+//    if(_clientId.isEmpty()) {
+//        _clientId = randomClientId();
+//    }
+//    frame.writeString(_clientId);
+//    if(!willTopic().isEmpty())
+//    {
+//        frame.writeString(willTopic());
+//        if(!willMessage().isEmpty())
+//        {
+//            frame.writeString(willMessage());
+//        }
+//    }
+//    if (!_username.isEmpty())
+//    {
+//        frame.writeString(_username);
+//    }
+//    if (!_password.isEmpty()){
+//        frame.writeString(_password);
+//    }
+    _network->sendFrame(packet.toFrame());
+}
+
+quint16 QMQTT::ClientPrivate::sendPublish(const Message& message)
+{
+    PublishPacket packet;
+    packet.setRetainFlag(message.retain());
+    // todo: QMQTT::Message to use QosType
+    packet.setQos(static_cast<QosType>(message.qos()));
+    packet.setDupFlag(message.dup());
+    packet.setTopicName(message.topic());
+    packet.setPacketIdentifier(message.id());
+    if (packet.qos() > Qos0)
     {
-        frame.writeString(willTopic());
-        if(!willMessage().isEmpty())
+        if (packet.packetIdentifier() == 0)
         {
-            frame.writeString(willMessage());
+            packet.setPacketIdentifier(_gmid++);
         }
     }
-    if (!_username.isEmpty())
-    {
-        frame.writeString(_username);
-    }
-    if (!_password.isEmpty()){
-        frame.writeString(_password);
-    }
+
+    _network->sendFrame(packet.toFrame());
+    return packet.packetIdentifier();
+}
+
+void QMQTT::ClientPrivate::sendPuback(quint8 /*type*/, quint16 /*mid*/)
+{
+//    Frame frame(type);
+    Frame frame;
+//    frame.writeInt(mid);
     _network->sendFrame(frame);
 }
 
-quint16 QMQTT::ClientPrivate::sendPublish(const Message& msg)
+quint16 QMQTT::ClientPrivate::sendSubscribe(const QString& topic, const QosType qos)
 {
-    Message message(msg);
-
-    quint8 header = PUBLISH;
-    header = SETRETAIN(header, message.retain() ? 1 : 0);
-    header = SETQOS(header, message.qos());
-    header = SETDUP(header, message.dup() ? 1 : 0);
-    Frame frame(header);
-    frame.writeString(message.topic());
-    if(message.qos() > QOS0) {
-        if(message.id() == 0) {
-            message.setId(_gmid++);
-        }
-        frame.writeInt(message.id());
-    }
-    if(!message.payload().isEmpty()) {
-        frame.writeRawData(message.payload());
-    }
-    _network->sendFrame(frame);
-    return message.id();
-}
-
-void QMQTT::ClientPrivate::sendPuback(quint8 type, quint16 mid)
-{
-    Frame frame(type);
-    frame.writeInt(mid);
-    _network->sendFrame(frame);
-}
-
-quint16 QMQTT::ClientPrivate::sendSubscribe(const QString & topic, quint8 qos)
-{
+    // todo: change this to support multiple subs
     quint16 mid = nextmid();
-    Frame frame(SETQOS(SUBSCRIBE, QOS1));
-    frame.writeInt(mid);
-    frame.writeString(topic);
-    frame.writeChar(qos);
-    _network->sendFrame(frame);
+
+    SubscribePacket packet;
+    packet.setPacketIdentifier(mid);
+    Subscription subscription;
+    subscription._topicFilter = topic;
+    subscription._requestedQos = qos;
+    packet.subscriptionList() << subscription;
+
+    _network->sendFrame(packet.toFrame());
     return mid;
 }
 
-quint16 QMQTT::ClientPrivate::sendUnsubscribe(const QString &topic)
+quint16 QMQTT::ClientPrivate::sendUnsubscribe(const QString& topic)
 {
+    // todo: support multiple topics unsubs
     quint16 mid = _gmid++;
-    Frame frame(SETQOS(UNSUBSCRIBE, QOS1));
-    frame.writeInt(mid);
-    frame.writeString(topic);
-    _network->sendFrame(frame);
+
+    // todo: why is this old code trying to set a qos in the unsubframe?
+    //    Frame frame(SETQOS(UNSUBSCRIBE, QOS1));
+
+    QMQTT::UnsubscribePacket packet;
+    packet.setPacketIdentifier(mid);
+    packet.topicFilterList() << topic;
+    _network->sendFrame(packet.toFrame());
     return mid;
 }
 
 void QMQTT::ClientPrivate::onTimerPingReq()
 {
-    Frame frame(PINGREQ);
+//    Frame frame(PINGREQ);
+    Frame frame;
     _network->sendFrame(frame);
 }
 
@@ -245,8 +278,7 @@ void QMQTT::ClientPrivate::disconnectFromHost()
 
 void QMQTT::ClientPrivate::sendDisconnect()
 {
-    Frame frame(DISCONNECT);
-    _network->sendFrame(frame);
+    _network->sendFrame(DisconnectPacket().toFrame());
 }
 
 void QMQTT::ClientPrivate::startKeepAlive()
@@ -283,7 +315,7 @@ void QMQTT::ClientPrivate::puback(const quint8 type, const quint16 msgid)
     sendPuback(type, msgid);
 }
 
-quint16 QMQTT::ClientPrivate::subscribe(const QString& topic, const quint8 qos)
+quint16 QMQTT::ClientPrivate::subscribe(const QString& topic, const QosType qos)
 {
     Q_Q(Client);
     quint16 msgid = sendSubscribe(topic, qos);
@@ -306,93 +338,106 @@ void QMQTT::ClientPrivate::onNetworkDisconnected()
     emit q->disconnected();
 }
 
-void QMQTT::ClientPrivate::onNetworkReceived(const QMQTT::Frame& frm)
+void QMQTT::ClientPrivate::onNetworkReceived(const Frame& frame)
 {
-    QMQTT::Frame frame(frm);
-    quint8 qos = 0;
-    bool retain, dup;
+//    QMQTT::Frame frame(frm);
+//    quint8 qos = 0;
+//    bool retain, dup;
     QString topic;
-    quint16 mid = 0;
-    quint8 header = frame.header();
-    quint8 type = GETTYPE(header);
+//    quint16 mid = 0;
+//    quint8 header = frame._header;
+//    quint8 type = CONNACK;
+    quint8 type = frame._header >> 4;
     Message message;
 
-    switch(type)
+    switch (type)
     {
-    case CONNACK:
-        frame.readChar();
-        handleConnack(frame.readChar());
+    case ConnackType:
+//    case CONNACK:
+//        frame.readChar();
+        handleConnack(frame);
         break;
-    case PUBLISH:
-        qos = GETQOS(header);;
-        retain = GETRETAIN(header);
-        dup = GETDUP(header);
-        topic = frame.readString();
-        if( qos > QOS0) {
-            mid = frame.readInt();
-        }
-        message.setId(mid);
-        message.setTopic(topic);
-        message.setPayload(frame.data());
-        message.setQos(qos);
-        message.setRetain(retain);
-        message.setDup(dup);
-        handlePublish(message);
+    case PublishType:
+//        qos = GETQOS(header);;
+//        retain = GETRETAIN(header);
+//        dup = GETDUP(header);
+//        topic = frame.readString();
+//        if( qos > QOS0) {
+//            mid = frame.readInt();
+//        }
+//        message.setId(mid);
+//        message.setTopic(topic);
+//        message.setPayload(frame.data());
+//        message.setQos(qos);
+//        message.setRetain(retain);
+//        message.setDup(dup);
+        handlePublish(frame);
         break;
-    case PUBACK:
-    case PUBREC:
-    case PUBREL:
-    case PUBCOMP:
-        mid = frame.readInt();
-        handlePuback(type, mid);
-        break;
-    case SUBACK:
-        mid = frame.readInt();
-        qos = frame.readChar();
+//    case PUBACK:
+//    case PUBREC:
+//    case PUBREL:
+//    case PUBCOMP:
+//        mid = frame.readInt();
+//        handlePuback(type, mid);
+//        break;
+//    case SUBACK:
+//        mid = frame.readInt();
+//        qos = frame.readChar();
         // todo: send a subscribed signal (only in certain cases? mid? qos?)
-        break;
-    case UNSUBACK:
+//        break;
+//    case UNSUBACK:
         // todo: send an unsubscribed signal (only certain cases? mid?)
-        break;
-    case PINGRESP:
+//        break;
+//    case PINGRESP:
         // todo: I know I'm suppose to do something with this. Look at specifications.
-        break;
+//        break;
     default:
         break;
     }
 }
 
-void QMQTT::ClientPrivate::handleConnack(const quint8 ack)
+void QMQTT::ClientPrivate::handleConnack(const Frame& frame)
 {
-    Q_UNUSED(ack);
+    Q_UNUSED(frame);
+
     // todo: send connected signal
 }
 
-void QMQTT::ClientPrivate::handlePublish(const Message& message)
+void QMQTT::ClientPrivate::handlePublish(const Frame& frame)
 {
     Q_Q(Client);
 
-    if(message.qos() == QOS1)
+    PublishPacket packet = PublishPacket::fromFrame(frame);
+
+    if(packet.qos() == Qos1)
     {
-        sendPuback(PUBACK, message.id());
+//        sendPuback(PUBACK, message.id());
     }
-    else if(message.qos() == QOS2)
+    else if(packet.qos() == Qos2)
     {
-        sendPuback(PUBREC, message.id());
+//        sendPuback(PUBREC, message.id());
     }
-    emit q->received(message);
+
+
+    emit q->received(Message(
+        packet.packetIdentifier(),
+        packet.topicName(),
+        packet.payload(),
+        packet.qos(),
+        packet.retainFlag(),
+        packet.dupFlag()));
 }
 
-void QMQTT::ClientPrivate::handlePuback(const quint8 type, const quint16 msgid)
+void QMQTT::ClientPrivate::handlePuback(const quint8 /*type*/, const quint16 /*msgid*/)
 {
-    if(type == PUBREC)
-    {
-        sendPuback(PUBREL, msgid);
-    }
-    else if (type == PUBREL)
-    {
-        sendPuback(PUBCOMP, msgid);
-    }
+//    if(type == PUBREC)
+//    {
+//        sendPuback(PUBREL, msgid);
+//    }
+//    else if (type == PUBREL)
+//    {
+//        sendPuback(PUBCOMP, msgid);
+//    }
     // todo: emit published signal (type? msgid?)
 }
 

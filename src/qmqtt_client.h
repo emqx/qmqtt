@@ -38,6 +38,7 @@
 #  define QMQTTSHARED_EXPORT Q_DECL_IMPORT
 #endif
 
+#include "qmqtt_global.h"
 #include <QObject>
 #include <QAbstractSocket>
 #include <QScopedPointer>
@@ -162,7 +163,7 @@ public slots:
     void connectToHost();
     void disconnectFromHost();
 
-    quint16 subscribe(const QString& topic, const quint8 qos);
+    quint16 subscribe(const QString& topic, const QosType qos);
     void unsubscribe(const QString& topic);
 
     quint16 publish(const Message& message);
@@ -184,7 +185,7 @@ signals:
 protected slots:
     void onNetworkConnected();
     void onNetworkDisconnected();
-    void onNetworkReceived(const QMQTT::Frame& frame);
+    void onNetworkReceived(const Frame& frame);
     void onTimerPingReq();
     void onNetworkError(QAbstractSocket::SocketError error);
 

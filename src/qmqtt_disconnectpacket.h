@@ -33,7 +33,7 @@
 #define QMQTT_DISCONNECT_PACKET_H
 
 #include "qmqtt_abstractpacket.h"
-#include <QDataStream>
+#include "qmqtt_frame.h"
 
 namespace QMQTT
 {
@@ -47,16 +47,12 @@ public:
     bool isValid() const;
     PacketType type() const;
 
+    Frame toFrame() const;
+    static DisconnectPacket fromFrame(Frame& frame);
+
 protected:
-    qint64 calculateRemainingLengthFromData() const;
-
-private:
-    friend QDataStream& operator>>(QDataStream& stream, DisconnectPacket& packet);
-    friend QDataStream& operator<<(QDataStream& stream, const DisconnectPacket& packet);
+    bool _headerReservedBitsValid;
 };
-
-QDataStream& operator>>(QDataStream& stream, DisconnectPacket& packet);
-QDataStream& operator<<(QDataStream& stream, const DisconnectPacket& packet);
 
 } // end namespace QMQTT
 

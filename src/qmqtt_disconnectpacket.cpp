@@ -31,11 +31,10 @@
  */
 #include "qmqtt_disconnectpacket.h"
 #include <QDataStream>
-
-const quint8 DEFAULT_FIXED_HEADER = QMQTT::DisconnectType << 4;
+#include <QBuffer>
 
 QMQTT::DisconnectPacket::DisconnectPacket()
-    : AbstractPacket(DEFAULT_FIXED_HEADER)
+    : _headerReservedBitsValid(true)
 {
 }
 
@@ -48,14 +47,9 @@ QMQTT::PacketType QMQTT::DisconnectPacket::type() const
     return QMQTT::DisconnectType;
 }
 
-qint64 QMQTT::DisconnectPacket::calculateRemainingLengthFromData() const
-{
-    return 0;
-}
-
 bool QMQTT::DisconnectPacket::isValid() const
 {
-    if (_fixedHeader != DEFAULT_FIXED_HEADER)
+    if (!_headerReservedBitsValid)
     {
         return false;
     }
@@ -63,18 +57,20 @@ bool QMQTT::DisconnectPacket::isValid() const
     return true;
 }
 
-QDataStream& QMQTT::operator>>(QDataStream& stream, DisconnectPacket& packet)
+QMQTT::Frame QMQTT::DisconnectPacket::toFrame() const
 {
-    stream >> packet._fixedHeader;
-    packet.readRemainingLength(stream);
+    Frame frame;
 
-    return stream;
+    frame._header = static_cast<quint8>(type()) << 4;
+
+    return frame;
 }
 
-QDataStream& QMQTT::operator<<(QDataStream& stream, const DisconnectPacket& packet)
+QMQTT::DisconnectPacket QMQTT::DisconnectPacket::fromFrame(Frame& frame)
 {
-    stream << packet._fixedHeader;
-    packet.writeRemainingLength(stream);
+    DisconnectPacket packet;
 
-    return stream;
+    packet._headerReservedBitsValid = (frame._header & 0x0f) == 0;
+
+    return packet;
 }

@@ -30,13 +30,11 @@
  *
  */
 #include "qmqtt_subscribepacket.h"
-#include <QDataStream>
-
-const quint8 DEFAULT_FIXED_HEADER = (QMQTT::SubscribeType << 4) | 0x02;
+#include <QBuffer>
 
 QMQTT::SubscribePacket::SubscribePacket()
-    : AbstractPacket(DEFAULT_FIXED_HEADER)
-    , _packetIdentifier(0)
+    : _packetIdentifier(0)
+    , _headerReservedBitsValid(true)
 {
 }
 
@@ -49,24 +47,12 @@ QMQTT::PacketType QMQTT::SubscribePacket::type() const
     return QMQTT::SubscribeType;
 }
 
-qint64 QMQTT::SubscribePacket::calculateRemainingLengthFromData() const
-{
-    quint64 remainingLength = 2;
-    foreach (const Subscription& subscription, _subscriptionList)
-    {
-        remainingLength += subscription._topicFilter.size() + 3;
-    }
-    return remainingLength;
-}
-
 bool QMQTT::SubscribePacket::isValid() const
 {
-    if (_fixedHeader != DEFAULT_FIXED_HEADER)
+    if (!_headerReservedBitsValid)
     {
         return false;
     }
-
-    // todo: re-check all wildcards
 
     if (_subscriptionList.isEmpty())
     {
@@ -80,7 +66,7 @@ bool QMQTT::SubscribePacket::isValid() const
             return false;
         }
 
-        if (subscription._requestedQos > 2)
+        if (static_cast<quint8>(subscription._requestedQos) > 2)
         {
             return false;
         }
@@ -99,44 +85,51 @@ void QMQTT::SubscribePacket::setPacketIdentifier(const quint16 packetIdentifier)
     _packetIdentifier = packetIdentifier;
 }
 
-QMQTT::SubscriptionList QMQTT::SubscribePacket::subscriptionList() const
+QMQTT::SubscriptionList& QMQTT::SubscribePacket::subscriptionList()
 {
     return _subscriptionList;
 }
 
-void QMQTT::SubscribePacket::setSubscriptionList(const SubscriptionList subscriptionList)
+QMQTT::Frame QMQTT::SubscribePacket::toFrame() const
 {
-    _subscriptionList = subscriptionList;
+    Frame frame;
+
+    frame._header = static_cast<quint8>(type()) << 4;
+
+    QBuffer buffer(&frame._data);
+    buffer.open(QIODevice::WriteOnly);
+    QDataStream stream(&buffer);
+    stream << _packetIdentifier;
+    foreach (const Subscription& subscription, _subscriptionList)
+    {
+        writeString(stream, subscription._topicFilter);
+        stream << static_cast<quint8>(subscription._requestedQos);
+    }
+    buffer.close();
+
+    return frame;
 }
 
-QDataStream& QMQTT::operator>>(QDataStream& stream, SubscribePacket& packet)
+QMQTT::SubscribePacket QMQTT::SubscribePacket::fromFrame(Frame& frame)
 {
-    stream >> packet._fixedHeader;
-    qint64 remainingLength = packet.readRemainingLength(stream);
+    SubscribePacket packet;
+
+    packet._headerReservedBitsValid = (frame._header & 0x0f) == 0;
+
+    QBuffer buffer(&frame._data);
+    buffer.open(QIODevice::ReadOnly);
+    QDataStream stream(&buffer);
     stream >> packet._packetIdentifier;
-    remainingLength -= 2;
-    packet._subscriptionList.clear();
-    while (remainingLength > 0)
+    while (buffer.pos() < buffer.size())
     {
-        Subscription subscription;
-        subscription._topicFilter = packet.readString(stream);
-        stream >> subscription._requestedQos;
-
-        packet._subscriptionList.append(subscription);
-        remainingLength -= subscription._topicFilter.size() + 3;
+        Subscription sub;
+        sub._topicFilter = readString(stream);
+        quint8 i = 0;
+        stream >> i;
+        sub._requestedQos = static_cast<QosType>(i);
+        packet._subscriptionList.append(sub);
     }
-    return stream;
-}
+    buffer.close();
 
-QDataStream& QMQTT::operator<<(QDataStream& stream, const SubscribePacket& packet)
-{
-    stream << packet._fixedHeader;
-    packet.writeRemainingLength(stream);
-    stream << packet._packetIdentifier;
-    foreach (const Subscription& subscription, packet._subscriptionList)
-    {
-        packet.writeString(stream, subscription._topicFilter);
-        stream << subscription._requestedQos;
-    }
-    return stream;
+    return packet;
 }

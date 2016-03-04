@@ -1,5 +1,6 @@
-#include "basepackettest.h"
 #include <qmqtt_pubrelpacket.h>
+#include <qmqtt_frame.h>
+#include <QBuffer>
 #include <gtest/gtest.h>
 
 using namespace testing;
@@ -22,70 +23,51 @@ TEST_F(PubrelPacketTest, defaultConstructorValues_Test)
 TEST_F(PubrelPacketTest, setPacketIdentifier_Test)
 {
     _packet.setPacketIdentifier(42);
+
     EXPECT_EQ(42, _packet.packetIdentifier());
 }
 
-class PubrelPacketTestWithStream : public BasePacketTest
-{
-public:
-    PubrelPacketTestWithStream() {}
-    virtual ~PubrelPacketTestWithStream() {}
-
-    QMQTT::PubrelPacket _packet;
-
-    void streamIntoPacket(
-        const quint8 fixedHeader,
-        const qint64 remainingLength,
-        const quint16 packetIdentifier)
-    {
-        _stream << fixedHeader;
-        writeRemainingLength(remainingLength);
-        _stream << packetIdentifier;
-        _buffer.seek(0);
-        _stream >> _packet;
-    }
-};
-
-TEST_F(PubrelPacketTestWithStream, fixedHeaderTypeWritesPubrelTypeToStream_Test)
-{
-    _stream << _packet;
-
-    EXPECT_EQ(QMQTT::PubrelType,
-              static_cast<QMQTT::PacketType>((readUInt8(0) & 0xf0) >> 4));
-}
-
-TEST_F(PubrelPacketTestWithStream, packetIdentifierWritesToStream_Test)
+TEST_F(PubrelPacketTest, toFrame_Test)
 {
     _packet.setPacketIdentifier(42);
-    _stream << _packet;
 
-    EXPECT_EQ(42, readUInt16(variableHeaderOffset()));
+    QMQTT::Frame frame = _packet.toFrame();
+
+    EXPECT_EQ(QMQTT::PubrelType, static_cast<QMQTT::PacketType>(frame._header >> 4));
+
+    ASSERT_EQ(2, frame._data.size());
+    EXPECT_EQ(0, frame._data.at(0));
+    EXPECT_EQ(42, frame._data.at(1));
 }
 
-TEST_F(PubrelPacketTestWithStream, packetIdentifierReadsFromStream_Test)
+TEST_F(PubrelPacketTest, fromFrame_Test)
 {
-    streamIntoPacket(QMQTT::PubrelType << 4, 18, 42);
+    QMQTT::Frame frame;
 
-    EXPECT_EQ(42, _packet.packetIdentifier());
+    frame._header = QMQTT::PubrelType << 4;
+
+    QBuffer buffer(&frame._data);
+    buffer.open(QIODevice::WriteOnly);
+    QDataStream stream(&buffer);
+    stream << static_cast<quint16>(42);
+    buffer.close();
+
+    QMQTT::PubrelPacket packet = QMQTT::PubrelPacket::fromFrame(frame);
+
+    EXPECT_EQ(QMQTT::PubrelType, packet.type());
+    EXPECT_EQ(42, packet.packetIdentifier());
 }
 
-TEST_F(PubrelPacketTestWithStream, typePubrelAndFixedHeaderFlagsTwoIsValid_Test)
+TEST_F(PubrelPacketTest, defaultIsValid_Test)
 {
-    streamIntoPacket((QMQTT::PubrelType << 4) | 0x02, 2, 42);
-
     EXPECT_TRUE(_packet.isValid());
 }
 
-TEST_F(PubrelPacketTestWithStream, typeNotPubrelAndFixedHeaderFlagsTwoIsInvalid_Test)
+TEST_F(PubrelPacketTest, headerReservedBitsNotTwoIsInvalid_Test)
 {
-    streamIntoPacket((QMQTT::ConnectType << 4) | 0x02, 2, 42);
-
-    EXPECT_FALSE(_packet.isValid());
-}
-
-TEST_F(PubrelPacketTestWithStream, typePubrelAndFixedHeaderFlagsNotTwoIsInvalid_Test)
-{
-    streamIntoPacket((QMQTT::PubrelType << 4) | 0x01, 2, 42);
+    QMQTT::Frame frame = _packet.toFrame();
+    frame._header &= 0xf0;
+    _packet = QMQTT::PubrelPacket::fromFrame(frame);
 
     EXPECT_FALSE(_packet.isValid());
 }
