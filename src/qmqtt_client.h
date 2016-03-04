@@ -163,7 +163,7 @@ public slots:
     void connectToHost();
     void disconnectFromHost();
 
-    quint16 subscribe(const QString& topic, const QosType qos);
+    quint16 subscribe(const QString& topic, const quint8 qos);
     void unsubscribe(const QString& topic);
 
     quint16 publish(const Message& message);

@@ -315,10 +315,11 @@ void QMQTT::ClientPrivate::puback(const quint8 type, const quint16 msgid)
     sendPuback(type, msgid);
 }
 
-quint16 QMQTT::ClientPrivate::subscribe(const QString& topic, const QosType qos)
+quint16 QMQTT::ClientPrivate::subscribe(const QString& topic, const quint8 qos)
 {
     Q_Q(Client);
-    quint16 msgid = sendSubscribe(topic, qos);
+    // todo: change Client public interface to use QosType
+    quint16 msgid = sendSubscribe(topic, static_cast<QosType>(qos));
     emit q->subscribed(topic);
     return msgid;
 }

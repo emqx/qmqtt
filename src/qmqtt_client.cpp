@@ -243,7 +243,7 @@ quint16 QMQTT::Client::publish(const Message& message)
     return d->publish(message);
 }
 
-quint16 QMQTT::Client::subscribe(const QString& topic, const QosType qos)
+quint16 QMQTT::Client::subscribe(const QString& topic, const quint8 qos)
 {
     Q_D(Client);
     return d->subscribe(topic, qos);

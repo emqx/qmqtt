@@ -1,3 +1,8 @@
+The following items will become a checklist as tests are written for each
+and behavior is characterized.
+
+
+
 [MQTT-1.5.3-1]
 
 The character data in a UTF-8 encoded string MUST be well-formed UTF-8 as

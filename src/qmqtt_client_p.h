@@ -83,7 +83,7 @@ public:
     void onNetworkDisconnected();
     quint16 publish(const Message& message);
     void puback(const quint8 type, const quint16 msgid);
-    quint16 subscribe(const QString& topic, const QosType qos);
+    quint16 subscribe(const QString& topic, const quint8 qos);
     void unsubscribe(const QString& topic);
     void onNetworkReceived(const Frame& frame);
     void handleConnack(const Frame& frame);
