@@ -15,14 +15,32 @@ SOURCES += \
     networktest.cpp \
     messagetest.cpp \
     frametest.cpp \
-    sockettest.cpp
+    sockettest.cpp \
+    basepackettest.cpp \
+    connectpackettest.cpp \
+    connackpackettest.cpp \
+    publishpackettest.cpp \
+    pubackpackettest.cpp \
+    pubrecpackettest.cpp \
+    pubrelpackettest.cpp \
+    pubcomppackettest.cpp \
+    subscribepackettest.cpp \
+    subackpackettest.cpp \
+    unsubscribepackettest.cpp \
+    unsubackpackettest.cpp \
+    pingreqpackettest.cpp \
+    pingresppackettest.cpp \
+    disconnectpackettest.cpp \
+    testutils.cpp
 
 HEADERS += \
     tcpserver.h \
     customprinter.h \
     networkmock.h \
     socketmock.h \
-    timermock.h
+    timermock.h \
+    basepackettest.h \
+    testutils.h
 
 INCLUDEPATH += \
     ../gtest/googletest/googletest/include \

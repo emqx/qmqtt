@@ -29,7 +29,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
-
 #include "qmqtt_client.h"
 #include "qmqtt_client_p.h"
 
@@ -44,6 +43,8 @@ QMQTT::Client::Client(const QHostAddress& host,
 }
 
 QMQTT::Client::Client(NetworkInterface* network,
+                      TimerInterface* pingrespTimer,
+                      TimerInterface* keepAliveTimer,
                       const QHostAddress& host,
                       const quint16 port,
                       QObject* parent)
@@ -51,7 +52,7 @@ QMQTT::Client::Client(NetworkInterface* network,
     , d_ptr(new ClientPrivate(this))
 {
     Q_D(Client);
-    d->init(host, port, network);
+    d->init(host, port, network, pingrespTimer, keepAliveTimer);
 }
 
 QMQTT::Client::~Client()
@@ -256,10 +257,10 @@ void QMQTT::Client::unsubscribe(const QString& topic)
     d->unsubscribe(topic);
 }
 
-void QMQTT::Client::onTimerPingReq()
+void QMQTT::Client::sendPingreqPacket()
 {
     Q_D(Client);
-    d->onTimerPingReq();
+    d->sendPingreqPacket();
 }
 
 void QMQTT::Client::disconnectFromHost()
@@ -268,7 +269,7 @@ void QMQTT::Client::disconnectFromHost()
     d->disconnectFromHost();
 }
 
-void QMQTT::Client::onNetworkReceived(const QMQTT::Frame& frame)
+void QMQTT::Client::onNetworkReceived(const Frame& frame)
 {
     Q_D(Client);
     d->onNetworkReceived(frame);

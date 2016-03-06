@@ -1,7 +1,16 @@
 #include "networkmock.h"
+#include "timermock.h"
 #include <qmqtt_client.h>
 #include <qmqtt_message.h>
 #include <qmqtt_frame.h>
+#include <qmqtt_connackpacket.h>
+#include <qmqtt_connectpacket.h>
+#include <qmqtt_subackpacket.h>
+#include <qmqtt_publishpacket.h>
+#include <qmqtt_unsubscribepacket.h>
+#include <qmqtt_unsubackpacket.h>
+#include <qmqtt_pingresppacket.h>
+#include <qmqtt_disconnectpacket.h>
 #include <QSharedPointer>
 #include <QSignalSpy>
 #include <QCoreApplication>
@@ -10,23 +19,6 @@
 
 using namespace testing;
 
-const quint8 CONNECT_TYPE = 0x10;
-const quint8 CONNACK_TYPE = 0x20;
-const quint8 PUBLISH_TYPE = 0x30;
-const quint8 PUBACK_TYPE = 0x40;
-const quint8 PUBREC_TYPE = 0x50;
-const quint8 PUBREL_TYPE = 0x60;
-const quint8 PUBCOMP_TYPE = 0x70;
-const quint8 SUBSCRIBE_TYPE = 0x80;
-const quint8 SUBACK_TYPE = 0x90;
-const quint8 UNSUBSCRIBE_TYPE = 0xA0;
-const quint8 UNSUBACK_TYPE = 0xB0;
-const quint8 PINGREQ_TYPE = 0xC0;
-const quint8 PINGRESP_TYPE = 0xD0;
-const quint8 DISCONNECT_TYPE = 0xE0;
-const quint8 QOS0 = 0x00;
-const quint8 QOS1 = 0x02;
-const quint8 QOS2 = 0x04;
 const QHostAddress HOST_ADDRESS = QHostAddress("8.8.8.8");
 const quint16 PORT = 8883;
 
@@ -35,20 +27,23 @@ class ClientTest : public Test
 public:
     explicit ClientTest()
         : _networkMock(new NetworkMock)
-        , _client(new QMQTT::Client(_networkMock))
+        , _pingrespTimerMock(new TimerMock)
+        , _keepAliveTimerMock(new TimerMock)
+        , _client(new QMQTT::Client(_networkMock, _pingrespTimerMock, _keepAliveTimerMock))
     {
         qRegisterMetaType<QMQTT::ClientError>("QMQTT::ClientError");
     }
     virtual ~ClientTest() {}
 
     NetworkMock* _networkMock;
+    TimerMock* _pingrespTimerMock;
+    TimerMock* _keepAliveTimerMock;
     QSharedPointer<QMQTT::Client> _client;
-
-    quint8 getHeaderType(const quint8 header)
-    {
-        return header & 0xF0;
-    }
 };
+
+//------------------------------------------
+// CONSTRUCTOR, SETTERS, and GETTERS
+//------------------------------------------
 
 TEST_F(ClientTest, constructorWithNoParameters_Test)
 {
@@ -147,15 +142,44 @@ TEST_F(ClientTest, setPasswordSetsPassword_Test)
     EXPECT_EQ("Password", _client->password());
 }
 
-TEST_F(ClientTest, keepAliveReturnsKeepAlive_Test)
+// test that _keepAliveTimer interval gets set in constructor
+// test that _pingreqTimer interval gets set in constructor
+
+TEST(ClientTestNoFixture, keepAliveTimerIntervalDefaultsTo300000_Test)
 {
-    EXPECT_EQ(300, _client->keepAlive());
+    TimerMock* keepAliveTimerMock = new TimerMock;
+    EXPECT_CALL(*keepAliveTimerMock, setInterval(300000));
+
+    QMQTT::Client(new NetworkMock, new TimerMock, keepAliveTimerMock);
 }
 
-TEST_F(ClientTest, setKeepAliveSetsKeepAlive_Test)
+TEST(ClientTestNoFixture, pinreqTimerIntervalDefaultsTo300000_Test)
 {
-    _client->setKeepAlive(400);
-    EXPECT_EQ(400, _client->keepAlive());
+    TimerMock* pingreqTimer = new TimerMock;
+    EXPECT_CALL(*pingreqTimer, setInterval(300000));
+
+    QMQTT::Client(new NetworkMock, pingreqTimer, new TimerMock);
+}
+
+TEST_F(ClientTest, keepAliveReturnsKeepAliveTimerIntervalDividedBy1000_Test)
+{
+    EXPECT_CALL(*_keepAliveTimerMock, interval()).WillOnce(Return(123000));
+
+    EXPECT_EQ(123, _client->keepAlive());
+}
+
+TEST_F(ClientTest, setKeepAliveSetsKeepAliveTimerIntervalToValueTimes1000_Test)
+{
+    EXPECT_CALL(*_keepAliveTimerMock, setInterval(123000));
+
+    _client->setKeepAlive(123);
+}
+
+TEST_F(ClientTest, setKeepAliveSetsPingreqTimerIntervalToValueTimes1000_Test)
+{
+    EXPECT_CALL(*_pingrespTimerMock, setInterval(123000));
+
+    _client->setKeepAlive(123);
 }
 
 TEST_F(ClientTest, CleanSessionReturnsCleanSession_Test)
@@ -169,7 +193,7 @@ TEST_F(ClientTest, setCleanSessionSetsCleanSession_Test)
     EXPECT_TRUE(_client->cleanSession());
 }
 
-TEST_F(ClientTest, connectToHostWillCallNetworkConnectToHost)
+TEST_F(ClientTest, connectToHostWillCallNetworkConnectToHost_Test)
 {
     EXPECT_CALL(*_networkMock, connectToHost(Eq(QHostAddress::LocalHost), Eq(1883)));
     _client->connectToHost();
@@ -261,164 +285,232 @@ TEST_F(ClientTest, setWillMessageSetsAWillMessageTest)
     EXPECT_EQ("message", _client->willMessage());
 }
 
-TEST_F(ClientTest, connectionStateReturnsStateInit_Test)
+//------------------------------------------
+// CONNECTION STATE
+//------------------------------------------
+
+TEST_F(ClientTest, connectionStateReturnsInitializedState_Test)
 {
-    EXPECT_EQ(QMQTT::STATE_INIT, _client->connectionState());
+    EXPECT_EQ(QMQTT::InitializedState, _client->connectionState());
 }
 
-TEST_F(ClientTest, connectionStateReturnsStateInitEvenAfterConnected_Test)
+TEST_F(ClientTest, connectionStateReturnsConnectingStateAfterConnectToHostCalled_Test)
 {
-    EXPECT_CALL(*_networkMock, sendFrame(_));
+    _client->connectToHost();
 
-    emit _networkMock->connected();
-
-    EXPECT_EQ(QMQTT::STATE_INIT, _client->connectionState());
+    EXPECT_EQ(QMQTT::ConnectingState, _client->connectionState());
 }
 
-TEST_F(ClientTest, connectSendsConnectMessage_Test)
+TEST_F(ClientTest, connectionStateReturnsConnectedStateAfterConnackPacketReceived_Test)
+{
+    emit _networkMock->received(QMQTT::ConnackPacket().toFrame());
+
+    EXPECT_EQ(QMQTT::ConnectedState, _client->connectionState());
+}
+
+TEST_F(ClientTest, connectionStateReturnsDisconnectedStateAfterDisconnectPacketReceived_Test)
+{
+    emit _networkMock->received(QMQTT::DisconnectPacket().toFrame());
+
+    EXPECT_EQ(QMQTT::DisconnectedState, _client->connectionState());
+}
+
+TEST_F(ClientTest, connectionStateReturnsDisconnectedStateAfterNetworkDisconnects_Test)
+{
+    emit _networkMock->disconnected();
+
+    EXPECT_EQ(QMQTT::DisconnectedState, _client->connectionState());
+}
+
+//------------------------------------------
+
+TEST_F(ClientTest, networkConnecteWillSendConnectPacket_Test)
 {
     QMQTT::Frame frame;
+    ASSERT_NE(QMQTT::ConnectType, frame._header >> 4);
     EXPECT_CALL(*_networkMock, sendFrame(_)).WillOnce(SaveArg<0>(&frame));
 
     emit _networkMock->connected();
 
-    EXPECT_EQ(CONNECT_TYPE, frame.header() & CONNECT_TYPE);
+    EXPECT_EQ(QMQTT::ConnectType, frame._header >> 4);
 }
 
-TEST_F(ClientTest, publishSendsPublishMessage_Test)
+TEST_F(ClientTest, publishWillSendPublishPacket_Test)
 {
     QMQTT::Frame frame;
+    ASSERT_NE(QMQTT::PublishType, frame._header >> 4);
     EXPECT_CALL(*_networkMock, sendFrame(_)).WillOnce(SaveArg<0>(&frame));
 
     QMQTT::Message message(222, "topic", QByteArray("payload"));
     _client->publish(message);
 
-    EXPECT_EQ(PUBLISH_TYPE, getHeaderType(frame.header()));
+    EXPECT_EQ(QMQTT::PublishType, frame._header >> 4);
 }
 
-TEST_F(ClientTest, subscribeSendsSubscribeMessage_Test)
+TEST_F(ClientTest, subscribeWillSendSubscribePacket_Test)
 {
     QMQTT::Frame frame;
+    ASSERT_NE(QMQTT::SubscribeType, frame._header >> 4);
     EXPECT_CALL(*_networkMock, sendFrame(_)).WillOnce(SaveArg<0>(&frame));
 
-    _client->subscribe("topic", QOS2);
+    _client->subscribe("topic", QMQTT::Qos2);
 
-    EXPECT_EQ(SUBSCRIBE_TYPE, getHeaderType(frame.header()));
+    EXPECT_EQ(QMQTT::SubscribeType, frame._header >> 4);
 }
 
-// todo: these are internal, test them as we can (all are puback types?)
-//    void puback(quint8 type, quint16 msgid);
-//    void pubrec(int msgid);
-//    void pubrel(int msgid);
-//    void pubcomp(int msgid);
-
 // todo: what happens if not already subscribed?
-TEST_F(ClientTest, unsubscribeSendsUnsubscribeMessage_Test)
+// will require session support
+TEST_F(ClientTest, unsubscribeWillSendUnsubscribePacket_Test)
 {
     QMQTT::Frame frame;
+    ASSERT_NE(QMQTT::UnsubscribeType, frame._header >> 4);
     EXPECT_CALL(*_networkMock, sendFrame(_)).WillOnce(SaveArg<0>(&frame));
 
     _client->unsubscribe("topic");
 
-    EXPECT_EQ(UNSUBSCRIBE_TYPE, getHeaderType(frame.header()));
-    // todo: test the topic
+    ASSERT_EQ(QMQTT::UnsubscribeType, frame._header >> 4);
+    QMQTT::UnsubscribePacket unsubscribePacket = QMQTT::UnsubscribePacket::fromFrame(frame);
+    ASSERT_EQ(1, unsubscribePacket.topicFilterList().size());
+    EXPECT_EQ("topic", unsubscribePacket.topicFilterList().first());
 }
 
-TEST_F(ClientTest, disconnectSendsDisconnectMessageAndNetworkDisconnect_Test)
+TEST_F(ClientTest, disconnectFromHostSendsDisconnectPacket_Test)
 {
     QMQTT::Frame frame;
+    ASSERT_NE(QMQTT::DisconnectType, frame._header >> 4);
     EXPECT_CALL(*_networkMock, sendFrame(_)).WillOnce(SaveArg<0>(&frame));
-    EXPECT_CALL(*_networkMock, disconnectFromHost());
 
     _client->disconnectFromHost();
 
-    EXPECT_EQ(DISCONNECT_TYPE, getHeaderType(frame.header()));
+    EXPECT_EQ(QMQTT::DisconnectType, frame._header >> 4);
 }
 
-// todo: verify pingreq sent from client, will require timer interface and mock
-
-// todo: this shouldn't emit connected until connect packet received
-TEST_F(ClientTest, networkConnectEmitsConnectedSignal_Test)
+TEST_F(ClientTest, disconnectFromHostCallsNetworkDisconnectFromHost_Test)
 {
-    EXPECT_CALL(*_networkMock, sendFrame(_));
+    EXPECT_CALL(*_networkMock, disconnectFromHost());
+
+    _client->disconnectFromHost();
+}
+
+TEST_F(ClientTest, receivingConnackPacketEmitsConnectedSignal_Test)
+{
     QSignalSpy spy(_client.data(), &QMQTT::Client::connected);
 
-    emit _networkMock->connected();
+    QMQTT::ConnackPacket connackPacket;
+    emit _networkMock->received(connackPacket.toFrame());
 
     EXPECT_EQ(1, spy.count());
 }
 
-TEST_F(ClientTest, networkReceivedSendsConnackDoesNotEmitConnectedSignal_Test)
+TEST_F(ClientTest, receivingConnackPacketStartsKeepAliveTimer_Test)
 {
-    QSignalSpy spy(_client.data(), &QMQTT::Client::connected);
+    EXPECT_CALL(*_keepAliveTimerMock, start());
 
-    QMQTT::Frame frame(CONNACK_TYPE, QByteArray(2, 0x00));
-    emit _networkMock->received(frame);
-
-    EXPECT_EQ(0, spy.count());
+    emit _networkMock->received(QMQTT::ConnackPacket().toFrame());
 }
 
-// todo: receive connack_type should start keepalive
-// todo: receive disconnect_type message should stop keepalive
-//  we need a timer interface to test timer start and stop correctly
+TEST_F(ClientTest, receivingDisconnectPacketStopsKeepAliveTimer_Test)
+{
+    EXPECT_CALL(*_keepAliveTimerMock, stop());
+
+    emit _networkMock->received(QMQTT::DisconnectPacket().toFrame());
+}
+
+TEST_F(ClientTest, receivingDisconnectPacketStopsPingrespTimer_Test)
+{
+    EXPECT_CALL(*_pingrespTimerMock, stop());
+
+    emit _networkMock->received(QMQTT::DisconnectPacket().toFrame());
+}
+
+TEST_F(ClientTest, networkDisconnectedStopsKeepAliveTimer_Test)
+{
+    EXPECT_CALL(*_keepAliveTimerMock, stop());
+
+    emit _networkMock->disconnected();
+}
+
+TEST_F(ClientTest, keepAliveTimerTimeoutWillSendPingreqPacket)
+{
+    QMQTT::Frame frame;
+    ASSERT_NE(QMQTT::PingreqType, frame._header >> 4);
+    EXPECT_CALL(*_networkMock, sendFrame(_)).WillOnce(SaveArg<0>(&frame));
+
+    emit _keepAliveTimerMock->timeout();
+
+    EXPECT_EQ(QMQTT::PingreqType, frame._header >> 4);
+}
+
+TEST_F(ClientTest, keepAliveTimerTimeoutStartsPingrespTimer_Test)
+{
+    EXPECT_CALL(*_pingrespTimerMock, start());
+
+    emit _keepAliveTimerMock->timeout();
+}
+
+TEST_F(ClientTest, pingrespTimerTimeoutDisconnectsNetwork_Test)
+{
+    EXPECT_CALL(*_networkMock, disconnectFromHost());
+
+    emit _pingrespTimerMock->timeout();
+}
+
+TEST_F(ClientTest, receivingPingrespPacketStopsPingrespTimer_Test)
+{
+    EXPECT_CALL(*_pingrespTimerMock, stop());
+
+    _networkMock->received(QMQTT::PingrespPacket().toFrame());
+}
 
 // todo: connack, connection accepted
 // todo: connack, connection refused, unnacceptable protocol
 // todo: connack, connection refused, identifier rejected
-TEST_F(ClientTest, publishEmitsPublishedSignal_Test)
+
+TEST_F(ClientTest, publishEmitsPublishedSignalWhenQos0_Test)
 {
-    EXPECT_CALL(*_networkMock, sendFrame(_));
     qRegisterMetaType<QMQTT::Message>("QMQTT::Message&");
     QSignalSpy spy(_client.data(), &QMQTT::Client::published);
-    QMQTT::Message message(222, "topic", QByteArray("payload"));
 
+    QMQTT::Message message(222, "topic", QByteArray("payload"));
     _client->publish(message);
 
-    EXPECT_EQ(1, spy.count());
+    ASSERT_EQ(1, spy.count());
     EXPECT_EQ(message, spy.at(0).at(0).value<QMQTT::Message>());
 }
 
-// todo: network received sends a puback, test what happens
-// todo: client sends puback, test what happens
-
-// todo: two different response types for different QoS levels
-TEST_F(ClientTest, networkReceivedSendsPublishEmitsReceivedSignal_Test)
+// todo: will not be true for Qos1 and Qos2
+TEST_F(ClientTest, receivingPublishPacketEmitsReceivedSignal_Test)
 {
     QSignalSpy spy(_client.data(), &QMQTT::Client::received);
 
-    QMQTT::Frame frame(PUBLISH_TYPE, QByteArray(2, 0x00));
-    emit _networkMock->received(frame);
+    emit _networkMock->received(QMQTT::PublishPacket().toFrame());
 
     EXPECT_EQ(1, spy.count());
 }
 
-// todo: should happen on suback
-TEST_F(ClientTest, subscribeEmitsSubscribedSignal_Test)
+TEST_F(ClientTest, receivingSubackPacketEmitsSubscribedSignal_Test)
 {
-    EXPECT_CALL(*_networkMock, sendFrame(_));
     QSignalSpy spy(_client.data(), &QMQTT::Client::subscribed);
 
-    _client->subscribe("topic", QOS2);
+    _networkMock->received(QMQTT::SubackPacket().toFrame());
 
     EXPECT_EQ(1, spy.count());
-    EXPECT_EQ("topic", spy.at(0).at(0).toString());
+    // todo: should be able to emit the topic being subscribed
+    // Can't yet, since we don't track subscriptions in a session
+    //EXPECT_EQ("topic", spy.at(0).at(0).toString());
 }
 
-// todo: network received sends suback triggers a subscribed signal (other things?)
-
-// todo: should happen on unsuback
-TEST_F(ClientTest, unsubscribeEmitsUnsubscribedSignal_Test)
+TEST_F(ClientTest, receivingUnsubackPacketEmitsUnsubscribedSignal_Test)
 {
-    EXPECT_CALL(*_networkMock, sendFrame(_));
     QSignalSpy spy(_client.data(), &QMQTT::Client::unsubscribed);
 
-    _client->unsubscribe("topic");
+    emit _networkMock->received(QMQTT::UnsubackPacket().toFrame());
 
     EXPECT_EQ(1, spy.count());
-    EXPECT_EQ("topic", spy.at(0).at(0).toString());
+    // todo: should be able to emit the topic being unsubscribed
+    // Can't yet, since we don't track subscriptions in a session
+    //EXPECT_EQ("topic", spy.at(0).at(0).toString());
 }
-
-// todo: network received sends unsuback then emit unsubscribed signal (only then?)
 
 TEST_F(ClientTest, networkDisconnectedEmitsDisconnectedSignal_Test)
 {
@@ -433,7 +525,7 @@ TEST_F(ClientTest, clientEmitsErrorWhenNetworkEmitsError_Test)
 {
     QSignalSpy spy(_client.data(), &QMQTT::Client::error);
     emit _networkMock->error(QAbstractSocket::ConnectionRefusedError);
-    EXPECT_EQ(1, spy.count());
+    ASSERT_EQ(1, spy.count());
     EXPECT_EQ(QMQTT::SocketConnectionRefusedError,
               spy.at(0).at(0).value<QMQTT::ClientError>());
 }
