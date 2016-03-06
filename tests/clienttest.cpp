@@ -9,6 +9,7 @@
 #include <qmqtt_publishpacket.h>
 #include <qmqtt_unsubscribepacket.h>
 #include <qmqtt_unsubackpacket.h>
+#include <qmqtt_pingresppacket.h>
 #include <qmqtt_disconnectpacket.h>
 #include <QSharedPointer>
 #include <QSignalSpy>
@@ -26,16 +27,16 @@ class ClientTest : public Test
 public:
     explicit ClientTest()
         : _networkMock(new NetworkMock)
-        , _timerMock(new TimerMock)
+        , _pingrespTimerMock(new TimerMock)
         , _keepAliveTimerMock(new TimerMock)
-        , _client(new QMQTT::Client(_networkMock, _timerMock, _keepAliveTimerMock))
+        , _client(new QMQTT::Client(_networkMock, _pingrespTimerMock, _keepAliveTimerMock))
     {
         qRegisterMetaType<QMQTT::ClientError>("QMQTT::ClientError");
     }
     virtual ~ClientTest() {}
 
     NetworkMock* _networkMock;
-    TimerMock* _timerMock;
+    TimerMock* _pingrespTimerMock;
     TimerMock* _keepAliveTimerMock;
     QSharedPointer<QMQTT::Client> _client;
 };
@@ -141,15 +142,44 @@ TEST_F(ClientTest, setPasswordSetsPassword_Test)
     EXPECT_EQ("Password", _client->password());
 }
 
-TEST_F(ClientTest, keepAliveReturnsKeepAlive_Test)
+// test that _keepAliveTimer interval gets set in constructor
+// test that _pingreqTimer interval gets set in constructor
+
+TEST(ClientTestNoFixture, keepAliveTimerIntervalDefaultsTo300000_Test)
 {
-    EXPECT_EQ(300, _client->keepAlive());
+    TimerMock* keepAliveTimerMock = new TimerMock;
+    EXPECT_CALL(*keepAliveTimerMock, setInterval(300000));
+
+    QMQTT::Client(new NetworkMock, new TimerMock, keepAliveTimerMock);
 }
 
-TEST_F(ClientTest, setKeepAliveSetsKeepAlive_Test)
+TEST(ClientTestNoFixture, pinreqTimerIntervalDefaultsTo300000_Test)
 {
-    _client->setKeepAlive(400);
-    EXPECT_EQ(400, _client->keepAlive());
+    TimerMock* pingreqTimer = new TimerMock;
+    EXPECT_CALL(*pingreqTimer, setInterval(300000));
+
+    QMQTT::Client(new NetworkMock, pingreqTimer, new TimerMock);
+}
+
+TEST_F(ClientTest, keepAliveReturnsKeepAliveTimerIntervalDividedBy1000_Test)
+{
+    EXPECT_CALL(*_keepAliveTimerMock, interval()).WillOnce(Return(123000));
+
+    EXPECT_EQ(123, _client->keepAlive());
+}
+
+TEST_F(ClientTest, setKeepAliveSetsKeepAliveTimerIntervalToValueTimes1000_Test)
+{
+    EXPECT_CALL(*_keepAliveTimerMock, setInterval(123000));
+
+    _client->setKeepAlive(123);
+}
+
+TEST_F(ClientTest, setKeepAliveSetsPingreqTimerIntervalToValueTimes1000_Test)
+{
+    EXPECT_CALL(*_pingrespTimerMock, setInterval(123000));
+
+    _client->setKeepAlive(123);
 }
 
 TEST_F(ClientTest, CleanSessionReturnsCleanSession_Test)
@@ -374,20 +404,23 @@ TEST_F(ClientTest, receivingConnackPacketEmitsConnectedSignal_Test)
 
 TEST_F(ClientTest, receivingConnackPacketStartsKeepAliveTimer_Test)
 {
-    EXPECT_CALL(*_keepAliveTimerMock, start()).WillOnce(DoAll(
-        Invoke(_timerMock, &QMQTT::TimerInterface::timeout),
-        Return()));
+    EXPECT_CALL(*_keepAliveTimerMock, start());
 
-    QMQTT::ConnackPacket connackPacket;
-    emit _networkMock->received(connackPacket.toFrame());
+    emit _networkMock->received(QMQTT::ConnackPacket().toFrame());
 }
 
 TEST_F(ClientTest, receivingDisconnectPacketStopsKeepAliveTimer_Test)
 {
     EXPECT_CALL(*_keepAliveTimerMock, stop());
 
-    QMQTT::DisconnectPacket disconnectPacket;
-    emit _networkMock->received(disconnectPacket.toFrame());
+    emit _networkMock->received(QMQTT::DisconnectPacket().toFrame());
+}
+
+TEST_F(ClientTest, receivingDisconnectPacketStopsPingrespTimer_Test)
+{
+    EXPECT_CALL(*_pingrespTimerMock, stop());
+
+    emit _networkMock->received(QMQTT::DisconnectPacket().toFrame());
 }
 
 TEST_F(ClientTest, networkDisconnectedStopsKeepAliveTimer_Test)
@@ -406,6 +439,27 @@ TEST_F(ClientTest, keepAliveTimerTimeoutWillSendPingreqPacket)
     emit _keepAliveTimerMock->timeout();
 
     EXPECT_EQ(QMQTT::PingreqType, frame._header >> 4);
+}
+
+TEST_F(ClientTest, keepAliveTimerTimeoutStartsPingrespTimer_Test)
+{
+    EXPECT_CALL(*_pingrespTimerMock, start());
+
+    emit _keepAliveTimerMock->timeout();
+}
+
+TEST_F(ClientTest, pingrespTimerTimeoutDisconnectsNetwork_Test)
+{
+    EXPECT_CALL(*_networkMock, disconnectFromHost());
+
+    emit _pingrespTimerMock->timeout();
+}
+
+TEST_F(ClientTest, receivingPingrespPacketStopsPingrespTimer_Test)
+{
+    EXPECT_CALL(*_pingrespTimerMock, stop());
+
+    _networkMock->received(QMQTT::PingrespPacket().toFrame());
 }
 
 // todo: connack, connection accepted
@@ -450,8 +504,7 @@ TEST_F(ClientTest, receivingUnsubackPacketEmitsUnsubscribedSignal_Test)
 {
     QSignalSpy spy(_client.data(), &QMQTT::Client::unsubscribed);
 
-    QMQTT::UnsubackPacket unsubackPacket;
-    emit _networkMock->received(unsubackPacket.toFrame());
+    emit _networkMock->received(QMQTT::UnsubackPacket().toFrame());
 
     EXPECT_EQ(1, spy.count());
     // todo: should be able to emit the topic being unsubscribed

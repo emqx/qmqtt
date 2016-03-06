@@ -50,6 +50,11 @@
 
 Q_LOGGING_CATEGORY(client, "qmqtt.client")
 
+namespace
+{
+    const quint16 DEFAULT_KEEP_ALIVE_INTERVAL = 300;
+}
+
 static const quint8 QOS0 = 0x00;
 static const quint8 QOS1 = 0x01;
 static const quint8 QOS2 = 0x02;
@@ -60,7 +65,6 @@ QMQTT::ClientPrivate::ClientPrivate(Client* qq_ptr)
     , _gmid(1)
     , _clientId(QUuid::createUuid().toString())
     , _cleanSession(false)
-    , _keepAlive(300)
     , _connectionState(InitializedState)
     , _willQos(0)
     , _willRetain(false)
@@ -73,7 +77,8 @@ QMQTT::ClientPrivate::~ClientPrivate()
 }
 
 void QMQTT::ClientPrivate::init(const QHostAddress& host, const quint16 port,
-                                NetworkInterface* network, TimerInterface* timer,
+                                NetworkInterface* network,
+                                TimerInterface* pingRespTimer,
                                 TimerInterface* keepAliveTimer)
 {
     Q_Q(Client);
@@ -88,14 +93,7 @@ void QMQTT::ClientPrivate::init(const QHostAddress& host, const quint16 port,
     {
         _network.reset(network);
     }
-    if(timer == NULL)
-    {
-        _timer.reset(new Timer);
-    }
-    else
-    {
-        _timer.reset(timer);
-    }
+
     if(keepAliveTimer == NULL)
     {
         _keepAliveTimer.reset(new Timer);
@@ -104,19 +102,34 @@ void QMQTT::ClientPrivate::init(const QHostAddress& host, const quint16 port,
     {
         _keepAliveTimer.reset(keepAliveTimer);
     }
+    _keepAliveTimer->setSingleShot(false);
+
+    if(pingRespTimer == NULL)
+    {
+        _pingrespTimer.reset(new Timer);
+    }
+    else
+    {
+        _pingrespTimer.reset(pingRespTimer);
+    }
+    _pingrespTimer->setSingleShot(true);
+
+    setKeepAlive(DEFAULT_KEEP_ALIVE_INTERVAL);
 
     initializeErrorHash();
 
     QObject::connect(_keepAliveTimer.data(), &Timer::timeout,
                      q, &Client::sendPingreqPacket);
+    QObject::connect(_pingrespTimer.data(), &Timer::timeout,
+                     _network.data(), &NetworkInterface::disconnectFromHost);
 
-    QObject::connect(_network.data(), &Network::connected,
+    QObject::connect(_network.data(), &NetworkInterface::connected,
                      q, &Client::onNetworkConnected);
-    QObject::connect(_network.data(), &Network::disconnected,
+    QObject::connect(_network.data(), &NetworkInterface::disconnected,
                      q, &Client::onNetworkDisconnected);
-    QObject::connect(_network.data(), &Network::received,
+    QObject::connect(_network.data(), &NetworkInterface::received,
                      q, &Client::onNetworkReceived);
-    QObject::connect(_network.data(), &Network::error,
+    QObject::connect(_network.data(), &NetworkInterface::error,
                      q, &Client::onNetworkError);
 }
 
@@ -163,7 +176,7 @@ void QMQTT::ClientPrivate::onNetworkConnected()
     connectPacket.setWillRetain(_willRetain);
     connectPacket.setUserName(_username);
     connectPacket.setPassword(_password);
-    connectPacket.setKeepAlive(_keepAlive);
+    connectPacket.setKeepAlive(keepAlive());
     connectPacket.setClientIdentifier(_clientId);
     if(_clientId.isEmpty())
     {
@@ -176,6 +189,8 @@ void QMQTT::ClientPrivate::onNetworkConnected()
 void QMQTT::ClientPrivate::sendPingreqPacket()
 {
     sendPacket(PingreqPacket());
+
+    _pingrespTimer->start();
 }
 
 void QMQTT::ClientPrivate::disconnectFromHost()
@@ -183,18 +198,6 @@ void QMQTT::ClientPrivate::disconnectFromHost()
     _network->sendFrame(DisconnectPacket().toFrame());
 
     _network->disconnectFromHost();
-}
-
-void QMQTT::ClientPrivate::startKeepAlive()
-{
-    _keepAliveTimer->setSingleShot(false);
-    _keepAliveTimer->setInterval(_keepAlive*1000);
-    _keepAliveTimer->start();
-}
-
-void QMQTT::ClientPrivate::stopKeepAlive()
-{
-    _keepAliveTimer->stop();
 }
 
 QString QMQTT::ClientPrivate::randomClientId()
@@ -272,15 +275,7 @@ void QMQTT::ClientPrivate::onNetworkDisconnected()
 
 void QMQTT::ClientPrivate::onNetworkReceived(const Frame& frame)
 {
-//    QMQTT::Frame frame(frm);
-//    quint8 qos = 0;
-//    bool retain, dup;
-    QString topic;
-//    quint16 mid = 0;
-//    quint8 header = frame._header;
-//    quint8 type = CONNACK;
     quint8 type = frame._header >> 4;
-    Message message;
 
     switch (type)
     {
@@ -371,9 +366,6 @@ void QMQTT::ClientPrivate::pubackPacketReceived(const Frame& frame)
 {
     PubackPacket puback = PubackPacket::fromFrame(frame);
     Q_UNUSED(puback);
-
-    // if this subscription is Qos1
-    // then accept this as acknowledged
 }
 
 void QMQTT::ClientPrivate::pubrecPacketReceived(const Frame& frame)
@@ -400,9 +392,6 @@ void QMQTT::ClientPrivate::pubcompPacketReceived(const Frame& frame)
 {
     PubcompPacket pubcomp = PubcompPacket::fromFrame(frame);
     Q_UNUSED(pubcomp);
-
-    // if this subscription is Qos2, then
-    // accept this as acknowledged
 }
 
 void QMQTT::ClientPrivate::subackPacketReceived(const Frame& frame)
@@ -410,8 +399,8 @@ void QMQTT::ClientPrivate::subackPacketReceived(const Frame& frame)
     Q_Q(Client);
     Q_UNUSED(frame);
 
-    // todo: send a subscribed signal (only in certain cases? mid? qos?)
-    // todo: associate msgid with a tracked subscription
+    // todo: associate msgid with a tracked subscription to get topic
+    // will need subscriptions and session support
     emit q->subscribed("");
 }
 
@@ -420,7 +409,8 @@ void QMQTT::ClientPrivate::unsubackPacketReceived(const Frame& frame)
     Q_Q(Client);
     Q_UNUSED(frame);
 
-    UnsubackPacket unsubackPacket = UnsubackPacket::fromFrame(frame);
+    // todo: associate msgid with a tracked subscription to get topic
+    // will need subscriptions and session support
     emit q->unsubscribed("");
 }
 
@@ -428,7 +418,7 @@ void QMQTT::ClientPrivate::pingrespPacketReceived(const Frame& frame)
 {
     Q_UNUSED(frame);
 
-    // reset idle timer?
+    _pingrespTimer->stop();
 }
 
 void QMQTT::ClientPrivate::disconnectPacketReceived(const Frame& frame)
@@ -480,12 +470,13 @@ bool QMQTT::ClientPrivate::cleanSession() const
 
 void QMQTT::ClientPrivate::setKeepAlive(const int keepAlive)
 {
-    _keepAlive = keepAlive;
+    _keepAliveTimer->setInterval(keepAlive * 1000);
+    _pingrespTimer->setInterval(keepAlive * 1000);
 }
 
 int QMQTT::ClientPrivate::keepAlive() const
 {
-    return _keepAlive;
+    return _keepAliveTimer->interval() / 1000;
 }
 
 void QMQTT::ClientPrivate::setPassword(const QString& password)
@@ -602,12 +593,13 @@ void QMQTT::ClientPrivate::setConnectionState(const ConnectionState& connectionS
     {
         if(connectionState == DisconnectedState)
         {
-            stopKeepAlive();
+            _keepAliveTimer->stop();
+            _pingrespTimer->stop();
         }
         else
         if(connectionState == ConnectedState)
         {
-            startKeepAlive();
+            _keepAliveTimer->start();
         }
 
         _connectionState = connectionState;

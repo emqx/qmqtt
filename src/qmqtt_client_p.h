@@ -45,8 +45,10 @@ public:
     ClientPrivate(Client* qq_ptr);
     ~ClientPrivate();
 
-    void init(const QHostAddress& host, const quint16 port, NetworkInterface* network = NULL,
-              TimerInterface* timer = NULL, TimerInterface* keepAliveTimer = NULL);
+    void init(const QHostAddress& host, const quint16 port,
+              NetworkInterface* network = NULL,
+              TimerInterface* pingRespTimer = NULL,
+              TimerInterface* keepAliveTimer = NULL);
 
     QHostAddress _host;
     quint16 _port;
@@ -55,10 +57,9 @@ public:
     QString _username;
     QString _password;
     bool _cleanSession;
-    int _keepAlive;
     ConnectionState _connectionState;
     QScopedPointer<NetworkInterface> _network;
-    QScopedPointer<TimerInterface> _timer;
+    QScopedPointer<TimerInterface> _pingrespTimer;
     QScopedPointer<TimerInterface> _keepAliveTimer;
     QString _willTopic;
     quint8 _willQos;
@@ -73,8 +74,6 @@ public:
     void connectToHost();
     void sendPingreqPacket();
     void disconnectFromHost();
-    void startKeepAlive();
-    void stopKeepAlive();
     void onNetworkConnected();
     void onNetworkDisconnected();
     quint16 publish(const Message& message);

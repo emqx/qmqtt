@@ -43,7 +43,7 @@ QMQTT::Client::Client(const QHostAddress& host,
 }
 
 QMQTT::Client::Client(NetworkInterface* network,
-                      TimerInterface* timer,
+                      TimerInterface* pingrespTimer,
                       TimerInterface* keepAliveTimer,
                       const QHostAddress& host,
                       const quint16 port,
@@ -52,7 +52,7 @@ QMQTT::Client::Client(NetworkInterface* network,
     , d_ptr(new ClientPrivate(this))
 {
     Q_D(Client);
-    d->init(host, port, network, timer, keepAliveTimer);
+    d->init(host, port, network, pingrespTimer, keepAliveTimer);
 }
 
 QMQTT::Client::~Client()

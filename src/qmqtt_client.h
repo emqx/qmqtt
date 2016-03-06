@@ -123,7 +123,7 @@ public:
 
     // for testing purposes only
     Client(NetworkInterface* network,
-           TimerInterface* timer,
+           TimerInterface* pingrespTimer,
            TimerInterface* keepAliveTimer,
            const QHostAddress& host = QHostAddress::LocalHost,
            const quint16 port = 1883,
