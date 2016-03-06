@@ -48,7 +48,7 @@ RouteSubscription *Router::subscribe(const QString &route)
 {
     RouteSubscription *subscription = new RouteSubscription(this);
     subscription->setRoute(route);
-    _client->subscribe(subscription->_topic, Qos0);
+    _client->subscribe(subscription->_topic, 0);
     connect(_client, &Client::received, subscription, &RouteSubscription::routeMessage);
     return subscription;
 }
