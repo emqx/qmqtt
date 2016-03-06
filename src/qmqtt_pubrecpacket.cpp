@@ -83,13 +83,14 @@ QMQTT::Frame QMQTT::PubrecPacket::toFrame() const
     return frame;
 }
 
-QMQTT::PubrecPacket QMQTT::PubrecPacket::fromFrame(Frame& frame)
+QMQTT::PubrecPacket QMQTT::PubrecPacket::fromFrame(const Frame& frame)
 {
     PubrecPacket packet;
 
     packet._headerReservedBitsValid = (frame._header & 0x0f) == 0;
 
-    QBuffer buffer(&frame._data);
+    QBuffer buffer;
+    buffer.setData(frame._data);
     buffer.open(QIODevice::ReadOnly);
     QDataStream stream(&buffer);
     stream >> packet._packetIdentifier;

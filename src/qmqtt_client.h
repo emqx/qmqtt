@@ -58,10 +58,10 @@ static const quint8 PROTOCOL_VERSION_REVISION = 1;
 
 enum ConnectionState
 {
-    STATE_INIT = 0,
-    STATE_CONNECTING,
-    STATE_CONNECTED,
-    STATE_DISCONNECTED
+    InitializedState = 0,
+    ConnectingState,
+    ConnectedState,
+    DisconnectedState
 };
 
 enum ClientError
@@ -96,6 +96,7 @@ class ClientPrivate;
 class Message;
 class Frame;
 class NetworkInterface;
+class TimerInterface;
 
 class QMQTTSHARED_EXPORT Client : public QObject
 {
@@ -122,6 +123,8 @@ public:
 
     // for testing purposes only
     Client(NetworkInterface* network,
+           TimerInterface* timer,
+           TimerInterface* keepAliveTimer,
            const QHostAddress& host = QHostAddress::LocalHost,
            const quint16 port = 1883,
            QObject* parent = NULL);
@@ -173,11 +176,8 @@ signals:
     void disconnected();
     void error(const QMQTT::ClientError error);
 
-    // todo: should emit on server suback (or is that only at specific QoS levels?)
     void subscribed(const QString& topic);
-    // todo: should emit on server unsuback (or is that only at specific QoS levels?)
     void unsubscribed(const QString& topic);
-    // todo: should emit on server puback (or is that only at specific QoS levels?)
     void published(const QMQTT::Message& message);
 
     void received(const QMQTT::Message& message);
@@ -186,7 +186,7 @@ protected slots:
     void onNetworkConnected();
     void onNetworkDisconnected();
     void onNetworkReceived(const Frame& frame);
-    void onTimerPingReq();
+    void sendPingreqPacket();
     void onNetworkError(QAbstractSocket::SocketError error);
 
 protected:

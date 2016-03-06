@@ -65,7 +65,7 @@ QMQTT::Frame QMQTT::PingreqPacket::toFrame() const
     return frame;
 }
 
-QMQTT::PingreqPacket QMQTT::PingreqPacket::fromFrame(Frame& frame)
+QMQTT::PingreqPacket QMQTT::PingreqPacket::fromFrame(const Frame& frame)
 {
     PingreqPacket packet;
 

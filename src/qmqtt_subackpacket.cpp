@@ -100,13 +100,14 @@ QMQTT::Frame QMQTT::SubackPacket::toFrame() const
     return frame;
 }
 
-QMQTT::SubackPacket QMQTT::SubackPacket::fromFrame(Frame& frame)
+QMQTT::SubackPacket QMQTT::SubackPacket::fromFrame(const Frame& frame)
 {
     SubackPacket packet;
 
     packet._headerReservedBitsValid = (frame._header & 0x0f) == 0;
 
-    QBuffer buffer(&frame._data);
+    QBuffer buffer;
+    buffer.setData(frame._data);
     buffer.open(QIODevice::ReadOnly);
     QDataStream stream(&buffer);
     stream >> packet._packetIdentifier;

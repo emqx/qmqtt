@@ -50,7 +50,7 @@ public:
     quint16 packetIdentifier() const;
     void setPacketIdentifier(const quint16 packetIdentifier);
 
-    static PubrelPacket fromFrame(Frame& frame);
+    static PubrelPacket fromFrame(const Frame& frame);
     Frame toFrame() const;
 
 protected:

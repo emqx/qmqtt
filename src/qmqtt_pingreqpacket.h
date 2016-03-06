@@ -48,7 +48,7 @@ public:
     PacketType type() const;
 
     Frame toFrame() const;
-    static PingreqPacket fromFrame(Frame& frame);
+    static PingreqPacket fromFrame(const Frame& frame);
 
 protected:
     bool _headerReservedBitsValid;

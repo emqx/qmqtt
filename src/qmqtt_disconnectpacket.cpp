@@ -66,7 +66,7 @@ QMQTT::Frame QMQTT::DisconnectPacket::toFrame() const
     return frame;
 }
 
-QMQTT::DisconnectPacket QMQTT::DisconnectPacket::fromFrame(Frame& frame)
+QMQTT::DisconnectPacket QMQTT::DisconnectPacket::fromFrame(const Frame& frame)
 {
     DisconnectPacket packet;
 

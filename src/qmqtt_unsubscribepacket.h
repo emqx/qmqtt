@@ -54,7 +54,7 @@ public:
     QStringList& topicFilterList();
 
     Frame toFrame() const;
-    static UnsubscribePacket fromFrame(Frame& frame);
+    static UnsubscribePacket fromFrame(const Frame& frame);
 
 protected:
     quint16 _packetIdentifier;

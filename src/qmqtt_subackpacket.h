@@ -54,7 +54,7 @@ public:
     SubackReturnCodeList& returnCodeList();
 
     Frame toFrame() const;
-    static SubackPacket fromFrame(Frame& frame);
+    static SubackPacket fromFrame(const Frame& frame);
 
 protected:
     quint16 _packetIdentifier;

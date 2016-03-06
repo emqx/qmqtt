@@ -214,13 +214,14 @@ bool QMQTT::ConnectPacket::isValid() const
     return true;
 }
 
-QMQTT::ConnectPacket QMQTT::ConnectPacket::fromFrame(Frame& frame)
+QMQTT::ConnectPacket QMQTT::ConnectPacket::fromFrame(const Frame& frame)
 {
     ConnectPacket packet;
 
     packet._headerReservedBitsValid = (frame._header & 0x0f) == 0;
 
-    QBuffer buffer(&frame._data);
+    QBuffer buffer;
+    buffer.setData(frame._data);
     buffer.open(QIODevice::ReadOnly);
     QDataStream stream(&buffer);
 

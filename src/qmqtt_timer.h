@@ -41,7 +41,7 @@ class Timer : public TimerInterface
 {
     Q_OBJECT
 public:
-    explicit Timer(QObject *parent = 0);
+    explicit Timer(QObject* parent = NULL);
     virtual ~Timer();
 
     bool isSingleShot() const;

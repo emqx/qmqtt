@@ -52,7 +52,7 @@ public:
 
     SubscriptionList& subscriptionList();
 
-    static SubscribePacket fromFrame(Frame& frame);
+    static SubscribePacket fromFrame(const Frame& frame);
     Frame toFrame() const;
 
 protected:

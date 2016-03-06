@@ -48,7 +48,7 @@ public:
     PacketType type() const;
 
     Frame toFrame() const;
-    static PingrespPacket fromFrame(Frame& frame);
+    static PingrespPacket fromFrame(const Frame& frame);
 
 protected:
     bool _headerReservedBitsValid;

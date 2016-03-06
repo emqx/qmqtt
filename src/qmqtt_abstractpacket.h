@@ -33,6 +33,7 @@
 #define QMQTT_ABSTRACT_PACKET_H
 
 #include "qmqtt_global.h"
+#include "qmqtt_frame.h"
 
 namespace QMQTT
 {
@@ -45,6 +46,8 @@ public:
 
     virtual bool isValid() const = 0;
     virtual PacketType type() const = 0;
+
+    virtual Frame toFrame() const = 0;
 
 protected:
     static QString readString(QDataStream& stream);

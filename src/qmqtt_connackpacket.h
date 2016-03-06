@@ -54,7 +54,7 @@ public:
     PacketType type() const;
 
     Frame toFrame() const;
-    static ConnackPacket fromFrame(Frame& frame);
+    static ConnackPacket fromFrame(const Frame& frame);
 
 protected:
     bool _sessionPresent;

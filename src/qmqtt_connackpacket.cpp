@@ -97,13 +97,14 @@ bool QMQTT::ConnackPacket::isValid() const
     return true;
 }
 
-QMQTT::ConnackPacket QMQTT::ConnackPacket::fromFrame(Frame& frame)
+QMQTT::ConnackPacket QMQTT::ConnackPacket::fromFrame(const Frame& frame)
 {
     ConnackPacket packet;
 
     packet._headerReservedBitsValid = (frame._header & 0x0f) == 0;
 
-    QBuffer buffer(&frame._data);
+    QBuffer buffer;
+    buffer.setData(frame._data);
     buffer.open(QIODevice::ReadOnly);
     QDataStream stream(&buffer);
 

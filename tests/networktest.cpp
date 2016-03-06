@@ -23,10 +23,7 @@ public:
         _byteArray.clear();
         _socketMock = new SocketMock;
         _timerMock = new TimerMock;
-//        EXPECT_CALL(*_timerMock, setSingleShot(_)).WillRepeatedly(Return());
-//        EXPECT_CALL(*_timerMock, setInterval(_)).WillRepeatedly(Return());
         _network.reset(new QMQTT::Network(_socketMock, _timerMock));
-//        Mock::VerifyAndClearExpectations(_socketMock);
     }
 
     void TearDown()

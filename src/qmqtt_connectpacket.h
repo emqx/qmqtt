@@ -72,7 +72,7 @@ public:
     PacketType type() const;
 
     Frame toFrame() const;
-    static ConnectPacket fromFrame(Frame& frame);
+    static ConnectPacket fromFrame(const Frame& frame);
 
 protected:
     QString _protocol;

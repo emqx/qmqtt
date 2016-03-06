@@ -51,7 +51,7 @@ public:
     void setPacketIdentifier(const quint16 packetIdentifier);
 
     Frame toFrame() const;
-    static UnsubackPacket fromFrame(Frame& frame);
+    static UnsubackPacket fromFrame(const Frame& frame);
 
 protected:
     quint16 _packetIdentifier;

@@ -34,7 +34,7 @@
 
 #include "qmqtt_client.h"
 #include "qmqtt_client_p.h"
-#include "qmqtt_network.h"
+#include "qmqtt_publishpacket.h"
 #include <QTimer>
 
 namespace QMQTT {
@@ -45,7 +45,8 @@ public:
     ClientPrivate(Client* qq_ptr);
     ~ClientPrivate();
 
-    void init(const QHostAddress& host, const quint16 port, NetworkInterface* network = NULL);
+    void init(const QHostAddress& host, const quint16 port, NetworkInterface* network = NULL,
+              TimerInterface* timer = NULL, TimerInterface* keepAliveTimer = NULL);
 
     QHostAddress _host;
     quint16 _port;
@@ -57,7 +58,8 @@ public:
     int _keepAlive;
     ConnectionState _connectionState;
     QScopedPointer<NetworkInterface> _network;
-    QTimer _timer;
+    QScopedPointer<TimerInterface> _timer;
+    QScopedPointer<TimerInterface> _keepAliveTimer;
     QString _willTopic;
     quint8 _willQos;
     bool _willRetain;
@@ -69,26 +71,26 @@ public:
     QString randomClientId();
     quint16 nextmid();
     void connectToHost();
-    void sendConnect();
-    void onTimerPingReq();
-    quint16 sendUnsubscribe(const QString &topic);
-    quint16 sendSubscribe(const QString &topic, const QosType qos);
-    quint16 sendPublish(const Message &msg);
-    void sendPuback(quint8 type, quint16 mid);
-    void sendDisconnect();
+    void sendPingreqPacket();
     void disconnectFromHost();
     void startKeepAlive();
     void stopKeepAlive();
     void onNetworkConnected();
     void onNetworkDisconnected();
     quint16 publish(const Message& message);
-    void puback(const quint8 type, const quint16 msgid);
     quint16 subscribe(const QString& topic, const quint8 qos);
     void unsubscribe(const QString& topic);
     void onNetworkReceived(const Frame& frame);
-    void handleConnack(const Frame& frame);
-    void handlePublish(const Frame& frame);
-    void handlePuback(const quint8 type, const quint16 msgid);
+    void connackPacketReceived(const Frame& frame);
+    void publishPacketReceived(const Frame& frame);
+    void pubackPacketReceived(const Frame& frame);
+    void pubrecPacketReceived(const Frame& frame);
+    void pubrelPacketReceived(const Frame& frame);
+    void pubcompPacketReceived(const Frame& frame);
+    void subackPacketReceived(const Frame& frame);
+    void unsubackPacketReceived(const Frame& frame);
+    void pingrespPacketReceived(const Frame& frame);
+    void disconnectPacketReceived(const Frame& frame);
     bool autoReconnect() const;
     void setAutoReconnect(const bool autoReconnect);
     bool autoReconnectInterval() const;
@@ -119,6 +121,9 @@ public:
     QString willMessage() const;
     void initializeErrorHash();
     void onNetworkError(QAbstractSocket::SocketError error);
+
+    void sendPacket(const AbstractPacket& packet);
+    void setConnectionState(const ConnectionState& connectionState);
 
     Q_DECLARE_PUBLIC(Client)
 };

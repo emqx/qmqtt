@@ -48,7 +48,7 @@ public:
     PacketType type() const;
 
     Frame toFrame() const;
-    static DisconnectPacket fromFrame(Frame& frame);
+    static DisconnectPacket fromFrame(const Frame& frame);
 
 protected:
     bool _headerReservedBitsValid;
