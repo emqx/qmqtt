@@ -32,8 +32,54 @@
 #ifndef QMQTT_FRAME_H
 #define QMQTT_FRAME_H
 
-#include <QByteArray>
-#include <QDataStream>
+#include <QObject>
+
+#define PROTOCOL_MAGIC "MQIsdp"
+
+#define CONNECT 0x10
+#define CONNACK 0x20
+#define PUBLISH 0x30
+#define PUBACK 0x40
+#define PUBREC 0x50
+#define PUBREL 0x60
+#define PUBCOMP 0x70
+#define SUBSCRIBE 0x80
+#define SUBACK 0x90
+#define UNSUBSCRIBE 0xA0
+#define UNSUBACK 0xB0
+#define PINGREQ 0xC0
+#define PINGRESP 0xD0
+#define DISCONNECT 0xE0
+
+#define LSB(A) (quint8)(A & 0x00FF)
+#define MSB(A) (quint8)((A & 0xFF00) >> 8)
+
+/*
+|--------------------------------------
+| 7 6 5 4 |     3    |  2 1  | 0      |
+|  Type   | DUP flag |  QoS  | RETAIN |
+|--------------------------------------
+*/
+#define GETTYPE(HDR)		(HDR & 0xF0)
+#define SETQOS(HDR, Q)		(HDR | ((Q) << 1))
+#define GETQOS(HDR)			((HDR & 0x06) >> 1)
+#define SETDUP(HDR, D)		(HDR | ((D) << 3))
+#define GETDUP(HDR)			((HDR & 0x08) >> 3)
+#define SETRETAIN(HDR, R)	(HDR | (R))
+#define GETRETAIN(HDR)		(HDR & 0x01)
+
+/*
+|----------------------------------------------------------------------------------
+|     7    |    6     |      5     |  4   3  |     2    |       1      |     0    |
+| username | password | willretain | willqos | willflag | cleansession | reserved |
+|----------------------------------------------------------------------------------
+*/
+#define FLAG_CLEANSESS(F, C)	(F | ((C) << 1))
+#define FLAG_WILL(F, W)			(F | ((W) << 2))
+#define FLAG_WILLQOS(F, Q)		(F | ((Q) << 3))
+#define FLAG_WILLRETAIN(F, R) 	(F | ((R) << 5))
+#define FLAG_PASSWD(F, P)		(F | ((P) << 6))
+#define FLAG_USERNAME(F, U)		(F | ((U) << 7))
 
 namespace QMQTT {
 
@@ -41,29 +87,35 @@ class Frame
 {
 public:
     explicit Frame();
-    explicit Frame(const quint8& header);
-    explicit Frame(const quint8& header, const QByteArray& data);
+    explicit Frame(quint8 header);
+    explicit Frame(quint8 header, QByteArray data);
     virtual ~Frame();
 
     Frame(const Frame& other);
     Frame& operator=(const Frame& other);
 
     bool operator==(const Frame& other) const;
-    bool operator!=(const Frame& other) const;
 
-    quint8 _header;
-    QByteArray _data;
+    quint8 header() const;
+    QByteArray data() const;
 
-    static int readRemainingLength(QDataStream& stream);
-    static void writeRemainingLength(QDataStream& stream, int remainingLength);
+    int readInt();
+    char readChar();
+    QString readString();
+
+    void writeInt(int i);
+    void writeChar(const quint8 c);
+    void writeString(const QString &string);
+    void writeRawData(const QByteArray &data);
+
+    //TODO: FIXME LATER
+    void write(QDataStream &stream);
 
 private:
-    friend QDataStream& operator>>(QDataStream& stream, Frame& packet);
-    friend QDataStream& operator<<(QDataStream& stream, const Frame& packet);
+    void encodeLength(QByteArray & lenbuf, int length);
+    quint8 _header;
+    QByteArray _data;
 };
-
-QDataStream& operator>>(QDataStream& stream, Frame& packet);
-QDataStream& operator<<(QDataStream& stream, const Frame& packet);
 
 } // namespace QMQTT
 
