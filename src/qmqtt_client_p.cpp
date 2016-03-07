@@ -325,7 +325,7 @@ void QMQTT::ClientPrivate::onNetworkReceived(const QMQTT::Frame& frm)
         handleConnack(frame.readChar());
         break;
     case PUBLISH:
-        qos = GETQOS(header);;
+        qos = GETQOS(header);
         retain = GETRETAIN(header);
         dup = GETDUP(header);
         topic = frame.readString();
