@@ -56,7 +56,7 @@ public:
             QObject* parent = NULL);
     ~Network();
 
-    void sendFrame(const Frame& frame);
+    void sendFrame(Frame& frame);
     bool isConnectedToHost() const;
     bool autoReconnect() const;
     void setAutoReconnect(const bool autoReconnect);
@@ -77,9 +77,7 @@ protected:
 
     quint16 _port;
     QHostAddress _host;
-    QByteArray _byteArray;
     QBuffer _buffer;
-//    int _bytesRemaining;
     bool _autoReconnect;
     int _autoReconnectInterval;
     SocketInterface* _socket;

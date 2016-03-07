@@ -33,96 +33,132 @@
 #include <QLoggingCategory>
 #include "qmqtt_frame.h"
 
+namespace QMQTT {
+
 Q_LOGGING_CATEGORY(frame, "qmqtt.frame")
 
-QMQTT::Frame::Frame()
+Frame::Frame()
     : _header(0)
+    , _data(QByteArray())
 {
 }
 
-QMQTT::Frame::Frame(const quint8& header)
+Frame::Frame(quint8 header)
     : _header(header)
+    , _data(QByteArray())
 {
 }
 
-QMQTT::Frame::Frame(const quint8& header, const QByteArray& data)
+Frame::Frame(quint8 header, QByteArray data)
     : _header(header)
     , _data(data)
 {
 }
 
-QMQTT::Frame::Frame(const Frame& other)
-    : _header(other._header)
-    , _data(other._data)
+Frame::Frame(const Frame& other)
 {
+    _header = other._header;
+    _data = other._data;
 }
 
-QMQTT::Frame& QMQTT::Frame::operator=(const Frame& other)
+Frame& Frame::operator=(const Frame& other)
 {
-    if (this != &other)
-    {
-        _header = other._header;
-        _data = other._data;
-    }
+    _header = other._header;
+    _data = other._data;
     return *this;
 }
 
-bool QMQTT::Frame::operator==(const Frame& other) const
+bool Frame::operator==(const Frame& other) const
 {
-    return _header == other._header && _data == other._data;
+  return _header == other._header
+      && _data == other._data;
 }
 
-bool QMQTT::Frame::operator!=(const Frame& other) const
-{
-    return _header != other._header || _data != other._data;
-}
 
-QMQTT::Frame::~Frame()
+Frame::~Frame()
 {
 }
 
-int QMQTT::Frame::readRemainingLength(QDataStream& stream)
+quint8 Frame::header() const
 {
-    int multiplier = 1;
-    int remainingLength = 0;
-    quint8 encodedByte = 0;
+    return _header;
+}
+
+QByteArray Frame::data() const
+{
+    return _data;
+}
+
+char Frame::readChar()
+{
+    char c = _data.at(0);
+    _data.remove(0, 1);
+    return c;
+}
+
+int Frame::readInt()
+{
+    char msb = _data.at(0);
+    char lsb = _data.at(1);
+    _data.remove(0, 2);
+    return (msb << 8) + lsb;
+}
+
+QString Frame::readString()
+{
+    int len = readInt();
+    QString s(_data.left(len));
+    _data.remove(0, len);
+    return s;
+}
+
+void Frame::writeInt(int i)
+{
+    _data.append(MSB(i));
+    _data.append(LSB(i));
+}
+
+void Frame::writeString(const QString &string)
+{
+    QByteArray data = string.toUtf8();
+    writeInt(data.size());
+    _data.append(data);
+}
+
+void Frame::writeChar(const quint8 c)
+{
+    _data.append(c);
+}
+
+void Frame::writeRawData(const QByteArray &data)
+{
+    _data.append(data);
+}
+
+void Frame::write(QDataStream &stream)
+{
+    QByteArray lenbuf;
+    stream << (quint8)_header;
+    if(_data.size() == 0) {
+        stream << (quint8)0;
+        return;
+    }
+    encodeLength(lenbuf, _data.size());
+    stream.writeRawData(lenbuf.data(), lenbuf.size());
+    stream.writeRawData(_data.data(), _data.size());
+}
+
+void Frame::encodeLength(QByteArray &lenbuf, int length)
+{
+    char d;
     do {
-        stream >> encodedByte;
-        remainingLength += (encodedByte & 127) * multiplier;
-        multiplier *= 128;
-    } while ((encodedByte & 128) != 0);
-    return remainingLength;
-}
-
-void QMQTT::Frame::writeRemainingLength(QDataStream& stream, int remainingLength)
-{
-    quint8 encodedByte = 0;
-    do {
-        encodedByte = remainingLength % 128;
-        remainingLength /= 128;
-        if (remainingLength > 0)
-        {
-            encodedByte |= 128;
+        d = length % 128;
+        length /= 128;
+        if (length > 0) {
+            d |= 0x80;
         }
-        stream << encodedByte;
-    } while (remainingLength > 0);
+        lenbuf.append(d);
+    } while (length > 0);
 }
 
-QDataStream& QMQTT::operator>>(QDataStream& stream, Frame& frame)
-{
-    stream >> frame._header;
-    int remainingLength = frame.readRemainingLength(stream);
-    frame._data.resize(remainingLength);
-    stream.readRawData(frame._data.data(), remainingLength);
-
-    return stream;
-}
-
-QDataStream& QMQTT::operator<<(QDataStream& stream, const Frame& frame)
-{
-    stream << frame._header;
-    frame.writeRemainingLength(stream, frame._data.size());
-    stream.writeRawData(frame._data.constData(), frame._data.size());
-
-    return stream;
-}
+} // namespace QMQTT

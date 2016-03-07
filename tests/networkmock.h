@@ -7,7 +7,7 @@
 class NetworkMock : public QMQTT::NetworkInterface
 {
 public:
-    MOCK_METHOD1(sendFrame, void(const QMQTT::Frame&));
+    MOCK_METHOD1(sendFrame, void(QMQTT::Frame&));
     MOCK_CONST_METHOD0(isConnectedToHost, bool());
     MOCK_CONST_METHOD0(autoReconnect, bool());
     MOCK_METHOD1(setAutoReconnect, void(const bool));
