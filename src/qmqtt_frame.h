@@ -88,7 +88,7 @@ class Frame
 public:
     explicit Frame();
     explicit Frame(quint8 header);
-    explicit Frame(quint8 header, QByteArray data);
+    explicit Frame(quint8 header, const QByteArray &data);
     virtual ~Frame();
 
     Frame(const Frame& other);

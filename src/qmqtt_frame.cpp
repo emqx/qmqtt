@@ -49,7 +49,7 @@ Frame::Frame(quint8 header)
 {
 }
 
-Frame::Frame(quint8 header, QByteArray data)
+Frame::Frame(quint8 header, const QByteArray &data)
     : _header(header)
     , _data(data)
 {
