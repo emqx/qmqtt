@@ -157,7 +157,6 @@ void QMQTT::Network::onSocketReadReady()
     int bytesRead = 0;
 
     QDataStream in(_socket);
-    QDataStream out(&_buffer);
     while(!_socket->atEnd())
     {
         if(bytesRemaining == 0)
@@ -169,12 +168,12 @@ void QMQTT::Network::onSocketReadReady()
         QByteArray data;
         data.resize(bytesRemaining);
         bytesRead = in.readRawData(data.data(), data.size());
+        data.resize(bytesRead);
+        _buffer.buffer().append(data);
         bytesRemaining -= bytesRead;
-        out.writeRawData(data.data(), bytesRead);
 
         if(bytesRemaining == 0)
         {
-            _buffer.reset();
             Frame frame(header, _buffer.buffer());
             _buffer.buffer().clear();
             emit received(frame);

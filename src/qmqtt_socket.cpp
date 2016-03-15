@@ -52,7 +52,7 @@ QMQTT::Socket::~Socket()
 
 void QMQTT::Socket::connectToHost(const QHostAddress& address, quint16 port)
 {
-    return _socket->connectToHost(address, port);
+    _socket->connectToHost(address, port);
 }
 
 void QMQTT::Socket::disconnectFromHost()

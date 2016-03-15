@@ -198,7 +198,7 @@ TEST_F(SocketTest, socketSendsOutgoingDataUsingQDataStream_Test)
     quint32 i = 0;
     QDataStream in(serverSocket);
     in >> i;
-    EXPECT_EQ(42, i);
+    EXPECT_EQ(static_cast<quint32>(42), i);
 }
 
 TEST_F(SocketTest, socketReceivesIncomingDataUsingQDataStream_Test)
@@ -223,5 +223,5 @@ TEST_F(SocketTest, socketReceivesIncomingDataUsingQDataStream_Test)
     quint32 i = 0;
     QDataStream in(_socket.data());
     in >> i;
-    EXPECT_EQ(42, i);
+    EXPECT_EQ(static_cast<quint32>(42), i);
 }
