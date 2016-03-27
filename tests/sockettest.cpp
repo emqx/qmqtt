@@ -11,7 +11,7 @@ using namespace testing;
 
 const QHostAddress HOST = QHostAddress::LocalHost;
 const quint16 PORT = 3875;
-const QByteArray BYTE_ARRAY = QString::fromLatin1("Supercalifragilisticexpialidocious").toUtf8();
+const QByteArray BYTE_ARRAY = QByteArrayLiteral("Supercalifragilisticexpialidocious");
 const int TCP_TIMEOUT_MS = 5000;
 
 class SocketTest : public Test
