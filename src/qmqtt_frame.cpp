@@ -89,7 +89,7 @@ QByteArray Frame::data() const
     return _data;
 }
 
-char Frame::readChar()
+quint8 Frame::readChar()
 {
     char c = _data.at(0);
     _data.remove(0, 1);
