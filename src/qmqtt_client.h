@@ -99,7 +99,7 @@ class NetworkInterface;
 class QMQTTSHARED_EXPORT Client : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(quint32 _port READ port WRITE setPort)
+    Q_PROPERTY(quint16 _port READ port WRITE setPort)
     Q_PROPERTY(QHostAddress _host READ host WRITE setHost)
     Q_PROPERTY(QString _clientId READ clientId WRITE setClientId)
     Q_PROPERTY(QString _username READ username WRITE setUsername)

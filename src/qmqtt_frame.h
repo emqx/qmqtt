@@ -100,7 +100,7 @@ public:
     QByteArray data() const;
 
     int readInt();
-    char readChar();
+    quint8 readChar();
     QString readString();
 
     void writeInt(int i);
