@@ -45,6 +45,7 @@ QMQTT::Network::Network(QObject* parent)
     , _host(DEFAULT_HOST)
     , _autoReconnect(DEFAULT_AUTORECONNECT)
     , _autoReconnectInterval(DEFAULT_AUTORECONNECT_INTERVAL_MS)
+    , _bytesRemaining(0)
     , _socket(new QMQTT::Socket)
     , _autoReconnectTimer(new QMQTT::Timer)
 {
@@ -58,6 +59,7 @@ QMQTT::Network::Network(SocketInterface* socketInterface, TimerInterface* timerI
     , _host(DEFAULT_HOST)
     , _autoReconnect(DEFAULT_AUTORECONNECT)
     , _autoReconnectInterval(DEFAULT_AUTORECONNECT_INTERVAL_MS)
+    , _bytesRemaining(0)
     , _socket(socketInterface)
     , _autoReconnectTimer(timerInterface)
 {
@@ -99,6 +101,7 @@ void QMQTT::Network::connectToHost(const QHostAddress& host, const quint16 port)
 
 void QMQTT::Network::connectToHost()
 {
+    _bytesRemaining = 0;
     _socket->connectToHost(_host, _port);
 }
 
@@ -152,29 +155,25 @@ void QMQTT::Network::setAutoReconnectInterval(const int autoReconnectInterval)
 
 void QMQTT::Network::onSocketReadReady()
 {
-    quint8 header = 0;
-    int bytesRemaining = 0;
-    int bytesRead = 0;
-
     QDataStream in(_socket);
     while(!_socket->atEnd())
     {
-        if(bytesRemaining == 0)
+        if(_bytesRemaining == 0)
         {
-            in >> header;
-            bytesRemaining = readRemainingLength(in);
+            in >> _header;
+            _bytesRemaining = readRemainingLength(in);
         }
 
         QByteArray data;
-        data.resize(bytesRemaining);
-        bytesRead = in.readRawData(data.data(), data.size());
+        data.resize(_bytesRemaining);
+        int bytesRead = in.readRawData(data.data(), data.size());
         data.resize(bytesRead);
         _buffer.buffer().append(data);
-        bytesRemaining -= bytesRead;
+        _bytesRemaining -= bytesRead;
 
-        if(bytesRemaining == 0)
+        if(_bytesRemaining == 0)
         {
-            Frame frame(header, _buffer.buffer());
+            Frame frame(_header, _buffer.buffer());
             _buffer.buffer().clear();
             emit received(frame);
         }

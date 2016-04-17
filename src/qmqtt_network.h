@@ -80,6 +80,8 @@ protected:
     QBuffer _buffer;
     bool _autoReconnect;
     int _autoReconnectInterval;
+    int _bytesRemaining;
+    quint8 _header;
     SocketInterface* _socket;
     TimerInterface* _autoReconnectTimer;
 
