@@ -2,6 +2,7 @@
 #include "timermock.h"
 #include <qmqtt_network.h>
 #include <QSignalSpy>
+#include <QBuffer>
 #include <QDataStream>
 #include <QCoreApplication>
 #include <gtest/gtest.h>

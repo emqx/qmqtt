@@ -45,6 +45,7 @@ QMQTT::Network::Network(QObject* parent)
     , _host(DEFAULT_HOST)
     , _autoReconnect(DEFAULT_AUTORECONNECT)
     , _autoReconnectInterval(DEFAULT_AUTORECONNECT_INTERVAL_MS)
+    , _bytesRemaining(0)
     , _socket(new QMQTT::Socket)
     , _autoReconnectTimer(new QMQTT::Timer)
 {
@@ -58,6 +59,7 @@ QMQTT::Network::Network(SocketInterface* socketInterface, TimerInterface* timerI
     , _host(DEFAULT_HOST)
     , _autoReconnect(DEFAULT_AUTORECONNECT)
     , _autoReconnectInterval(DEFAULT_AUTORECONNECT_INTERVAL_MS)
+    , _bytesRemaining(0)
     , _socket(socketInterface)
     , _autoReconnectTimer(timerInterface)
 {
@@ -68,7 +70,6 @@ void QMQTT::Network::initialize()
 {
     _socket->setParent(this);
     _autoReconnectTimer->setParent(this);
-    _buffer.open(QIODevice::ReadWrite);
 
     QObject::connect(_socket, &SocketInterface::connected, this, &Network::connected);
     QObject::connect(_socket, &SocketInterface::disconnected, this, &Network::onDisconnected);
@@ -99,6 +100,7 @@ void QMQTT::Network::connectToHost(const QHostAddress& host, const quint16 port)
 
 void QMQTT::Network::connectToHost()
 {
+    _bytesRemaining = 0;
     _socket->connectToHost(_host, _port);
 }
 
@@ -152,42 +154,34 @@ void QMQTT::Network::setAutoReconnectInterval(const int autoReconnectInterval)
 
 void QMQTT::Network::onSocketReadReady()
 {
-    quint8 header = 0;
-    int bytesRemaining = 0;
-    int bytesRead = 0;
-
-    QDataStream in(_socket);
     while(!_socket->atEnd())
     {
-        if(bytesRemaining == 0)
+        if(_bytesRemaining == 0)
         {
-            in >> header;
-            bytesRemaining = readRemainingLength(in);
+            _socket->getChar(reinterpret_cast<char *>(&_header));
+            _bytesRemaining = readRemainingLength();
         }
 
-        QByteArray data;
-        data.resize(bytesRemaining);
-        bytesRead = in.readRawData(data.data(), data.size());
-        data.resize(bytesRead);
-        _buffer.buffer().append(data);
-        bytesRemaining -= bytesRead;
+        QByteArray data = _socket->read(_bytesRemaining);
+        _buffer.append(data);
+        _bytesRemaining -= data.size();
 
-        if(bytesRemaining == 0)
+        if(_bytesRemaining == 0)
         {
-            Frame frame(header, _buffer.buffer());
-            _buffer.buffer().clear();
+            Frame frame(_header, _buffer);
+            _buffer.clear();
             emit received(frame);
         }
     }
 }
 
-int QMQTT::Network::readRemainingLength(QDataStream &in)
+int QMQTT::Network::readRemainingLength()
 {
      qint8 byte = 0;
      int length = 0;
      int multiplier = 1;
      do {
-         in >> byte;
+         _socket->getChar(reinterpret_cast<char *>(&byte));
          length += (byte & 127) * multiplier;
          multiplier *= 128;
      } while ((byte & 128) != 0);
