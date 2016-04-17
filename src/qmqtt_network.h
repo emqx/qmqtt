@@ -34,10 +34,10 @@
 
 #include "qmqtt_networkinterface.h"
 #include "qmqtt_frame.h"
+#include <QByteArray>
 #include <QObject>
 #include <QTcpSocket>
 #include <QPointer>
-#include <QBuffer>
 #include <QByteArray>
 #include <QHostAddress>
 
@@ -77,7 +77,7 @@ protected:
 
     quint16 _port;
     QHostAddress _host;
-    QBuffer _buffer;
+    QByteArray _buffer;
     bool _autoReconnect;
     int _autoReconnectInterval;
     int _bytesRemaining;

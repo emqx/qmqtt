@@ -70,7 +70,6 @@ void QMQTT::Network::initialize()
 {
     _socket->setParent(this);
     _autoReconnectTimer->setParent(this);
-    _buffer.open(QIODevice::ReadWrite);
 
     QObject::connect(_socket, &SocketInterface::connected, this, &Network::connected);
     QObject::connect(_socket, &SocketInterface::disconnected, this, &Network::onDisconnected);
@@ -168,13 +167,13 @@ void QMQTT::Network::onSocketReadReady()
         data.resize(_bytesRemaining);
         int bytesRead = in.readRawData(data.data(), data.size());
         data.resize(bytesRead);
-        _buffer.buffer().append(data);
+        _buffer.append(data);
         _bytesRemaining -= bytesRead;
 
         if(_bytesRemaining == 0)
         {
-            Frame frame(_header, _buffer.buffer());
-            _buffer.buffer().clear();
+            Frame frame(_header, _buffer);
+            _buffer.clear();
             emit received(frame);
         }
     }
