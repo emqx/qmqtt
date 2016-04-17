@@ -73,7 +73,7 @@ protected slots:
 
 protected:
     void initialize();
-    int readRemainingLength(QDataStream &in);
+    int readRemainingLength();
 
     quint16 _port;
     QHostAddress _host;

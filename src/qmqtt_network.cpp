@@ -154,21 +154,17 @@ void QMQTT::Network::setAutoReconnectInterval(const int autoReconnectInterval)
 
 void QMQTT::Network::onSocketReadReady()
 {
-    QDataStream in(_socket);
     while(!_socket->atEnd())
     {
         if(_bytesRemaining == 0)
         {
-            in >> _header;
-            _bytesRemaining = readRemainingLength(in);
+            _socket->getChar(reinterpret_cast<char *>(&_header));
+            _bytesRemaining = readRemainingLength();
         }
 
-        QByteArray data;
-        data.resize(_bytesRemaining);
-        int bytesRead = in.readRawData(data.data(), data.size());
-        data.resize(bytesRead);
+        QByteArray data = _socket->read(_bytesRemaining);
         _buffer.append(data);
-        _bytesRemaining -= bytesRead;
+        _bytesRemaining -= data.size();
 
         if(_bytesRemaining == 0)
         {
@@ -179,13 +175,13 @@ void QMQTT::Network::onSocketReadReady()
     }
 }
 
-int QMQTT::Network::readRemainingLength(QDataStream &in)
+int QMQTT::Network::readRemainingLength()
 {
      qint8 byte = 0;
      int length = 0;
      int multiplier = 1;
      do {
-         in >> byte;
+         _socket->getChar(reinterpret_cast<char *>(&byte));
          length += (byte & 127) * multiplier;
          multiplier *= 128;
      } while ((byte & 128) != 0);
