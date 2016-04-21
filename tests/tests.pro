@@ -5,7 +5,7 @@ TARGET = qmqtt_tests
 
 DEFINES += QMQTT_LIBRARY_TESTS
 INCLUDEPATH += ../src
-LIBS += -L../src -lqmqtt
+LIBS += -L../src -L../src/debug -L../src/release -lqmqtt
 
 SOURCES += \
     clienttest.cpp \
@@ -27,7 +27,7 @@ HEADERS += \
 INCLUDEPATH += \
     ../gtest/googletest/googletest/include \
     ../gtest/googletest/googlemock/include
-LIBS += -L../gtest -lgtest
+LIBS += -L../gtest -L../gtest/debug -L../gtest/release -lgtest
 
 unix:!NO_UNIT_TESTS:!NO_RUN_UNIT_TESTS: {
     unit_tests.target = all

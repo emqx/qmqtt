@@ -1,4 +1,4 @@
-*.pro.user
+*.pro.user*
 debug
 release
 *.autosave
