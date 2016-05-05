@@ -21,7 +21,7 @@ file(GLOB headerfiles "*.h")
 add_library(qmqtt SHARED ${srcfiles} ${headerfiles})
 target_link_libraries(qmqtt Qt5::Core Qt5::Network)
 
-install(TARGETS qmqtt DESTINATION "bin")
+install(TARGETS qmqtt DESTINATION "lib")
 install(FILES ${headerfiles} DESTINATION "include")
 
 add_subdirectory(examples)
