@@ -204,14 +204,14 @@ quint16 QMQTT::ClientPrivate::sendPublish(const Message& msg)
     return message.id();
 }
 
-void QMQTT::ClientPrivate::sendPuback(quint8 type, quint16 mid)
+void QMQTT::ClientPrivate::sendPuback(const quint8 type, const quint16 mid)
 {
     Frame frame(type);
     frame.writeInt(mid);
     _network->sendFrame(frame);
 }
 
-quint16 QMQTT::ClientPrivate::sendSubscribe(const QString & topic, quint8 qos)
+quint16 QMQTT::ClientPrivate::sendSubscribe(const QString & topic, const quint8 qos)
 {
     quint16 mid = nextmid();
     Frame frame(SETQOS(SUBSCRIBE, QOS1));

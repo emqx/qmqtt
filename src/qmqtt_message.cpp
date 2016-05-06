@@ -39,8 +39,8 @@ QMQTT::Message::Message()
     d->init(0, QString(), QByteArray(), 0, false, false);
 }
 
-QMQTT::Message::Message(quint16 id, const QString &topic, const QByteArray &payload,
-                 quint8 qos, bool retain, bool dup)
+QMQTT::Message::Message(const quint16 id, const QString &topic, const QByteArray &payload,
+                 const quint8 qos, const bool retain, const bool dup)
     : d_ptr(new MessagePrivate)
 {
     Q_D(Message);

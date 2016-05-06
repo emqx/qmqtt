@@ -43,13 +43,13 @@ Frame::Frame()
 {
 }
 
-Frame::Frame(quint8 header)
+Frame::Frame(const quint8 header)
     : _header(header)
     , _data(QByteArray())
 {
 }
 
-Frame::Frame(quint8 header, const QByteArray &data)
+Frame::Frame(const quint8 header, const QByteArray &data)
     : _header(header)
     , _data(data)
 {

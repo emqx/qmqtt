@@ -49,8 +49,8 @@ class QMQTTSHARED_EXPORT Message
 {
 public:
     explicit Message();
-    explicit Message(quint16 id, const QString &topic, const QByteArray &payload,
-                     quint8 qos = 0, bool retain = false, bool dup = false);
+    explicit Message(const quint16 id, const QString &topic, const QByteArray &payload,
+                     const quint8 qos = 0, const bool retain = false, const bool dup = false);
     virtual ~Message();
 
     Message(const Message& other);

@@ -12,9 +12,9 @@ QMQTT::MessagePrivate::~MessagePrivate()
 {
 }
 
-void QMQTT::MessagePrivate::init(quint16 id, const QString& topic,
-                                 const QByteArray& payload, quint8 qos,
-                                 bool retain, bool dup)
+void QMQTT::MessagePrivate::init(const quint16 id, const QString& topic,
+                                 const QByteArray& payload, const quint8 qos,
+                                 const bool retain, const bool dup)
 {
     _id = id;
     _topic = topic;
