@@ -43,7 +43,7 @@ QMQTT::Socket::Socket(QObject* parent)
     connect(_socket.data(),
             static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error),
             this,
-            static_cast<void (SocketInterface::*)(QAbstractSocket::SocketError)>(&SocketInterface::error));\
+            static_cast<void (SocketInterface::*)(QAbstractSocket::SocketError)>(&SocketInterface::error));
 }
 
 QMQTT::Socket::~Socket()
