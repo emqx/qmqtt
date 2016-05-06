@@ -96,7 +96,7 @@ quint8 Frame::readChar()
     return c;
 }
 
-int Frame::readInt()
+quint16 Frame::readInt()
 {
     char msb = _data.at(0);
     char lsb = _data.at(1);
@@ -106,13 +106,13 @@ int Frame::readInt()
 
 QString Frame::readString()
 {
-    int len = readInt();
+    quint16 len = readInt();
     QString s(_data.left(len));
     _data.remove(0, len);
     return s;
 }
 
-void Frame::writeInt(int i)
+void Frame::writeInt(const quint16 i)
 {
     _data.append(MSB(i));
     _data.append(LSB(i));
