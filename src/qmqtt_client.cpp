@@ -118,13 +118,13 @@ void QMQTT::Client::setPassword(const QString& password)
     d->setPassword(password);
 }
 
-int QMQTT::Client::keepAlive() const
+quint16 QMQTT::Client::keepAlive() const
 {
     Q_D(const Client);
     return d->keepAlive();
 }
 
-void QMQTT::Client::setKeepAlive(const int keepAlive)
+void QMQTT::Client::setKeepAlive(const quint16 keepAlive)
 {
     Q_D(Client);
     d->setKeepAlive(keepAlive);

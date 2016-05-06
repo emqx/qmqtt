@@ -104,7 +104,7 @@ class QMQTTSHARED_EXPORT Client : public QObject
     Q_PROPERTY(QString _clientId READ clientId WRITE setClientId)
     Q_PROPERTY(QString _username READ username WRITE setUsername)
     Q_PROPERTY(QString _password READ password WRITE setPassword)
-    Q_PROPERTY(int _keepAlive READ keepAlive WRITE setKeepAlive)
+    Q_PROPERTY(quint16 _keepAlive READ keepAlive WRITE setKeepAlive)
     Q_PROPERTY(bool _autoReconnect READ autoReconnect WRITE setAutoReconnect)
     Q_PROPERTY(int _autoReconnectInterval READ autoReconnectInterval WRITE setAutoReconnectInterval)
     Q_PROPERTY(bool _cleanSession READ cleanSession WRITE setCleanSession)
@@ -132,7 +132,7 @@ public:
     QString clientId() const;
     QString username() const;
     QString password() const;
-    int keepAlive() const;
+    quint16 keepAlive() const;
     bool cleanSession() const;
     bool autoReconnect() const;
     int autoReconnectInterval() const;
@@ -150,7 +150,7 @@ public slots:
     void setClientId(const QString& clientId);
     void setUsername(const QString& username);
     void setPassword(const QString& password);
-    void setKeepAlive(const int keepAlive);
+    void setKeepAlive(const quint16 keepAlive);
     void setCleanSession(const bool cleanSession);
     void setAutoReconnect(const bool value);
     void setAutoReconnectInterval(const int autoReconnectInterval);

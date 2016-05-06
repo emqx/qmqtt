@@ -437,12 +437,12 @@ bool QMQTT::ClientPrivate::cleanSession() const
     return _cleanSession;
 }
 
-void QMQTT::ClientPrivate::setKeepAlive(const int keepAlive)
+void QMQTT::ClientPrivate::setKeepAlive(const quint16 keepAlive)
 {
     _keepAlive = keepAlive;
 }
 
-int QMQTT::ClientPrivate::keepAlive() const
+quint16 QMQTT::ClientPrivate::keepAlive() const
 {
     return _keepAlive;
 }

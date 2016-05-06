@@ -54,7 +54,7 @@ public:
     QString _username;
     QString _password;
     bool _cleanSession;
-    int _keepAlive;
+    quint16 _keepAlive;
     ConnectionState _connectionState;
     QScopedPointer<NetworkInterface> _network;
     QTimer _timer;
@@ -97,8 +97,8 @@ public:
     QMQTT::ConnectionState connectionState() const;
     void setCleanSession(const bool cleanSession);
     bool cleanSession() const;
-    void setKeepAlive(const int keepAlive);
-    int keepAlive() const;
+    void setKeepAlive(const quint16 keepAlive);
+    quint16 keepAlive() const;
     void setPassword(const QString& password);
     QString password() const;
     void setUsername(const QString& username);
