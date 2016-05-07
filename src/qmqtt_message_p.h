@@ -12,8 +12,8 @@ public:
     explicit MessagePrivate();
     virtual ~MessagePrivate();
 
-    void init(quint16 id, const QString &topic, const QByteArray &payload,
-              quint8 qos, bool retain, bool dup);
+    void init(const quint16 id, const QString &topic, const QByteArray &payload,
+              const quint8 qos, const bool retain, const bool dup);
 
     MessagePrivate(const MessagePrivate& other);
     MessagePrivate& operator=(const MessagePrivate& other);

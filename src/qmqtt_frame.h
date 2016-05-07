@@ -87,8 +87,8 @@ class Frame
 {
 public:
     explicit Frame();
-    explicit Frame(quint8 header);
-    explicit Frame(quint8 header, const QByteArray &data);
+    explicit Frame(const quint8 header);
+    explicit Frame(const quint8 header, const QByteArray &data);
     virtual ~Frame();
 
     Frame(const Frame& other);
@@ -99,11 +99,11 @@ public:
     quint8 header() const;
     QByteArray data() const;
 
-    int readInt();
+    quint16 readInt();
     quint8 readChar();
     QString readString();
 
-    void writeInt(int i);
+    void writeInt(const quint16 i);
     void writeChar(const quint8 c);
     void writeString(const QString &string);
     void writeRawData(const QByteArray &data);
