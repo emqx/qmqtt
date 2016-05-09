@@ -24,9 +24,11 @@ const quint8 UNSUBACK_TYPE = 0xB0;
 const quint8 PINGREQ_TYPE = 0xC0;
 const quint8 PINGRESP_TYPE = 0xD0;
 const quint8 DISCONNECT_TYPE = 0xE0;
+
 const quint8 QOS0 = 0x00;
 const quint8 QOS1 = 0x02;
 const quint8 QOS2 = 0x04;
+
 const QHostAddress HOST_ADDRESS = QHostAddress("8.8.8.8");
 const quint16 PORT = 8883;
 
@@ -230,13 +232,13 @@ TEST_F(ClientTest, setWillTopicSetsAWillTopic_Test)
 
 TEST_F(ClientTest, willQosDefaultsToZero_Test)
 {
-    EXPECT_EQ(0, _client->willQos());
+    EXPECT_EQ(QOS0, _client->willQos());
 }
 
 TEST_F(ClientTest, setWillQosSetsAWillQos_Test)
 {
-    _client->setWillQos(2);
-    EXPECT_EQ(2, _client->willQos());
+    _client->setWillQos(QOS1);
+    EXPECT_EQ(QOS1, _client->willQos());
 }
 
 TEST_F(ClientTest, willRetainDefaultsToFalse_Test)
