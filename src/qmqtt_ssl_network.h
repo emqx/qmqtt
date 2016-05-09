@@ -1,7 +1,8 @@
 /*
- * qmqtt_network.h - qmqtt network header
+ * qmqtt_ssl_network.h - qmqtt SSL network header
  *
  * Copyright (c) 2013  Ery Lee <ery.lee at gmail dot com>
+ * Copyright (c) 2016  Matthias Dieter Wallnöfer
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,8 +30,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#ifndef QMQTT_NETWORK_H
-#define QMQTT_NETWORK_H
+#ifndef QMQTT_SSL_NETWORK_H
+#define QMQTT_SSL_NETWORK_H
 
 #include "qmqtt_networkinterface.h"
 #include "qmqtt_frame.h"
@@ -46,15 +47,15 @@ namespace QMQTT {
 class SocketInterface;
 class TimerInterface;
 
-class Network : public NetworkInterface
+class SslNetwork : public NetworkInterface
 {
     Q_OBJECT
 
 public:
-    Network(QObject* parent = NULL);
-    Network(SocketInterface* socketInterface, TimerInterface* timerInterface,
+    SslNetwork(bool ignoreSelfSigned, QObject* parent = NULL);
+    SslNetwork(SocketInterface* socketInterface, TimerInterface* timerInterface,
             QObject* parent = NULL);
-    ~Network();
+    ~SslNetwork();
 
     void sendFrame(Frame& frame);
     bool isConnectedToHost() const;
@@ -77,7 +78,6 @@ protected:
     int readRemainingLength();
 
     quint16 _port;
-    QHostAddress _host;
     QString _hostName;
     QByteArray _buffer;
     bool _autoReconnect;
@@ -93,9 +93,9 @@ protected slots:
     void connectToHost();
 
 private:
-    Q_DISABLE_COPY(Network)
+    Q_DISABLE_COPY(SslNetwork)
 };
 
 } // namespace QMQTT
 
-#endif // QMQTT_NETWORK_H
+#endif // QMQTT_SSL_NETWORK_H

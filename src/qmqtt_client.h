@@ -47,8 +47,8 @@ namespace QMQTT {
 
 static const quint8 LIBRARY_VERSION_MAJOR = 0;
 static const quint8 LIBRARY_VERSION_MINOR = 3;
-static const quint8 LIBRARY_VERSION_REVISION = 0;
-//static const char* LIBRARY_VERSION = "0.3.0";
+static const quint8 LIBRARY_VERSION_REVISION = 1;
+//static const char* LIBRARY_VERSION = "0.3.1";
 
 static const quint8 PROTOCOL_VERSION_MAJOR = 3;
 static const quint8 PROTOCOL_VERSION_MINOR = 1;
@@ -101,6 +101,7 @@ class QMQTTSHARED_EXPORT Client : public QObject
     Q_OBJECT
     Q_PROPERTY(quint16 _port READ port WRITE setPort)
     Q_PROPERTY(QHostAddress _host READ host WRITE setHost)
+    Q_PROPERTY(QString _hostName READ hostName WRITE setHostName)
     Q_PROPERTY(QString _clientId READ clientId WRITE setClientId)
     Q_PROPERTY(QString _username READ username WRITE setUsername)
     Q_PROPERTY(QString _password READ password WRITE setPassword)
@@ -119,6 +120,12 @@ public:
            const quint16 port = 1883,
            QObject* parent = NULL);
 
+    Client(const QString& hostName,
+           const quint16 port,
+           const bool ssl,
+           const bool ignoreSelfSigned,
+           QObject* parent = NULL);
+
     // for testing purposes only
     Client(NetworkInterface* network,
            const QHostAddress& host = QHostAddress::LocalHost,
@@ -128,6 +135,7 @@ public:
     virtual ~Client();
 
     QHostAddress host() const;
+    QString hostName() const;
     quint16 port() const;
     QString clientId() const;
     QString username() const;
@@ -146,6 +154,7 @@ public:
 
 public slots:
     void setHost(const QHostAddress& host);
+    void setHostName(const QString& hostName);
     void setPort(const quint16 port);
     void setClientId(const QString& clientId);
     void setUsername(const QString& username);
