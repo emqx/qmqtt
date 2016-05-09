@@ -1,7 +1,8 @@
 /*
- * qmqtt_network.cpp - qmqtt network
+ * qmqtt_ssl_network.cpp - qmqtt SSL network
  *
  * Copyright (c) 2013  Ery Lee <ery.lee at gmail dot com>
+ * Copyright (c) 2016  Matthias Dieter Wallnöfer
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,33 +31,33 @@
  *
  */
 #include <QDataStream>
-#include "qmqtt_network.h"
-#include "qmqtt_socket.h"
+#include "qmqtt_ssl_network.h"
+#include "qmqtt_ssl_socket.h"
 #include "qmqtt_timer.h"
 
-const QHostAddress DEFAULT_HOST = QHostAddress::LocalHost;
-const quint16 DEFAULT_PORT = 1883;
+const QString DEFAULT_HOST_NAME = QStringLiteral("localhost");
+const quint16 DEFAULT_PORT = 8883;
 const bool DEFAULT_AUTORECONNECT = false;
 const int DEFAULT_AUTORECONNECT_INTERVAL_MS = 5000;
 
-QMQTT::Network::Network(QObject* parent)
+QMQTT::SslNetwork::SslNetwork(bool ignoreSelfSigned, QObject* parent)
     : NetworkInterface(parent)
     , _port(DEFAULT_PORT)
-    , _host(DEFAULT_HOST)
+    , _hostName(DEFAULT_HOST_NAME)
     , _autoReconnect(DEFAULT_AUTORECONNECT)
     , _autoReconnectInterval(DEFAULT_AUTORECONNECT_INTERVAL_MS)
     , _bytesRemaining(0)
-    , _socket(new QMQTT::Socket)
+    , _socket(new QMQTT::SslSocket(ignoreSelfSigned))
     , _autoReconnectTimer(new QMQTT::Timer)
 {
     initialize();
 }
 
-QMQTT::Network::Network(SocketInterface* socketInterface, TimerInterface* timerInterface,
+QMQTT::SslNetwork::SslNetwork(SocketInterface* socketInterface, TimerInterface* timerInterface,
                         QObject* parent)
     : NetworkInterface(parent)
     , _port(DEFAULT_PORT)
-    , _host(DEFAULT_HOST)
+    , _hostName(DEFAULT_HOST_NAME)
     , _autoReconnect(DEFAULT_AUTORECONNECT)
     , _autoReconnectInterval(DEFAULT_AUTORECONNECT_INTERVAL_MS)
     , _bytesRemaining(0)
@@ -66,59 +67,54 @@ QMQTT::Network::Network(SocketInterface* socketInterface, TimerInterface* timerI
     initialize();
 }
 
-void QMQTT::Network::initialize()
+void QMQTT::SslNetwork::initialize()
 {
     _socket->setParent(this);
     _autoReconnectTimer->setParent(this);
 
-    QObject::connect(_socket, &SocketInterface::connected, this, &Network::connected);
-    QObject::connect(_socket, &SocketInterface::disconnected, this, &Network::onDisconnected);
-    QObject::connect(_socket, &SocketInterface::readyRead, this, &Network::onSocketReadReady);
+    QObject::connect(_socket, &SocketInterface::connected, this, &SslNetwork::connected);
+    QObject::connect(_socket, &SocketInterface::disconnected, this, &SslNetwork::onDisconnected);
+    QObject::connect(_socket, &SocketInterface::readyRead, this, &SslNetwork::onSocketReadReady);
     QObject::connect(
         _autoReconnectTimer, &TimerInterface::timeout,
-        this, static_cast<void (Network::*)()>(&Network::connectToHost));    
+        this, static_cast<void (SslNetwork::*)()>(&SslNetwork::connectToHost));
     QObject::connect(_socket,
         static_cast<void (SocketInterface::*)(QAbstractSocket::SocketError)>(&SocketInterface::error),
-        this, &Network::onSocketError);
+        this, &SslNetwork::onSocketError);
 }
 
-QMQTT::Network::~Network()
+QMQTT::SslNetwork::~SslNetwork()
 {
 }
 
-bool QMQTT::Network::isConnectedToHost() const
+bool QMQTT::SslNetwork::isConnectedToHost() const
 {
     return _socket->state() == QAbstractSocket::ConnectedState;
 }
 
-void QMQTT::Network::connectToHost(const QHostAddress& host, const quint16 port)
+void QMQTT::SslNetwork::connectToHost(const QHostAddress& host, const quint16 port)
 {
-    _host = host;
-    _port = port;
-    connectToHost();
+    Q_UNUSED(host);
+    Q_UNUSED(port);
+
+    qCritical("qmqtt: SSL does not work with host addresses!");
+    emit error(QAbstractSocket::SocketError::ConnectionRefusedError);
 }
 
-void QMQTT::Network::connectToHost(const QString& hostName, const quint16 port)
+void QMQTT::SslNetwork::connectToHost(const QString& hostName, const quint16 port)
 {
     _hostName = hostName;
     _port = port;
     connectToHost();
 }
 
-void QMQTT::Network::connectToHost()
+void QMQTT::SslNetwork::connectToHost()
 {
     _bytesRemaining = 0;
-    if (_hostName.isEmpty())
-    {
-        _socket->connectToHost(_host, _port);
-    }
-    else
-    {
-        _socket->connectToHost(_hostName, _port);
-    }
+    _socket->connectToHost(_hostName, _port);
 }
 
-void QMQTT::Network::onSocketError(QAbstractSocket::SocketError socketError)
+void QMQTT::SslNetwork::onSocketError(QAbstractSocket::SocketError socketError)
 {
     emit error(socketError);
     if(_autoReconnect)
@@ -127,7 +123,7 @@ void QMQTT::Network::onSocketError(QAbstractSocket::SocketError socketError)
     }
 }
 
-void QMQTT::Network::sendFrame(Frame& frame)
+void QMQTT::SslNetwork::sendFrame(Frame& frame)
 {
     if(_socket->state() == QAbstractSocket::ConnectedState)
     {
@@ -136,37 +132,37 @@ void QMQTT::Network::sendFrame(Frame& frame)
     }
 }
 
-void QMQTT::Network::disconnectFromHost()
+void QMQTT::SslNetwork::disconnectFromHost()
 {
     _socket->disconnectFromHost();
 }
 
-QAbstractSocket::SocketState QMQTT::Network::state() const
+QAbstractSocket::SocketState QMQTT::SslNetwork::state() const
 {
     return _socket->state();
 }
 
-bool QMQTT::Network::autoReconnect() const
+bool QMQTT::SslNetwork::autoReconnect() const
 {
     return _autoReconnect;
 }
 
-void QMQTT::Network::setAutoReconnect(const bool autoReconnect)
+void QMQTT::SslNetwork::setAutoReconnect(const bool autoReconnect)
 {
     _autoReconnect = autoReconnect;
 }
 
-int QMQTT::Network::autoReconnectInterval() const
+int QMQTT::SslNetwork::autoReconnectInterval() const
 {
     return _autoReconnectInterval;
 }
 
-void QMQTT::Network::setAutoReconnectInterval(const int autoReconnectInterval)
+void QMQTT::SslNetwork::setAutoReconnectInterval(const int autoReconnectInterval)
 {
     _autoReconnectInterval = autoReconnectInterval;
 }
 
-void QMQTT::Network::onSocketReadReady()
+void QMQTT::SslNetwork::onSocketReadReady()
 {
     while(!_socket->atEnd())
     {
@@ -189,7 +185,7 @@ void QMQTT::Network::onSocketReadReady()
     }
 }
 
-int QMQTT::Network::readRemainingLength()
+int QMQTT::SslNetwork::readRemainingLength()
 {
      qint8 byte = 0;
      int length = 0;
@@ -203,7 +199,7 @@ int QMQTT::Network::readRemainingLength()
      return length;
 }
 
-void QMQTT::Network::onDisconnected()
+void QMQTT::SslNetwork::onDisconnected()
 {
     emit disconnected();
     if(_autoReconnect)

@@ -1,7 +1,8 @@
 /*
- * qmqtt_socketinterface.h - qmqtt socket interface header
+ * qmqtt_ssl_socket.h - qmqtt SSL socket header
  *
  * Copyright (c) 2013  Ery Lee <ery.lee at gmail dot com>
+ * Copyright (c) 2016  Matthias Dieter Wallnöfer
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,42 +30,46 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#ifndef QMQTT_SOCKET_INTERFACE_H
-#define QMQTT_SOCKET_INTERFACE_H
+#ifndef QMQTT_SSL_SOCKET_H
+#define QMQTT_SSL_SOCKET_H
 
-#include <QHostAddress>
-#include <QIODevice>
+#include "qmqtt_socketinterface.h"
+#include <QObject>
+#include <QScopedPointer>
+
+class QSslSocket;
+class QSslError;
 
 namespace QMQTT
 {
 
-class SocketInterface : public QIODevice
+class SslSocket : public SocketInterface
 {
     Q_OBJECT
 public:
-    explicit SocketInterface(QObject* parent = NULL) : QIODevice(parent)
-    {
-        setOpenMode(QIODevice::ReadWrite);
-    }
-    virtual	~SocketInterface() {}
+    explicit SslSocket(bool ignoreSelfSigned, QObject* parent = NULL);
+    virtual ~SslSocket();
 
-    virtual void connectToHost(const QHostAddress& address, quint16 port) = 0;
-    virtual void connectToHost(const QString& hostName, quint16 port) = 0;
-    virtual void disconnectFromHost() = 0;
-    virtual QAbstractSocket::SocketState state() const = 0;
-    virtual bool atEnd() const = 0;
-    virtual bool waitForBytesWritten(int msecs) = 0;
-    virtual QAbstractSocket::SocketError error() const = 0;
-    virtual qint64 readData(char* data, qint64 maxlen) = 0;
-    virtual qint64 writeData(const char* data, qint64 len) = 0;
+    void connectToHost(const QHostAddress& address, quint16 port);
+    void connectToHost(const QString& hostName, quint16 port);
+    void disconnectFromHost();
+    QAbstractSocket::SocketState state() const;
+    bool waitForBytesWritten(int msecs = 30000);
+    bool waitForReadyRead(int msecs = 30000);
+    QAbstractSocket::SocketError error() const;
+    bool atEnd() const;
+    qint64 readData(char* data, qint64 maxlen);
+    qint64 writeData(const char* data, qint64 len);
 
-signals:
-    void connected();
-    void disconnected();
-    void readyRead();
-    void error(QAbstractSocket::SocketError socketError);
+protected slots:
+    void onStateChanged(QAbstractSocket::SocketState state);
+    void sslErrors(const QList<QSslError> &errors);
+
+protected:
+    QScopedPointer<QSslSocket> _socket;
+    bool _ignoreSelfSigned;
 };
 
 }
 
-#endif // QMQTT_SOCKET_INTERFACE_H
+#endif // QMQTT_SSL_SOCKET_H

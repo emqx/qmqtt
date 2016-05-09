@@ -35,6 +35,7 @@
 #include "qmqtt_client.h"
 #include "qmqtt_client_p.h"
 #include "qmqtt_network.h"
+#include "qmqtt_ssl_network.h"
 #include <QTimer>
 
 namespace QMQTT {
@@ -46,8 +47,10 @@ public:
     ~ClientPrivate();
 
     void init(const QHostAddress& host, const quint16 port, NetworkInterface* network = NULL);
+    void init(const QString& hostName, const quint16 port, const bool ssl, const bool ignoreSelfSigned);
 
     QHostAddress _host;
+    QString _hostName;
     quint16 _port;
     quint16 _gmid;
     QString _clientId;
@@ -109,6 +112,8 @@ public:
     quint16 port() const;
     void setHost(const QHostAddress& host);
     QHostAddress host() const;
+    void setHostName(const QString& hostName);
+    QString hostName() const;
     void setWillTopic(const QString& willTopic);
     void setWillQos(const quint8 willQos);
     void setWillRetain(const bool willRetain);

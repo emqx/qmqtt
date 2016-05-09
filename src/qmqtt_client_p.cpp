@@ -88,6 +88,34 @@ void QMQTT::ClientPrivate::init(const QHostAddress& host, const quint16 port, Ne
                      q, &Client::onNetworkError);
 }
 
+void QMQTT::ClientPrivate::init(const QString& hostName, const quint16 port, const bool ssl, const bool ignoreSelfSigned)
+{
+    Q_Q(Client);
+
+    _hostName = hostName;
+    _port = port;
+    if (ssl)
+    {
+        _network.reset(new SslNetwork(ignoreSelfSigned));
+    }
+    else
+    {
+        _network.reset(new Network);
+    }
+
+    initializeErrorHash();
+
+    QObject::connect(&_timer, &QTimer::timeout, q, &Client::onTimerPingReq);
+    QObject::connect(_network.data(), &Network::connected,
+                     q, &Client::onNetworkConnected);
+    QObject::connect(_network.data(), &Network::disconnected,
+                     q, &Client::onNetworkDisconnected);
+    QObject::connect(_network.data(), &Network::received,
+                     q, &Client::onNetworkReceived);
+    QObject::connect(_network.data(), &Network::error,
+                     q, &Client::onNetworkError);
+}
+
 void QMQTT::ClientPrivate::initializeErrorHash()
 {
     _socketErrorHash.insert(QAbstractSocket::ConnectionRefusedError, SocketConnectionRefusedError);
@@ -117,7 +145,14 @@ void QMQTT::ClientPrivate::initializeErrorHash()
 
 void QMQTT::ClientPrivate::connectToHost()
 {
-    _network->connectToHost(_host, _port);
+    if (_hostName.isEmpty())
+    {
+        _network->connectToHost(_host, _port);
+    }
+    else
+    {
+        _network->connectToHost(_hostName, _port);
+    }
 }
 
 void QMQTT::ClientPrivate::onNetworkConnected()
@@ -502,6 +537,16 @@ void QMQTT::ClientPrivate::setHost(const QHostAddress& host)
 QHostAddress QMQTT::ClientPrivate::host() const
 {
     return _host;
+}
+
+void QMQTT::ClientPrivate::setHostName(const QString& hostName)
+{
+    _hostName = hostName;
+}
+
+QString QMQTT::ClientPrivate::hostName() const
+{
+    return _hostName;
 }
 
 QString QMQTT::ClientPrivate::willTopic() const
