@@ -35,6 +35,7 @@
 #include <QObject>
 
 #define PROTOCOL_MAGIC "MQIsdp"
+#define RANDOM_CLIENT_PREFIX "QMQTT-"
 
 #define CONNECT 0x10
 #define CONNACK 0x20

@@ -165,7 +165,6 @@ void QMQTT::ClientPrivate::onNetworkConnected()
 
 void QMQTT::ClientPrivate::sendConnect()
 {
-    QString magic(PROTOCOL_MAGIC);
     quint8 header = CONNECT;
     quint8 flags = 0;
 
@@ -190,7 +189,7 @@ void QMQTT::ClientPrivate::sendConnect()
     }
 
     //payload
-    frame.writeString(magic);
+    frame.writeString(QStringLiteral(PROTOCOL_MAGIC));
     frame.writeChar(PROTOCOL_VERSION_MAJOR);
     frame.writeChar(flags);
     frame.writeInt(_keepAlive);
@@ -298,7 +297,7 @@ void QMQTT::ClientPrivate::stopKeepAlive()
 
 QString QMQTT::ClientPrivate::randomClientId()
 {
-    return "QMQTT-" + QString::number(QDateTime::currentMSecsSinceEpoch() % 1000000);
+    return QStringLiteral(RANDOM_CLIENT_PREFIX) + QString::number(QDateTime::currentMSecsSinceEpoch() % 1000000);
 }
 
 quint16 QMQTT::ClientPrivate::nextmid()
