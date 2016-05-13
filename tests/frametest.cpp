@@ -90,6 +90,13 @@ TEST_F(FrameTest, writeStringWritesToBytearray_Test)
     EXPECT_EQ(QString("forty-two"), _frame->readString());
 }
 
+TEST_F(FrameTest, writeStringWritesToBytearrayTooLong_Test)
+{
+    _frame->writeString(QString(70000, 0x00));
+
+    EXPECT_EQ(QString(USHRT_MAX, 0x00), _frame->readString());
+}
+
 TEST_F(FrameTest, writeRawDataWritesToBytearray_Test)
 {
     QByteArray byteArray;

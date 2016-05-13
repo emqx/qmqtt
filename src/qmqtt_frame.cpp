@@ -121,6 +121,11 @@ void Frame::writeInt(const quint16 i)
 void Frame::writeString(const QString &string)
 {
     QByteArray data = string.toUtf8();
+    if (data.size() > (int)USHRT_MAX)
+    {
+        qCritical("qmqtt: String size bigger than %u bytes, truncate it!", USHRT_MAX);
+        data.resize(USHRT_MAX);
+    }
     writeInt(data.size());
     _data.append(data);
 }
