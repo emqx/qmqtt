@@ -22,7 +22,8 @@ HEADERS += \
     customprinter.h \
     networkmock.h \
     socketmock.h \
-    timermock.h
+    timermock.h \
+    iodevicemock.h
 
 INCLUDEPATH += \
     ../gtest/googletest/googletest/include \

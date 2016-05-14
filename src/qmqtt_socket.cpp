@@ -36,10 +36,8 @@ QMQTT::Socket::Socket(QObject* parent)
     : SocketInterface(parent)
     , _socket(new QTcpSocket)
 {
-    connect(_socket.data(), &QTcpSocket::stateChanged, this, &Socket::onStateChanged);
     connect(_socket.data(), &QTcpSocket::connected,    this, &SocketInterface::connected);
     connect(_socket.data(), &QTcpSocket::disconnected, this, &SocketInterface::disconnected);
-    connect(_socket.data(), &QTcpSocket::readyRead,    this, &SocketInterface::readyRead);
     connect(_socket.data(),
             static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error),
             this,
@@ -48,6 +46,11 @@ QMQTT::Socket::Socket(QObject* parent)
 
 QMQTT::Socket::~Socket()
 {
+}
+
+QIODevice *QMQTT::Socket::ioDevice()
+{
+    return _socket.data();
 }
 
 void QMQTT::Socket::connectToHost(const QHostAddress& address, quint16 port)
@@ -70,41 +73,7 @@ QAbstractSocket::SocketState QMQTT::Socket::state() const
     return _socket->state();
 }
 
-bool QMQTT::Socket::atEnd() const
-{
-    return _socket->atEnd();
-}
-
-bool QMQTT::Socket::waitForBytesWritten(int msecs)
-{
-    return _socket->waitForBytesWritten(msecs);
-}
-
-bool QMQTT::Socket::waitForReadyRead(int msecs)
-{
-    return _socket->waitForReadyRead(msecs);
-}
-
 QAbstractSocket::SocketError QMQTT::Socket::error() const
 {
     return _socket->error();
-}
-
-qint64 QMQTT::Socket::readData(char* data, qint64 maxlen)
-{
-    return _socket->read(data, maxlen);
-}
-
-qint64 QMQTT::Socket::writeData(const char* data, qint64 len)
-{
-    return _socket->write(data, len);
-}
-
-void QMQTT::Socket::onStateChanged(QAbstractSocket::SocketState state)
-{
-    Q_UNUSED(state);
-    if(openMode() != _socket->openMode())
-    {
-        setOpenMode(_socket->openMode());
-    }
 }
