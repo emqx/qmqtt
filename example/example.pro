@@ -1,4 +1,4 @@
-QT += widgets network
+QT += network
 QT -= gui
 
 TARGET = qmqtt_example

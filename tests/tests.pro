@@ -1,4 +1,4 @@
-QT += widgets network testlib
+QT += network testlib
 QT -= gui
 
 TARGET = qmqtt_tests
