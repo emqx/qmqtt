@@ -172,8 +172,22 @@ void QMQTT::Network::onSocketReadReady()
     {
         if(_bytesRemaining == 0)
         {
-            _socket->getChar(reinterpret_cast<char *>(&_header));
+            if (!_socket->getChar(reinterpret_cast<char *>(&_header)))
+            {
+                // malformed packet
+                emit _socket->error(QAbstractSocket::SocketError::OperationError);
+                _socket->close();
+                return;
+            }
+
             _bytesRemaining = readRemainingLength();
+            if (_bytesRemaining < 0)
+            {
+                // malformed remaining length
+                emit _socket->error(QAbstractSocket::SocketError::OperationError);
+                _socket->close();
+                return;
+            }
         }
 
         QByteArray data = _socket->read(_bytesRemaining);
@@ -191,13 +205,16 @@ void QMQTT::Network::onSocketReadReady()
 
 int QMQTT::Network::readRemainingLength()
 {
-     qint8 byte = 0;
+     quint8 byte = 0;
      int length = 0;
      int multiplier = 1;
      do {
-         _socket->getChar(reinterpret_cast<char *>(&byte));
+         if (!_socket->getChar(reinterpret_cast<char *>(&byte)))
+             return -1;
          length += (byte & 127) * multiplier;
          multiplier *= 128;
+         if (multiplier > 128*128*128)
+             return -1;
      } while ((byte & 128) != 0);
 
      return length;
