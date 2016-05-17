@@ -126,3 +126,15 @@ TEST_F(FrameTest, writeWritesToDatastream_Test)
     EXPECT_EQ(static_cast<quint8>(0x01), static_cast<quint8>(streamedData.at(2)));
     EXPECT_EQ(frameData, streamedData.mid(3));
 }
+
+TEST_F(FrameTest, encodeLength_Test)
+{
+    QByteArray lenbuf;
+    EXPECT_FALSE(_frame->encodeLength(lenbuf, 268435456)); // bigger than 268,435,455
+    EXPECT_TRUE(_frame->encodeLength(lenbuf, 268435455) && lenbuf == QByteArray::fromHex("FFFFFF7F"));
+    EXPECT_TRUE(_frame->encodeLength(lenbuf, 2097151) && lenbuf == QByteArray::fromHex("FFFF7F"));
+    EXPECT_TRUE(_frame->encodeLength(lenbuf, 16383) && lenbuf == QByteArray::fromHex("FF7F"));
+    EXPECT_TRUE(_frame->encodeLength(lenbuf, 127) && lenbuf == QByteArray::fromHex("7F"));
+    EXPECT_TRUE(_frame->encodeLength(lenbuf, 1) && lenbuf == QByteArray::fromHex("1"));
+    EXPECT_TRUE(_frame->encodeLength(lenbuf, 0) && lenbuf.isEmpty());
+}

@@ -111,9 +111,9 @@ public:
 
     //TODO: FIXME LATER
     void write(QDataStream &stream);
+    bool encodeLength(QByteArray &lenbuf, int length);
 
 private:
-    void encodeLength(QByteArray & lenbuf, int length);
     quint8 _header;
     QByteArray _data;
 };
