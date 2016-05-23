@@ -62,7 +62,7 @@ void QMQTT::SslSocket::connectToHost(const QHostAddress& address, quint16 port)
     Q_UNUSED(port);
 
     qCritical("qmqtt: SSL does not work with host addresses!");
-    emit _socket->error(QAbstractSocket::SocketError::ConnectionRefusedError);
+    emit _socket->error(QAbstractSocket::ConnectionRefusedError);
 }
 
 void QMQTT::SslSocket::connectToHost(const QString& hostName, quint16 port)
@@ -70,7 +70,7 @@ void QMQTT::SslSocket::connectToHost(const QString& hostName, quint16 port)
     _socket->connectToHostEncrypted(hostName, port);
     if (!_socket->waitForEncrypted())
     {
-        qCritical().noquote() << QStringLiteral("qmqtt SSL: ") << _socket->errorString();
+        qCritical() << QStringLiteral("qmqtt SSL: ") << _socket->errorString();
     }
 }
 

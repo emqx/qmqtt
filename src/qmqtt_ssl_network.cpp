@@ -100,7 +100,7 @@ void QMQTT::SslNetwork::connectToHost(const QHostAddress& host, const quint16 po
     Q_UNUSED(port);
 
     qCritical("qmqtt: SSL does not work with host addresses!");
-    emit error(QAbstractSocket::SocketError::ConnectionRefusedError);
+    emit error(QAbstractSocket::ConnectionRefusedError);
 }
 
 void QMQTT::SslNetwork::connectToHost(const QString& hostName, const quint16 port)
@@ -173,7 +173,7 @@ void QMQTT::SslNetwork::onSocketReadReady()
             if (!_socket->getChar(reinterpret_cast<char *>(&_header)))
             {
                 // malformed packet
-                emit _socket->error(QAbstractSocket::SocketError::OperationError);
+                emit _socket->error(QAbstractSocket::OperationError);
                 _socket->close();
                 return;
             }
@@ -182,7 +182,7 @@ void QMQTT::SslNetwork::onSocketReadReady()
             if (_bytesRemaining < 0)
             {
                 // malformed remaining length
-                emit _socket->error(QAbstractSocket::SocketError::OperationError);
+                emit _socket->error(QAbstractSocket::OperationError);
                 _socket->close();
                 return;
             }

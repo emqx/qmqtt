@@ -177,7 +177,7 @@ void QMQTT::Network::onSocketReadReady()
             if (!_socket->getChar(reinterpret_cast<char *>(&_header)))
             {
                 // malformed packet
-                emit _socket->error(QAbstractSocket::SocketError::OperationError);
+                emit _socket->error(QAbstractSocket::OperationError);
                 _socket->close();
                 return;
             }
@@ -186,7 +186,7 @@ void QMQTT::Network::onSocketReadReady()
             if (_bytesRemaining < 0)
             {
                 // malformed remaining length
-                emit _socket->error(QAbstractSocket::SocketError::OperationError);
+                emit _socket->error(QAbstractSocket::OperationError);
                 _socket->close();
                 return;
             }
