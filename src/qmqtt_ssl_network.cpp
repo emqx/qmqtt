@@ -71,6 +71,8 @@ void QMQTT::SslNetwork::initialize()
 {
     _socket->setParent(this);
     _autoReconnectTimer->setParent(this);
+    _autoReconnectTimer->setSingleShot(true);
+    _autoReconnectTimer->setInterval(_autoReconnectInterval);
 
     QObject::connect(_socket, &SocketInterface::connected, this, &SslNetwork::connected);
     QObject::connect(_socket, &SocketInterface::disconnected, this, &SslNetwork::onDisconnected);
