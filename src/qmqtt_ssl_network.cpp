@@ -35,6 +35,8 @@
 #include "qmqtt_ssl_socket.h"
 #include "qmqtt_timer.h"
 
+#ifndef QT_NO_SSL
+
 const QString DEFAULT_HOST_NAME = QStringLiteral("localhost");
 const quint16 DEFAULT_PORT = 8883;
 const bool DEFAULT_AUTORECONNECT = false;
@@ -226,3 +228,5 @@ void QMQTT::SslNetwork::onDisconnected()
         _autoReconnectTimer->start();
     }
 }
+
+#endif // QT_NO_SSL

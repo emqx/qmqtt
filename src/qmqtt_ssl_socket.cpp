@@ -33,6 +33,8 @@
 #include "qmqtt_ssl_socket.h"
 #include <QSslSocket>
 
+#ifndef QT_NO_SSL
+
 QMQTT::SslSocket::SslSocket(bool ignoreSelfSigned, QObject* parent)
     : SocketInterface(parent)
     , _socket(new QSslSocket)
@@ -133,3 +135,5 @@ void QMQTT::SslSocket::sslErrors(const QList<QSslError> &errors)
         _socket->ignoreSslErrors();
     }
 }
+
+#endif // QT_NO_SSL

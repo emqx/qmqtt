@@ -42,6 +42,8 @@
 #include <QByteArray>
 #include <QHostAddress>
 
+#ifndef QT_NO_SSL
+
 namespace QMQTT {
 
 class SocketInterface;
@@ -97,5 +99,7 @@ private:
 };
 
 } // namespace QMQTT
+
+#endif // QT_NO_SSL
 
 #endif // QMQTT_SSL_NETWORK_H

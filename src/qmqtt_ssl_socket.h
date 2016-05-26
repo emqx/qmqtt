@@ -37,6 +37,8 @@
 #include <QObject>
 #include <QScopedPointer>
 
+#ifndef QT_NO_SSL
+
 class QSslSocket;
 class QSslError;
 
@@ -71,5 +73,7 @@ protected:
 };
 
 }
+
+#endif // QT_NO_SSL
 
 #endif // QMQTT_SSL_SOCKET_H
