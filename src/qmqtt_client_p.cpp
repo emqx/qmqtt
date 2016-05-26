@@ -209,7 +209,8 @@ void QMQTT::ClientPrivate::sendConnect()
     {
         frame.writeString(_username);
     }
-    if (!_password.isEmpty()){
+    if (!_password.isEmpty())
+    {
         frame.writeString(_password);
     }
     _network->sendFrame(frame);
@@ -227,7 +228,7 @@ quint16 QMQTT::ClientPrivate::sendPublish(const Message& msg)
     frame.writeString(message.topic());
     if(message.qos() > QOS0) {
         if(message.id() == 0) {
-            message.setId(_gmid++);
+            message.setId(nextmid());
         }
         frame.writeInt(message.id());
     }
@@ -258,7 +259,7 @@ quint16 QMQTT::ClientPrivate::sendSubscribe(const QString & topic, const quint8 
 
 quint16 QMQTT::ClientPrivate::sendUnsubscribe(const QString &topic)
 {
-    quint16 mid = _gmid++;
+    quint16 mid = nextmid();
     Frame frame(SETQOS(UNSUBSCRIBE, QOS1));
     frame.writeInt(mid);
     frame.writeString(topic);
