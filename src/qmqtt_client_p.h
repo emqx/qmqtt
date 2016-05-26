@@ -35,6 +35,7 @@
 #include "qmqtt_client.h"
 #include "qmqtt_client_p.h"
 #include "qmqtt_network.h"
+#include "qmqtt_ssl_network.h"
 #include <QTimer>
 
 namespace QMQTT {
@@ -46,15 +47,17 @@ public:
     ~ClientPrivate();
 
     void init(const QHostAddress& host, const quint16 port, NetworkInterface* network = NULL);
+    void init(const QString& hostName, const quint16 port, const bool ssl, const bool ignoreSelfSigned);
 
     QHostAddress _host;
+    QString _hostName;
     quint16 _port;
     quint16 _gmid;
     QString _clientId;
     QString _username;
     QString _password;
     bool _cleanSession;
-    int _keepAlive;
+    quint16 _keepAlive;
     ConnectionState _connectionState;
     QScopedPointer<NetworkInterface> _network;
     QTimer _timer;
@@ -72,9 +75,9 @@ public:
     void sendConnect();
     void onTimerPingReq();
     quint16 sendUnsubscribe(const QString &topic);
-    quint16 sendSubscribe(const QString &topic, quint8 qos);
+    quint16 sendSubscribe(const QString &topic, const quint8 qos);
     quint16 sendPublish(const Message &msg);
-    void sendPuback(quint8 type, quint16 mid);
+    void sendPuback(const quint8 type, const quint16 mid);
     void sendDisconnect();
     void disconnectFromHost();
     void startKeepAlive();
@@ -97,8 +100,8 @@ public:
     QMQTT::ConnectionState connectionState() const;
     void setCleanSession(const bool cleanSession);
     bool cleanSession() const;
-    void setKeepAlive(const int keepAlive);
-    int keepAlive() const;
+    void setKeepAlive(const quint16 keepAlive);
+    quint16 keepAlive() const;
     void setPassword(const QString& password);
     QString password() const;
     void setUsername(const QString& username);
@@ -109,6 +112,8 @@ public:
     quint16 port() const;
     void setHost(const QHostAddress& host);
     QHostAddress host() const;
+    void setHostName(const QString& hostName);
+    QString hostName() const;
     void setWillTopic(const QString& willTopic);
     void setWillQos(const quint8 willQos);
     void setWillRetain(const bool willRetain);

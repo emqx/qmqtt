@@ -24,10 +24,13 @@ const quint8 UNSUBACK_TYPE = 0xB0;
 const quint8 PINGREQ_TYPE = 0xC0;
 const quint8 PINGRESP_TYPE = 0xD0;
 const quint8 DISCONNECT_TYPE = 0xE0;
+
 const quint8 QOS0 = 0x00;
 const quint8 QOS1 = 0x02;
 const quint8 QOS2 = 0x04;
+
 const QHostAddress HOST_ADDRESS = QHostAddress("8.8.8.8");
+const QString HOST_NAME = QStringLiteral("test.mosquitto.org");
 const quint16 PORT = 8883;
 
 class ClientTest : public Test
@@ -86,6 +89,26 @@ TEST_F(ClientTest, constructorWithHostPortAndParent_Test)
     _client.reset();
 }
 
+TEST_F(ClientTest, constructorWithHostPortAndSsl_Test)
+{
+    _client.reset(new QMQTT::Client(HOST_NAME, PORT, true, false));
+
+    EXPECT_EQ(HOST_NAME, _client->hostName());
+    EXPECT_EQ(PORT, _client->port());
+    EXPECT_THAT(_client->parent(), IsNull());
+}
+
+TEST_F(ClientTest, constructorWithHostPortSslAndParent_Test)
+{
+    QObject parent;
+    _client.reset(new QMQTT::Client(HOST_NAME, PORT, true, false, &parent));
+
+    EXPECT_EQ(HOST_NAME, _client->hostName());
+    EXPECT_EQ(PORT, _client->port());
+    EXPECT_EQ(&parent, _client->parent());
+    _client.reset();
+}
+
 TEST_F(ClientTest, hostReturnsHostValue_Test)
 {
     EXPECT_EQ(QHostAddress::LocalHost, _client->host());
@@ -95,6 +118,17 @@ TEST_F(ClientTest, setHostSetsHostValue_Test)
 {
     _client->setHost(HOST_ADDRESS);
     EXPECT_EQ(HOST_ADDRESS, _client->host());
+}
+
+TEST_F(ClientTest, hostNameReturnsHostNameValue_Test)
+{
+    EXPECT_EQ(QString(), _client->hostName());
+}
+
+TEST_F(ClientTest, setHostNameSetsHostNameValue_Test)
+{
+    _client->setHostName(HOST_NAME);
+    EXPECT_EQ(HOST_NAME, _client->hostName());
 }
 
 TEST_F(ClientTest, portReturnsPortValue_Test)
@@ -171,7 +205,7 @@ TEST_F(ClientTest, setCleanSessionSetsCleanSession_Test)
 
 TEST_F(ClientTest, connectToHostWillCallNetworkConnectToHost)
 {
-    EXPECT_CALL(*_networkMock, connectToHost(Eq(QHostAddress::LocalHost), Eq(1883)));
+    EXPECT_CALL(*_networkMock, connectToHost(TypedEq<const QHostAddress&>(QHostAddress::LocalHost), Eq(1883)));
     _client->connectToHost();
 }
 
@@ -230,13 +264,13 @@ TEST_F(ClientTest, setWillTopicSetsAWillTopic_Test)
 
 TEST_F(ClientTest, willQosDefaultsToZero_Test)
 {
-    EXPECT_EQ(0, _client->willQos());
+    EXPECT_EQ(QOS0, _client->willQos());
 }
 
 TEST_F(ClientTest, setWillQosSetsAWillQos_Test)
 {
-    _client->setWillQos(2);
-    EXPECT_EQ(2, _client->willQos());
+    _client->setWillQos(QOS1);
+    EXPECT_EQ(QOS1, _client->willQos());
 }
 
 TEST_F(ClientTest, willRetainDefaultsToFalse_Test)

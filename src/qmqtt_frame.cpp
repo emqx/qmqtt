@@ -43,13 +43,13 @@ Frame::Frame()
 {
 }
 
-Frame::Frame(quint8 header)
+Frame::Frame(const quint8 header)
     : _header(header)
     , _data(QByteArray())
 {
 }
 
-Frame::Frame(quint8 header, const QByteArray &data)
+Frame::Frame(const quint8 header, const QByteArray &data)
     : _header(header)
     , _data(data)
 {
@@ -96,7 +96,7 @@ quint8 Frame::readChar()
     return c;
 }
 
-int Frame::readInt()
+quint16 Frame::readInt()
 {
     char msb = _data.at(0);
     char lsb = _data.at(1);
@@ -106,13 +106,13 @@ int Frame::readInt()
 
 QString Frame::readString()
 {
-    int len = readInt();
+    quint16 len = readInt();
     QString s(_data.left(len));
     _data.remove(0, len);
     return s;
 }
 
-void Frame::writeInt(int i)
+void Frame::writeInt(const quint16 i)
 {
     _data.append(MSB(i));
     _data.append(LSB(i));
@@ -121,6 +121,11 @@ void Frame::writeInt(int i)
 void Frame::writeString(const QString &string)
 {
     QByteArray data = string.toUtf8();
+    if (data.size() > (int)USHRT_MAX)
+    {
+        qCritical("qmqtt: String size bigger than %u bytes, truncate it!", USHRT_MAX);
+        data.resize(USHRT_MAX);
+    }
     writeInt(data.size());
     _data.append(data);
 }
@@ -138,19 +143,33 @@ void Frame::writeRawData(const QByteArray &data)
 void Frame::write(QDataStream &stream)
 {
     QByteArray lenbuf;
+
+    if (!encodeLength(lenbuf, _data.size()))
+    {
+        qCritical("qmqtt: Control packet bigger than 256 MB, dropped!");
+        return;
+    }
+
     stream << (quint8)_header;
     if(_data.size() == 0) {
         stream << (quint8)0;
         return;
     }
-    encodeLength(lenbuf, _data.size());
-    stream.writeRawData(lenbuf.data(), lenbuf.size());
-    stream.writeRawData(_data.data(), _data.size());
+    if (stream.writeRawData(lenbuf.data(), lenbuf.size()) != lenbuf.size())
+    {
+        qCritical("qmqtt: Control packet write error!");
+        return;
+    }
+    if (stream.writeRawData(_data.data(), _data.size()) != _data.size())
+    {
+        qCritical("qmqtt: Control packet write error!");
+    }
 }
 
-void Frame::encodeLength(QByteArray &lenbuf, int length)
+bool Frame::encodeLength(QByteArray &lenbuf, int length)
 {
-    qint8 d;
+    lenbuf.clear();
+    quint8 d;
     do {
         d = length % 128;
         length /= 128;
@@ -159,6 +178,8 @@ void Frame::encodeLength(QByteArray &lenbuf, int length)
         }
         lenbuf.append(d);
     } while (length > 0);
+
+    return lenbuf.size() <= 4;
 }
 
 } // namespace QMQTT

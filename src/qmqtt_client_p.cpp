@@ -88,6 +88,34 @@ void QMQTT::ClientPrivate::init(const QHostAddress& host, const quint16 port, Ne
                      q, &Client::onNetworkError);
 }
 
+void QMQTT::ClientPrivate::init(const QString& hostName, const quint16 port, const bool ssl, const bool ignoreSelfSigned)
+{
+    Q_Q(Client);
+
+    _hostName = hostName;
+    _port = port;
+    if (ssl)
+    {
+        _network.reset(new SslNetwork(ignoreSelfSigned));
+    }
+    else
+    {
+        _network.reset(new Network);
+    }
+
+    initializeErrorHash();
+
+    QObject::connect(&_timer, &QTimer::timeout, q, &Client::onTimerPingReq);
+    QObject::connect(_network.data(), &Network::connected,
+                     q, &Client::onNetworkConnected);
+    QObject::connect(_network.data(), &Network::disconnected,
+                     q, &Client::onNetworkDisconnected);
+    QObject::connect(_network.data(), &Network::received,
+                     q, &Client::onNetworkReceived);
+    QObject::connect(_network.data(), &Network::error,
+                     q, &Client::onNetworkError);
+}
+
 void QMQTT::ClientPrivate::initializeErrorHash()
 {
     _socketErrorHash.insert(QAbstractSocket::ConnectionRefusedError, SocketConnectionRefusedError);
@@ -117,7 +145,14 @@ void QMQTT::ClientPrivate::initializeErrorHash()
 
 void QMQTT::ClientPrivate::connectToHost()
 {
-    _network->connectToHost(_host, _port);
+    if (_hostName.isEmpty())
+    {
+        _network->connectToHost(_host, _port);
+    }
+    else
+    {
+        _network->connectToHost(_hostName, _port);
+    }
 }
 
 void QMQTT::ClientPrivate::onNetworkConnected()
@@ -130,7 +165,6 @@ void QMQTT::ClientPrivate::onNetworkConnected()
 
 void QMQTT::ClientPrivate::sendConnect()
 {
-    QString magic(PROTOCOL_MAGIC);
     quint8 header = CONNECT;
     quint8 flags = 0;
 
@@ -155,7 +189,7 @@ void QMQTT::ClientPrivate::sendConnect()
     }
 
     //payload
-    frame.writeString(magic);
+    frame.writeString(QStringLiteral(PROTOCOL_MAGIC));
     frame.writeChar(PROTOCOL_VERSION_MAJOR);
     frame.writeChar(flags);
     frame.writeInt(_keepAlive);
@@ -204,14 +238,14 @@ quint16 QMQTT::ClientPrivate::sendPublish(const Message& msg)
     return message.id();
 }
 
-void QMQTT::ClientPrivate::sendPuback(quint8 type, quint16 mid)
+void QMQTT::ClientPrivate::sendPuback(const quint8 type, const quint16 mid)
 {
     Frame frame(type);
     frame.writeInt(mid);
     _network->sendFrame(frame);
 }
 
-quint16 QMQTT::ClientPrivate::sendSubscribe(const QString & topic, quint8 qos)
+quint16 QMQTT::ClientPrivate::sendSubscribe(const QString & topic, const quint8 qos)
 {
     quint16 mid = nextmid();
     Frame frame(SETQOS(SUBSCRIBE, QOS1));
@@ -263,7 +297,7 @@ void QMQTT::ClientPrivate::stopKeepAlive()
 
 QString QMQTT::ClientPrivate::randomClientId()
 {
-    return "QMQTT-" + QString::number(QDateTime::currentMSecsSinceEpoch() % 1000000);
+    return QStringLiteral(RANDOM_CLIENT_PREFIX) + QString::number(QDateTime::currentMSecsSinceEpoch() % 1000000);
 }
 
 quint16 QMQTT::ClientPrivate::nextmid()
@@ -437,12 +471,12 @@ bool QMQTT::ClientPrivate::cleanSession() const
     return _cleanSession;
 }
 
-void QMQTT::ClientPrivate::setKeepAlive(const int keepAlive)
+void QMQTT::ClientPrivate::setKeepAlive(const quint16 keepAlive)
 {
     _keepAlive = keepAlive;
 }
 
-int QMQTT::ClientPrivate::keepAlive() const
+quint16 QMQTT::ClientPrivate::keepAlive() const
 {
     return _keepAlive;
 }
@@ -502,6 +536,16 @@ void QMQTT::ClientPrivate::setHost(const QHostAddress& host)
 QHostAddress QMQTT::ClientPrivate::host() const
 {
     return _host;
+}
+
+void QMQTT::ClientPrivate::setHostName(const QString& hostName)
+{
+    _hostName = hostName;
+}
+
+QString QMQTT::ClientPrivate::hostName() const
+{
+    return _hostName;
 }
 
 QString QMQTT::ClientPrivate::willTopic() const

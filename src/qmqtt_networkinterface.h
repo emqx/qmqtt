@@ -56,6 +56,7 @@ public:
 
 public slots:
     virtual void connectToHost(const QHostAddress& host, const quint16 port) = 0;
+    virtual void connectToHost(const QString& hostName, const quint16 port) = 0;
     virtual void disconnectFromHost() = 0;
 
 signals:

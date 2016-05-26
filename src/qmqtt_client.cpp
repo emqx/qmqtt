@@ -43,6 +43,18 @@ QMQTT::Client::Client(const QHostAddress& host,
     d->init(host, port);
 }
 
+QMQTT::Client::Client(const QString &hostName,
+                      const quint16 port,
+                      const bool ssl,
+                      const bool ignoreSelfSigned,
+                      QObject* parent)
+    : QObject(parent)
+    , d_ptr(new ClientPrivate(this))
+{
+    Q_D(Client);
+    d->init(hostName, port, ssl, ignoreSelfSigned);
+}
+
 QMQTT::Client::Client(NetworkInterface* network,
                       const QHostAddress& host,
                       const quint16 port,
@@ -68,6 +80,18 @@ void QMQTT::Client::setHost(const QHostAddress& host)
 {
     Q_D(Client);
     d->setHost(host);
+}
+
+QString QMQTT::Client::hostName() const
+{
+    Q_D(const Client);
+    return d->hostName();
+}
+
+void QMQTT::Client::setHostName(const QString &hostName)
+{
+    Q_D(Client);
+    d->setHostName(hostName);
 }
 
 quint16 QMQTT::Client::port() const
@@ -118,13 +142,13 @@ void QMQTT::Client::setPassword(const QString& password)
     d->setPassword(password);
 }
 
-int QMQTT::Client::keepAlive() const
+quint16 QMQTT::Client::keepAlive() const
 {
     Q_D(const Client);
     return d->keepAlive();
 }
 
-void QMQTT::Client::setKeepAlive(const int keepAlive)
+void QMQTT::Client::setKeepAlive(const quint16 keepAlive)
 {
     Q_D(Client);
     d->setKeepAlive(keepAlive);

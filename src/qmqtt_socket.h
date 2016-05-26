@@ -49,6 +49,7 @@ public:
     virtual	~Socket();
 
     void connectToHost(const QHostAddress& address, quint16 port);
+    void connectToHost(const QString& hostName, quint16 port);
     void disconnectFromHost();
     QAbstractSocket::SocketState state() const;
     bool waitForBytesWritten(int msecs = 30000);

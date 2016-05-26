@@ -10,6 +10,7 @@ public:
     using QMQTT::SocketInterface::error;
 
     MOCK_METHOD2(connectToHost, void(const QHostAddress&, quint16));
+    MOCK_METHOD2(connectToHost, void(const QString&, quint16));
     MOCK_METHOD0(disconnectFromHost, void());
     MOCK_CONST_METHOD0(state, QAbstractSocket::SocketState());
     MOCK_CONST_METHOD0(atEnd, bool());
