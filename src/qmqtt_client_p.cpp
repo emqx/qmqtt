@@ -33,7 +33,6 @@
 #include "qmqtt_client_p.h"
 #include "qmqtt_message.h"
 #include <QLoggingCategory>
-#include <QDateTime>
 #include <QUuid>
 
 Q_LOGGING_CATEGORY(client, "qmqtt.client")
@@ -193,9 +192,6 @@ void QMQTT::ClientPrivate::sendConnect()
     frame.writeChar(PROTOCOL_VERSION_MAJOR);
     frame.writeChar(flags);
     frame.writeInt(_keepAlive);
-    if(_clientId.isEmpty()) {
-        _clientId = randomClientId();
-    }
     frame.writeString(_clientId);
     if(!willTopic().isEmpty())
     {
@@ -294,11 +290,6 @@ void QMQTT::ClientPrivate::startKeepAlive()
 void QMQTT::ClientPrivate::stopKeepAlive()
 {
     _timer.stop();
-}
-
-QString QMQTT::ClientPrivate::randomClientId()
-{
-    return QStringLiteral(RANDOM_CLIENT_PREFIX) + QString::number(QDateTime::currentMSecsSinceEpoch() % 1000000);
 }
 
 quint16 QMQTT::ClientPrivate::nextmid()

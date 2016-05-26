@@ -69,7 +69,6 @@ public:
 
     Client* const q_ptr;
 
-    QString randomClientId();
     quint16 nextmid();
     void connectToHost();
     void sendConnect();
