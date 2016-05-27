@@ -33,7 +33,6 @@
 #include "qmqtt_client_p.h"
 #include "qmqtt_message.h"
 #include <QLoggingCategory>
-#include <QDateTime>
 #include <QUuid>
 
 Q_LOGGING_CATEGORY(client, "qmqtt.client")
@@ -193,9 +192,6 @@ void QMQTT::ClientPrivate::sendConnect()
     frame.writeChar(PROTOCOL_VERSION_MAJOR);
     frame.writeChar(flags);
     frame.writeInt(_keepAlive);
-    if(_clientId.isEmpty()) {
-        _clientId = randomClientId();
-    }
     frame.writeString(_clientId);
     if(!willTopic().isEmpty())
     {
@@ -209,7 +205,8 @@ void QMQTT::ClientPrivate::sendConnect()
     {
         frame.writeString(_username);
     }
-    if (!_password.isEmpty()){
+    if (!_password.isEmpty())
+    {
         frame.writeString(_password);
     }
     _network->sendFrame(frame);
@@ -227,7 +224,7 @@ quint16 QMQTT::ClientPrivate::sendPublish(const Message& msg)
     frame.writeString(message.topic());
     if(message.qos() > QOS0) {
         if(message.id() == 0) {
-            message.setId(_gmid++);
+            message.setId(nextmid());
         }
         frame.writeInt(message.id());
     }
@@ -258,7 +255,7 @@ quint16 QMQTT::ClientPrivate::sendSubscribe(const QString & topic, const quint8 
 
 quint16 QMQTT::ClientPrivate::sendUnsubscribe(const QString &topic)
 {
-    quint16 mid = _gmid++;
+    quint16 mid = nextmid();
     Frame frame(SETQOS(UNSUBSCRIBE, QOS1));
     frame.writeInt(mid);
     frame.writeString(topic);
@@ -293,11 +290,6 @@ void QMQTT::ClientPrivate::startKeepAlive()
 void QMQTT::ClientPrivate::stopKeepAlive()
 {
     _timer.stop();
-}
-
-QString QMQTT::ClientPrivate::randomClientId()
-{
-    return QStringLiteral(RANDOM_CLIENT_PREFIX) + QString::number(QDateTime::currentMSecsSinceEpoch() % 1000000);
 }
 
 quint16 QMQTT::ClientPrivate::nextmid()
