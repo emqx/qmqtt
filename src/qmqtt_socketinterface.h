@@ -38,30 +38,23 @@
 namespace QMQTT
 {
 
-class SocketInterface : public QIODevice
+class SocketInterface : public QObject
 {
     Q_OBJECT
 public:
-    explicit SocketInterface(QObject* parent = NULL) : QIODevice(parent)
-    {
-        setOpenMode(QIODevice::ReadWrite);
-    }
+    explicit SocketInterface(QObject* parent = NULL) : QObject(parent) {}
     virtual	~SocketInterface() {}
 
+    virtual QIODevice *ioDevice() = 0;
     virtual void connectToHost(const QHostAddress& address, quint16 port) = 0;
     virtual void connectToHost(const QString& hostName, quint16 port) = 0;
     virtual void disconnectFromHost() = 0;
     virtual QAbstractSocket::SocketState state() const = 0;
-    virtual bool atEnd() const = 0;
-    virtual bool waitForBytesWritten(int msecs) = 0;
     virtual QAbstractSocket::SocketError error() const = 0;
-    virtual qint64 readData(char* data, qint64 maxlen) = 0;
-    virtual qint64 writeData(const char* data, qint64 len) = 0;
 
 signals:
     void connected();
     void disconnected();
-    void readyRead();
     void error(QAbstractSocket::SocketError socketError);
 };
 

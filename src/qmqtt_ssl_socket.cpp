@@ -33,15 +33,15 @@
 #include "qmqtt_ssl_socket.h"
 #include <QSslSocket>
 
+#ifndef QT_NO_SSL
+
 QMQTT::SslSocket::SslSocket(bool ignoreSelfSigned, QObject* parent)
     : SocketInterface(parent)
     , _socket(new QSslSocket)
     , _ignoreSelfSigned(ignoreSelfSigned)
 {
-    connect(_socket.data(), &QSslSocket::stateChanged, this, &SslSocket::onStateChanged);
     connect(_socket.data(), &QSslSocket::encrypted,    this, &SocketInterface::connected);
     connect(_socket.data(), &QSslSocket::disconnected, this, &SocketInterface::disconnected);
-    connect(_socket.data(), &QSslSocket::readyRead,    this, &SocketInterface::readyRead);
     connect(_socket.data(),
             static_cast<void (QSslSocket::*)(QAbstractSocket::SocketError)>(&QSslSocket::error),
             this,
@@ -56,13 +56,18 @@ QMQTT::SslSocket::~SslSocket()
 {
 }
 
+QIODevice *QMQTT::SslSocket::ioDevice()
+{
+    return _socket.data();
+}
+
 void QMQTT::SslSocket::connectToHost(const QHostAddress& address, quint16 port)
 {
     Q_UNUSED(address);
     Q_UNUSED(port);
 
     qCritical("qmqtt: SSL does not work with host addresses!");
-    emit _socket->error(QAbstractSocket::SocketError::ConnectionRefusedError);
+    emit _socket->error(QAbstractSocket::ConnectionRefusedError);
 }
 
 void QMQTT::SslSocket::connectToHost(const QString& hostName, quint16 port)
@@ -70,7 +75,7 @@ void QMQTT::SslSocket::connectToHost(const QString& hostName, quint16 port)
     _socket->connectToHostEncrypted(hostName, port);
     if (!_socket->waitForEncrypted())
     {
-        qCritical().noquote() << QStringLiteral("qmqtt SSL: ") << _socket->errorString();
+        qCritical() << QStringLiteral("qmqtt SSL: ") << _socket->errorString();
     }
 }
 
@@ -84,43 +89,9 @@ QAbstractSocket::SocketState QMQTT::SslSocket::state() const
     return _socket->state();
 }
 
-bool QMQTT::SslSocket::atEnd() const
-{
-    return _socket->atEnd();
-}
-
-bool QMQTT::SslSocket::waitForBytesWritten(int msecs)
-{
-    return _socket->waitForBytesWritten(msecs);
-}
-
-bool QMQTT::SslSocket::waitForReadyRead(int msecs)
-{
-    return _socket->waitForReadyRead(msecs);
-}
-
 QAbstractSocket::SocketError QMQTT::SslSocket::error() const
 {
     return _socket->error();
-}
-
-qint64 QMQTT::SslSocket::readData(char* data, qint64 maxlen)
-{
-    return _socket->read(data, maxlen);
-}
-
-qint64 QMQTT::SslSocket::writeData(const char* data, qint64 len)
-{
-    return _socket->write(data, len);
-}
-
-void QMQTT::SslSocket::onStateChanged(QAbstractSocket::SocketState state)
-{
-    Q_UNUSED(state);
-    if(openMode() != _socket->openMode())
-    {
-        setOpenMode(_socket->openMode());
-    }
 }
 
 void QMQTT::SslSocket::sslErrors(const QList<QSslError> &errors)
@@ -133,3 +104,5 @@ void QMQTT::SslSocket::sslErrors(const QList<QSslError> &errors)
         _socket->ignoreSslErrors();
     }
 }
+
+#endif // QT_NO_SSL

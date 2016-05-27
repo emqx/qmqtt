@@ -1,4 +1,4 @@
-QT += widgets network testlib
+QT += network testlib
 QT -= gui
 
 TARGET = qmqtt_tests
@@ -22,7 +22,8 @@ HEADERS += \
     customprinter.h \
     networkmock.h \
     socketmock.h \
-    timermock.h
+    timermock.h \
+    iodevicemock.h
 
 INCLUDEPATH += \
     ../gtest/googletest/googletest/include \

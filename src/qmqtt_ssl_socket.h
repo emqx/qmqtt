@@ -37,6 +37,8 @@
 #include <QObject>
 #include <QScopedPointer>
 
+#ifndef QT_NO_SSL
+
 class QSslSocket;
 class QSslError;
 
@@ -50,19 +52,14 @@ public:
     explicit SslSocket(bool ignoreSelfSigned, QObject* parent = NULL);
     virtual ~SslSocket();
 
+    virtual QIODevice *ioDevice();
     void connectToHost(const QHostAddress& address, quint16 port);
     void connectToHost(const QString& hostName, quint16 port);
     void disconnectFromHost();
     QAbstractSocket::SocketState state() const;
-    bool waitForBytesWritten(int msecs = 30000);
-    bool waitForReadyRead(int msecs = 30000);
     QAbstractSocket::SocketError error() const;
-    bool atEnd() const;
-    qint64 readData(char* data, qint64 maxlen);
-    qint64 writeData(const char* data, qint64 len);
 
 protected slots:
-    void onStateChanged(QAbstractSocket::SocketState state);
     void sslErrors(const QList<QSslError> &errors);
 
 protected:
@@ -71,5 +68,7 @@ protected:
 };
 
 }
+
+#endif // QT_NO_SSL
 
 #endif // QMQTT_SSL_SOCKET_H

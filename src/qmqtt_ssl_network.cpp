@@ -35,6 +35,8 @@
 #include "qmqtt_ssl_socket.h"
 #include "qmqtt_timer.h"
 
+#ifndef QT_NO_SSL
+
 const QString DEFAULT_HOST_NAME = QStringLiteral("localhost");
 const quint16 DEFAULT_PORT = 8883;
 const bool DEFAULT_AUTORECONNECT = false;
@@ -71,10 +73,12 @@ void QMQTT::SslNetwork::initialize()
 {
     _socket->setParent(this);
     _autoReconnectTimer->setParent(this);
+    _autoReconnectTimer->setSingleShot(true);
+    _autoReconnectTimer->setInterval(_autoReconnectInterval);
 
     QObject::connect(_socket, &SocketInterface::connected, this, &SslNetwork::connected);
     QObject::connect(_socket, &SocketInterface::disconnected, this, &SslNetwork::onDisconnected);
-    QObject::connect(_socket, &SocketInterface::readyRead, this, &SslNetwork::onSocketReadReady);
+    QObject::connect(_socket->ioDevice(), &QIODevice::readyRead, this, &SslNetwork::onSocketReadReady);
     QObject::connect(
         _autoReconnectTimer, &TimerInterface::timeout,
         this, static_cast<void (SslNetwork::*)()>(&SslNetwork::connectToHost));
@@ -98,7 +102,7 @@ void QMQTT::SslNetwork::connectToHost(const QHostAddress& host, const quint16 po
     Q_UNUSED(port);
 
     qCritical("qmqtt: SSL does not work with host addresses!");
-    emit error(QAbstractSocket::SocketError::ConnectionRefusedError);
+    emit error(QAbstractSocket::ConnectionRefusedError);
 }
 
 void QMQTT::SslNetwork::connectToHost(const QString& hostName, const quint16 port)
@@ -127,7 +131,7 @@ void QMQTT::SslNetwork::sendFrame(Frame& frame)
 {
     if(_socket->state() == QAbstractSocket::ConnectedState)
     {
-        QDataStream out(_socket);
+        QDataStream out(_socket->ioDevice());
         frame.write(out);
     }
 }
@@ -164,15 +168,16 @@ void QMQTT::SslNetwork::setAutoReconnectInterval(const int autoReconnectInterval
 
 void QMQTT::SslNetwork::onSocketReadReady()
 {
-    while(!_socket->atEnd())
+    QIODevice *ioDevice = _socket->ioDevice();
+    while(!ioDevice->atEnd())
     {
         if(_bytesRemaining == 0)
         {
-            if (!_socket->getChar(reinterpret_cast<char *>(&_header)))
+            if (!ioDevice->getChar(reinterpret_cast<char *>(&_header)))
             {
                 // malformed packet
-                emit _socket->error(QAbstractSocket::SocketError::OperationError);
-                _socket->close();
+                emit error(QAbstractSocket::OperationError);
+                ioDevice->close();
                 return;
             }
 
@@ -180,13 +185,13 @@ void QMQTT::SslNetwork::onSocketReadReady()
             if (_bytesRemaining < 0)
             {
                 // malformed remaining length
-                emit _socket->error(QAbstractSocket::SocketError::OperationError);
-                _socket->close();
+                emit error(QAbstractSocket::OperationError);
+                ioDevice->close();
                 return;
             }
         }
 
-        QByteArray data = _socket->read(_bytesRemaining);
+        QByteArray data = ioDevice->read(_bytesRemaining);
         _buffer.append(data);
         _bytesRemaining -= data.size();
 
@@ -204,8 +209,9 @@ int QMQTT::SslNetwork::readRemainingLength()
      quint8 byte = 0;
      int length = 0;
      int multiplier = 1;
+     QIODevice *ioDevice = _socket->ioDevice();
      do {
-         if (!_socket->getChar(reinterpret_cast<char *>(&byte)))
+         if (!ioDevice->getChar(reinterpret_cast<char *>(&byte)))
              return -1;
          length += (byte & 127) * multiplier;
          multiplier *= 128;
@@ -224,3 +230,5 @@ void QMQTT::SslNetwork::onDisconnected()
         _autoReconnectTimer->start();
     }
 }
+
+#endif // QT_NO_SSL

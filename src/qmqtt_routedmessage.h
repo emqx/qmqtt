@@ -34,6 +34,7 @@
 #define QMQTT_ROUTEDMESSAGE_H
 
 #include <QHash>
+#include <QString>
 #include "qmqtt_message.h"
 
 namespace QMQTT {
