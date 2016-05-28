@@ -98,10 +98,10 @@ quint8 Frame::readChar()
 
 quint16 Frame::readInt()
 {
-    char msb = _data.at(0);
-    char lsb = _data.at(1);
+    quint8 msb = static_cast<quint8>(_data.at(0));
+    quint8 lsb = static_cast<quint8>(_data.at(1));
     _data.remove(0, 2);
-    return (msb << 8) + lsb;
+    return (msb << 8) | lsb;
 }
 
 QString Frame::readString()
