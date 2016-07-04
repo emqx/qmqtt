@@ -95,7 +95,7 @@ TEST_F(FrameTest, writeStringWritesToBytearrayTooLong_Test)
     _frame->writeString(QString(70000, 'a'));
 
     QString s = _frame->readString();
-    EXPECT_EQ(USHRT_MAX, s.size());
+    EXPECT_EQ(static_cast<int>(USHRT_MAX), s.size());
     EXPECT_EQ(QString(USHRT_MAX, 'a'), s);
 }
 
