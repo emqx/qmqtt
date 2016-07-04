@@ -92,9 +92,11 @@ TEST_F(FrameTest, writeStringWritesToBytearray_Test)
 
 TEST_F(FrameTest, writeStringWritesToBytearrayTooLong_Test)
 {
-    _frame->writeString(QString(70000, 0x00));
+    _frame->writeString(QString(70000, 'a'));
 
-    EXPECT_EQ(QString(USHRT_MAX, 0x00), _frame->readString());
+    QString s = _frame->readString();
+    EXPECT_EQ(USHRT_MAX, s.size());
+    EXPECT_EQ(QString(USHRT_MAX, 'a'), s);
 }
 
 TEST_F(FrameTest, writeRawDataWritesToBytearray_Test)
@@ -136,5 +138,5 @@ TEST_F(FrameTest, encodeLength_Test)
     EXPECT_TRUE(_frame->encodeLength(lenbuf, 16383) && lenbuf == QByteArray::fromHex("FF7F"));
     EXPECT_TRUE(_frame->encodeLength(lenbuf, 127) && lenbuf == QByteArray::fromHex("7F"));
     EXPECT_TRUE(_frame->encodeLength(lenbuf, 1) && lenbuf == QByteArray::fromHex("1"));
-    EXPECT_TRUE(_frame->encodeLength(lenbuf, 0) && lenbuf.isEmpty());
+    EXPECT_TRUE(_frame->encodeLength(lenbuf, 0) && lenbuf == QByteArray::fromHex("0"));
 }

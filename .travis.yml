@@ -1,0 +1,13 @@
+before_install:
+ - sudo apt-add-repository -y ppa:ubuntu-toolchain-r/test
+ - sudo apt-add-repository -y ppa:beineri/opt-qt56
+ - sudo apt-get update -qq
+ - sudo apt-get install -qq qt56base qt56tools g++-4.8
+ - source /opt/qt56/bin/qt56-env.sh
+ - export CXX="g++-4.8"
+
+script:
+ - qmake --version
+ - $CXX --version
+ - qmake
+ - make CXX=$CXX
