@@ -371,7 +371,6 @@ TEST_F(ClientTest, disconnectSendsDisconnectMessageAndNetworkDisconnect_Test)
 
 // todo: verify pingreq sent from client, will require timer interface and mock
 
-// todo: this shouldn't emit connected until connect packet received
 TEST_F(ClientTest, networkConnectEmitsConnectedSignal_Test)
 {
     EXPECT_CALL(*_networkMock, sendFrame(_));
@@ -379,7 +378,7 @@ TEST_F(ClientTest, networkConnectEmitsConnectedSignal_Test)
 
     emit _networkMock->connected();
 
-    EXPECT_EQ(1, spy.count());
+    EXPECT_EQ(0, spy.count());
 }
 
 TEST_F(ClientTest, networkReceivedSendsConnackDoesNotEmitConnectedSignal_Test)
@@ -389,7 +388,7 @@ TEST_F(ClientTest, networkReceivedSendsConnackDoesNotEmitConnectedSignal_Test)
     QMQTT::Frame frame(CONNACK_TYPE, QByteArray(2, 0x00));
     emit _networkMock->received(frame);
 
-    EXPECT_EQ(0, spy.count());
+    EXPECT_EQ(1, spy.count());
 }
 
 // todo: receive connack_type should start keepalive
