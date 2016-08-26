@@ -1,24 +1,23 @@
 INCLUDEPATH += $$PWD
-DEPENDPATH += $$PWD
 
-HEADERS += \
-    $$PWD/qmqtt_client_p.h \
+PUBLIC_HEADERS += \
     $$PWD/qmqtt_client.h \
     $$PWD/qmqtt_frame.h \
-    $$PWD/qmqtt_global.h \
     $$PWD/qmqtt_message.h \
-    $$PWD/qmqtt_network_p.h \
-    $$PWD/qmqtt_ssl_network_p.h \
-    $$PWD/qmqtt.h \
     $$PWD/qmqtt_routesubscription.h \
     $$PWD/qmqtt_routedmessage.h \
     $$PWD/qmqtt_router.h \
     $$PWD/qmqtt_networkinterface.h \
-    $$PWD/qmqtt_message_p.h \
-    $$PWD/qmqtt_socket_p.h \
-    $$PWD/qmqtt_ssl_socket_p.h \
     $$PWD/qmqtt_socketinterface.h \
-    $$PWD/qmqtt_timerinterface.h \
+    $$PWD/qmqtt_timerinterface.h
+
+PRIVATE_HEADERS += \
+    $$PWD/qmqtt_client_p.h \
+    $$PWD/qmqtt_message_p.h \
+    $$PWD/qmqtt_network_p.h \
+    $$PWD/qmqtt_socket_p.h \
+    $$PWD/qmqtt_ssl_network_p.h \
+    $$PWD/qmqtt_ssl_socket_p.h \
     $$PWD/qmqtt_timer_p.h
 
 SOURCES += \

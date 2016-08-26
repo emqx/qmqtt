@@ -1,8 +1,9 @@
+TEMPLATE = app
 TARGET = qmqtt_example
-QT = core network
+QT = core network mqtt
 
-DEFINES += QMQTT_EXAMPLE
-INCLUDEPATH += ../../../src/mqtt
-LIBS += -L../../../src/mqtt -L../../../src/mqtt/debug -L../../../src/mqtt/release -lqmqtt
+SOURCES += \
+    example.cpp
 
-SOURCES = example.cpp
+target.path = $$[QT_INSTALL_EXAMPLES]/mqtt/client
+INSTALLS += target

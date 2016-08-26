@@ -1,4 +1,5 @@
 TEMPLATE = subdirs
-SUBDIRS =
+SUBDIRS += \
+    auto
 
 unix:!NO_UNIT_TESTS: SUBDIRS += gtest
