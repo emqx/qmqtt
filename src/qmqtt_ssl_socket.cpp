@@ -30,7 +30,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#include "qmqtt_ssl_socket.h"
+#include "qmqtt_ssl_socket_p.h"
 #include <QSslSocket>
 #include <QSslConfiguration>
 #include <QSslCertificate>

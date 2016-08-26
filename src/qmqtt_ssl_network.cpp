@@ -31,9 +31,9 @@
  *
  */
 #include <QDataStream>
-#include "qmqtt_ssl_network.h"
-#include "qmqtt_ssl_socket.h"
-#include "qmqtt_timer.h"
+#include "qmqtt_ssl_network_p.h"
+#include "qmqtt_ssl_socket_p.h"
+#include "qmqtt_timer_p.h"
 
 #ifndef QT_NO_SSL
 

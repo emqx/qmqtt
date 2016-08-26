@@ -33,6 +33,8 @@
 #ifndef QMQTT_ROUTESUBSCRIPTION_H
 #define QMQTT_ROUTESUBSCRIPTION_H
 
+#include <qmqtt_global.h>
+
 #include <QObject>
 #include <QRegularExpression>
 
@@ -42,7 +44,7 @@ class Message;
 class RoutedMessage;
 class Router;
 
-class RouteSubscription : public QObject
+class Q_MQTT_EXPORT RouteSubscription : public QObject
 {
     Q_OBJECT
 public:

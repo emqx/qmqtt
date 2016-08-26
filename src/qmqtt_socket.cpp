@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#include "qmqtt_socket.h"
+#include "qmqtt_socket_p.h"
 #include <QTcpSocket>
 
 QMQTT::Socket::Socket(QObject* parent)

@@ -32,6 +32,8 @@
 #ifndef QMQTT_FRAME_H
 #define QMQTT_FRAME_H
 
+#include <qmqtt_global.h>
+
 #include <QObject>
 
 #define PROTOCOL_MAGIC "MQIsdp"
@@ -84,7 +86,7 @@
 
 namespace QMQTT {
 
-class Frame
+class Q_MQTT_EXPORT Frame
 {
 public:
     explicit Frame();

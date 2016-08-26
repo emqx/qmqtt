@@ -32,11 +32,7 @@
 #ifndef QMQTT_MESSAGE_H
 #define QMQTT_MESSAGE_H
 
-#if defined(QMQTT_LIBRARY)
-#  define QMQTTSHARED_EXPORT Q_DECL_EXPORT
-#else
-#  define QMQTTSHARED_EXPORT Q_DECL_IMPORT
-#endif
+#include <qmqtt_global.h>
 
 #include <QScopedPointer>
 #include <QMetaType>
@@ -45,7 +41,7 @@ namespace QMQTT {
 
 class MessagePrivate;
 
-class QMQTTSHARED_EXPORT Message
+class Q_MQTT_EXPORT Message
 {
 public:
     explicit Message();

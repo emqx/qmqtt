@@ -32,11 +32,7 @@
 #ifndef QMQTT_CLIENT_H
 #define QMQTT_CLIENT_H
 
-#if defined(QMQTT_LIBRARY)
-#  define QMQTTSHARED_EXPORT Q_DECL_EXPORT
-#else
-#  define QMQTTSHARED_EXPORT Q_DECL_IMPORT
-#endif
+#include <qmqtt_global.h>
 
 #include <QObject>
 #include <QAbstractSocket>
@@ -96,7 +92,7 @@ class Message;
 class Frame;
 class NetworkInterface;
 
-class QMQTTSHARED_EXPORT Client : public QObject
+class Q_MQTT_EXPORT Client : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(quint16 _port READ port WRITE setPort)

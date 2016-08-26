@@ -1,4 +1,4 @@
-#include "qmqtt_socket.h"
+#include <qmqtt_socket_p.h>
 #include "tcpserver.h"
 #include <QCoreApplication>
 #include <QSignalSpy>

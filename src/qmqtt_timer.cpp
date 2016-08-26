@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#include "qmqtt_timer.h"
+#include "qmqtt_timer_p.h"
 
 QMQTT::Timer::Timer(QObject* parent)
     : TimerInterface(parent)

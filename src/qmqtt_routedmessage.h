@@ -41,7 +41,7 @@ namespace QMQTT {
 
 class Message;
 
-class RoutedMessage
+class Q_MQTT_EXPORT RoutedMessage
 {
 public:
     explicit RoutedMessage(const Message &message);

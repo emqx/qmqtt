@@ -5,7 +5,7 @@ QT       -= gui
 TARGET = qmqtt
 TEMPLATE = lib
 
-DEFINES += QMQTT_LIBRARY
+DEFINES += QT_BUILD_MQTT_LIB
 
 DEFINES += QT_NO_CAST_TO_ASCII QT_NO_CAST_FROM_ASCII
 
@@ -25,7 +25,7 @@ SOURCES += qmqtt_client.cpp \
 
 HEADERS += qmqtt_client.h\
     qmqtt_global.h \
-    qmqtt_network.h \
+    qmqtt_network_p.h \
     qmqtt_frame.h \
     qmqtt_client_p.h \
     qmqtt_message.h \
@@ -36,11 +36,11 @@ HEADERS += qmqtt_client.h\
     qmqtt_networkinterface.h \
     qmqtt_message_p.h \
     qmqtt_socketinterface.h \
-    qmqtt_socket.h \
-    qmqtt_timer.h \
+    qmqtt_socket_p.h \
+    qmqtt_timer_p.h \
     qmqtt_timerinterface.h \
-    qmqtt_ssl_socket.h \
-    qmqtt_ssl_network.h
+    qmqtt_ssl_socket_p.h \
+    qmqtt_ssl_network_p.h
 
 isEmpty(PREFIX) {
     contains(MEEGO_EDITION,harmattan) {
