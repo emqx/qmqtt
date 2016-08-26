@@ -34,8 +34,8 @@
 
 #include "qmqtt_client.h"
 #include "qmqtt_client_p.h"
-#include "qmqtt_network.h"
-#include "qmqtt_ssl_network.h"
+#include "qmqtt_network_p.h"
+#include "qmqtt_ssl_network_p.h"
 #include <QTimer>
 
 namespace QMQTT {

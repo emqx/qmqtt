@@ -1,5 +1,5 @@
 /*
- * qmqtt_ssl_socket.h - qmqtt SSL socket header
+ * qmqtt_ssl_network_p.h - qmqtt SSL network private header
  *
  * Copyright (c) 2013  Ery Lee <ery.lee at gmail dot com>
  * Copyright (c) 2016  Matthias Dieter Wallnöfer
@@ -30,45 +30,76 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#ifndef QMQTT_SSL_SOCKET_H
-#define QMQTT_SSL_SOCKET_H
+#ifndef QMQTT_SSL_NETWORK_P_H
+#define QMQTT_SSL_NETWORK_P_H
 
-#include "qmqtt_socketinterface.h"
+#include "qmqtt_networkinterface.h"
+#include "qmqtt_frame.h"
+#include <QByteArray>
 #include <QObject>
-#include <QScopedPointer>
+#include <QTcpSocket>
+#include <QPointer>
+#include <QByteArray>
+#include <QHostAddress>
 
 #ifndef QT_NO_SSL
 
-class QSslSocket;
-class QSslError;
+namespace QMQTT {
 
-namespace QMQTT
-{
+class SocketInterface;
+class TimerInterface;
 
-class SslSocket : public SocketInterface
+class SslNetwork : public NetworkInterface
 {
     Q_OBJECT
-public:
-    explicit SslSocket(bool ignoreSelfSigned, QObject* parent = NULL);
-    virtual ~SslSocket();
 
-    virtual QIODevice *ioDevice();
-    void connectToHost(const QHostAddress& address, quint16 port);
-    void connectToHost(const QString& hostName, quint16 port);
-    void disconnectFromHost();
+public:
+    SslNetwork(bool ignoreSelfSigned, QObject* parent = NULL);
+    SslNetwork(SocketInterface* socketInterface, TimerInterface* timerInterface,
+            QObject* parent = NULL);
+    ~SslNetwork();
+
+    void sendFrame(Frame& frame);
+    bool isConnectedToHost() const;
+    bool autoReconnect() const;
+    void setAutoReconnect(const bool autoReconnect);
     QAbstractSocket::SocketState state() const;
-    QAbstractSocket::SocketError error() const;
+    int autoReconnectInterval() const;
+    void setAutoReconnectInterval(const int autoReconnectInterval);
+
+public slots:
+    void connectToHost(const QHostAddress& host, const quint16 port);
+    void connectToHost(const QString& hostName, const quint16 port);
+    void disconnectFromHost();
 
 protected slots:
-    void sslErrors(const QList<QSslError> &errors);
+    void onSocketError(QAbstractSocket::SocketError socketError);
 
 protected:
-    QScopedPointer<QSslSocket> _socket;
-    bool _ignoreSelfSigned;
+    void initialize();
+    int readRemainingLength();
+
+    quint16 _port;
+    QString _hostName;
+    QByteArray _buffer;
+    bool _autoReconnect;
+    int _autoReconnectInterval;
+    int _bytesRemaining;
+    quint8 _header;
+    SocketInterface* _socket;
+    TimerInterface* _autoReconnectTimer;
+
+protected slots:
+    void onSocketReadReady();
+    void onDisconnected();
+    void connectToHost();
+
+private:
+    Q_DISABLE_COPY(SslNetwork)
 };
 
-}
+} // namespace QMQTT
 
 #endif // QT_NO_SSL
 
-#endif // QMQTT_SSL_SOCKET_H
+#endif // QMQTT_SSL_NETWORK_P_H

@@ -1,5 +1,5 @@
 /*
- * qmqtt_network.h - qmqtt network header
+ * qmqtt_network_p.h - qmqtt network private header
  *
  * Copyright (c) 2013  Ery Lee <ery.lee at gmail dot com>
  * All rights reserved.
@@ -29,8 +29,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#ifndef QMQTT_NETWORK_H
-#define QMQTT_NETWORK_H
+#ifndef QMQTT_NETWORK_P_H
+#define QMQTT_NETWORK_P_H
 
 #include "qmqtt_networkinterface.h"
 #include "qmqtt_frame.h"
@@ -98,4 +98,4 @@ private:
 
 } // namespace QMQTT
 
-#endif // QMQTT_NETWORK_H
+#endif // QMQTT_NETWORK_P_H

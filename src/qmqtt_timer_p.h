@@ -1,5 +1,5 @@
 /*
- * qmqtt_socket.h - qmqtt socket header
+ * qmqtt_timer_p.h - qmqtt timer private header
  *
  * Copyright (c) 2013  Ery Lee <ery.lee at gmail dot com>
  * All rights reserved.
@@ -29,36 +29,32 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#ifndef QMQTT_SOCKET_H
-#define QMQTT_SOCKET_H
+#ifndef QMQTT_TIMER_P_H
+#define QMQTT_TIMER_P_H
 
-#include "qmqtt_socketinterface.h"
-#include <QObject>
-#include <QScopedPointer>
+#include "qmqtt_timerinterface.h"
+#include <QTimer>
 
-class QTcpSocket;
+namespace QMQTT {
 
-namespace QMQTT
-{
-
-class Socket : public SocketInterface
+class Timer : public TimerInterface
 {
     Q_OBJECT
 public:
-    explicit Socket(QObject* parent = NULL);
-    virtual	~Socket();
+    explicit Timer(QObject *parent = 0);
+    virtual ~Timer();
 
-    virtual QIODevice *ioDevice();
-    void connectToHost(const QHostAddress& address, quint16 port);
-    void connectToHost(const QString& hostName, quint16 port);
-    void disconnectFromHost();
-    QAbstractSocket::SocketState state() const;
-    QAbstractSocket::SocketError error() const;
+    bool isSingleShot() const;
+    void setSingleShot(bool singleShot);
+    int interval() const;
+    void setInterval(int msec);
+    void start();
+    void stop();
 
 protected:
-    QScopedPointer<QTcpSocket> _socket;
+    QTimer _timer;
 };
 
 }
 
-#endif // QMQTT_SOCKET_H
+#endif // QMQTT_TIMER_P_H
