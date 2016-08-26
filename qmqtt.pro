@@ -1,8 +1,8 @@
 TEMPLATE = subdirs
 
-SUBDIRS = src example
+SUBDIRS = src examples
 
-example.depends = src
+examples.depends = src
 
 unix:!NO_UNIT_TESTS: {
     SUBDIRS += gtest tests
