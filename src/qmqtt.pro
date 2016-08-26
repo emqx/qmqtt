@@ -7,6 +7,8 @@ TEMPLATE = lib
 
 DEFINES += QMQTT_LIBRARY
 
+DEFINES += QT_NO_CAST_TO_ASCII QT_NO_CAST_FROM_ASCII
+
 SOURCES += qmqtt_client.cpp \
     qmqtt_network.cpp \
     qmqtt_frame.cpp \
