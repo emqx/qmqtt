@@ -52,19 +52,19 @@ QString RouteSubscription::route() const
 
 void RouteSubscription::setRoute(const QString &route)
 {
-    QRegularExpression parameterNamesRegExp("\\:([a-zA-Z0-9]+)"); // note how names must not contain dashes or underscores
+    QRegularExpression parameterNamesRegExp(QStringLiteral("\\:([a-zA-Z0-9]+)")); // note how names must not contain dashes or underscores
 
     // Remove paramter names to get the actual topic "route"
     QString topic = route;
-    topic.replace(parameterNamesRegExp, "");
+    topic.remove(parameterNamesRegExp);
 
     // Remove the MQTT wildcards to get a regular expression, which matches the parameters
     QString parameterRegExp = route;
     parameterRegExp
-            .replace("+", "")
-            .replace(parameterNamesRegExp, "([a-zA-Z0-9_-]+)") // note how parameter values may contain dashes or underscores
-            .replace("#", "")
-            .replace("$", "\\$");
+            .remove(QLatin1Char('+'))
+            .replace(parameterNamesRegExp, QStringLiteral("([a-zA-Z0-9_-]+)")) // note how parameter values may contain dashes or underscores
+            .remove(QLatin1Char('#'))
+            .replace(QLatin1String("$"), QLatin1String("\\$"));
 
     // Extract the parameter names
     QRegularExpressionMatchIterator it = parameterNamesRegExp.globalMatch(route);
