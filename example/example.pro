@@ -4,7 +4,7 @@ QT -= gui
 TARGET = qmqtt_example
 
 DEFINES += QMQTT_EXAMPLE
-INCLUDEPATH += ../src
-LIBS += -L../src -L../src/debug -L../src/release -lqmqtt
+INCLUDEPATH += ../src/mqtt
+LIBS += -L../src/mqtt -L../src/mqtt/debug -L../src/mqtt/release -lqmqtt
 
 SOURCES = example.cpp

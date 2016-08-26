@@ -4,8 +4,8 @@ QT -= gui
 TARGET = qmqtt_tests
 
 DEFINES += QMQTT_LIBRARY_TESTS
-INCLUDEPATH += ../src
-LIBS += -L../src -L../src/debug -L../src/release -lqmqtt
+INCLUDEPATH += ../src/mqtt
+LIBS += -L../src/mqtt -L../src/mqtt/debug -L../src/mqtt/release -lqmqtt
 
 SOURCES += \
     clienttest.cpp \
@@ -34,10 +34,10 @@ unix:!NO_UNIT_TESTS:!NO_RUN_UNIT_TESTS: {
     unit_tests.target = all
     macx: unit_tests.commands = \
         install_name_tool -change libgtest.1.dylib $${OUT_PWD}/../gtest/libgtest.1.dylib $${OUT_PWD}/qmqtt_tests.app/Contents/MacOS/qmqtt_tests; \
-        install_name_tool -change libqmqtt.1.dylib $${OUT_PWD}/../src/libqmqtt.1.dylib $${OUT_PWD}/qmqtt_tests.app/Contents/MacOS/qmqtt_tests; \
+        install_name_tool -change libqmqtt.1.dylib $${OUT_PWD}/../src/mqtt/libqmqtt.1.dylib $${OUT_PWD}/qmqtt_tests.app/Contents/MacOS/qmqtt_tests; \
         $${OUT_PWD}/qmqtt_tests.app/Contents/MacOS/qmqtt_tests
     else: unit_tests.commands = \
-        LD_LIBRARY_PATH=$${OUT_PWD}/../gtest:$${OUT_PWD}/../src \
+        LD_LIBRARY_PATH=$${OUT_PWD}/../gtest:$${OUT_PWD}/../src/mqtt \
         $${OUT_PWD}/qmqtt_tests
     QMAKE_EXTRA_TARGETS += unit_tests
 }
