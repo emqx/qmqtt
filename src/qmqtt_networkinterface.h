@@ -1,5 +1,5 @@
 /*
- * qmqtt_network.h - qmqtt network header
+ * qmqtt_networkinterface.h - qmqtt network interface header
  *
  * Copyright (c) 2013  Ery Lee <ery.lee at gmail dot com>
  * All rights reserved.
