@@ -32,13 +32,15 @@
 #ifndef QMQTT_SOCKET_INTERFACE_H
 #define QMQTT_SOCKET_INTERFACE_H
 
+#include <qmqtt_global.h>
+
 #include <QHostAddress>
 #include <QIODevice>
 
 namespace QMQTT
 {
 
-class SocketInterface : public QObject
+class Q_MQTT_EXPORT SocketInterface : public QObject
 {
     Q_OBJECT
 public:

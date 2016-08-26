@@ -39,7 +39,7 @@
 
 namespace QMQTT {
 
-class NetworkInterface : public QObject
+class Q_MQTT_EXPORT NetworkInterface : public QObject
 {
     Q_OBJECT
 public:

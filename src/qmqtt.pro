@@ -5,7 +5,7 @@ QT       -= gui
 TARGET = qmqtt
 TEMPLATE = lib
 
-DEFINES += QMQTT_LIBRARY
+DEFINES += QT_BUILD_MQTT_LIB
 
 SOURCES += qmqtt_client.cpp \
     qmqtt_network.cpp \

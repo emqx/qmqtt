@@ -32,10 +32,16 @@
 #ifndef QMQTT_GLOBAL_H
 #define QMQTT_GLOBAL_H
 
-#if defined(QMQTT_LIBRARY)
-#  define QMQTTSHARED_EXPORT Q_DECL_EXPORT
+#include <QtCore/qglobal.h>
+
+#ifndef QT_STATIC
+#  if defined(QT_BUILD_MQTT_LIB)
+#    define Q_MQTT_EXPORT Q_DECL_EXPORT
+#  else
+#    define Q_MQTT_EXPORT Q_DECL_IMPORT
+#  endif
 #else
-#  define QMQTTSHARED_EXPORT Q_DECL_IMPORT
+#  define Q_MQTT_EXPORT
 #endif
 
 #endif // QMQTT_GLOBAL_H

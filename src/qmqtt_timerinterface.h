@@ -32,11 +32,13 @@
 #ifndef QMQTT_TIMER_INTERFACE_H
 #define QMQTT_TIMER_INTERFACE_H
 
+#include <qmqtt_global.h>
+
 #include <QObject>
 
 namespace QMQTT {
 
-class TimerInterface : public QObject
+class Q_MQTT_EXPORT TimerInterface : public QObject
 {
     Q_OBJECT
 public:

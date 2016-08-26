@@ -33,6 +33,8 @@
 #ifndef QMQTT_ROUTER_H
 #define QMQTT_ROUTER_H
 
+#include <qmqtt_global.h>
+
 #include <QObject>
 
 namespace QMQTT {
@@ -40,7 +42,7 @@ namespace QMQTT {
 class Client;
 class RouteSubscription;
 
-class Router : public QObject
+class Q_MQTT_EXPORT Router : public QObject
 {
     Q_OBJECT
 public:
