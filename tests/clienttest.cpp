@@ -371,7 +371,7 @@ TEST_F(ClientTest, disconnectSendsDisconnectMessageAndNetworkDisconnect_Test)
 
 // todo: verify pingreq sent from client, will require timer interface and mock
 
-TEST_F(ClientTest, networkConnectEmitsConnectedSignal_Test)
+TEST_F(ClientTest, networkConnectDoesNotEmitConnectedSignal_Test)
 {
     EXPECT_CALL(*_networkMock, sendFrame(_));
     QSignalSpy spy(_client.data(), &QMQTT::Client::connected);
@@ -381,7 +381,7 @@ TEST_F(ClientTest, networkConnectEmitsConnectedSignal_Test)
     EXPECT_EQ(0, spy.count());
 }
 
-TEST_F(ClientTest, networkReceivedSendsConnackDoesNotEmitConnectedSignal_Test)
+TEST_F(ClientTest, networkReceivedSendsConnackAndEmitsConnectedSignal_Test)
 {
     QSignalSpy spy(_client.data(), &QMQTT::Client::connected);
 
