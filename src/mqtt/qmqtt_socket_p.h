@@ -36,7 +36,7 @@
 #include <QObject>
 #include <QScopedPointer>
 
-class QTcpSocket;
+QT_FORWARD_DECLARE_CLASS(QTcpSocket)
 
 namespace QMQTT
 {
