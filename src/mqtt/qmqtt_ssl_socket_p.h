@@ -39,8 +39,8 @@
 
 #ifndef QT_NO_SSL
 
-class QSslSocket;
-class QSslError;
+QT_FORWARD_DECLARE_CLASS(QSslSocket)
+QT_FORWARD_DECLARE_CLASS(QSslError)
 
 namespace QMQTT
 {
