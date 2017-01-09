@@ -166,6 +166,7 @@ int QMQTT::Network::autoReconnectInterval() const
 void QMQTT::Network::setAutoReconnectInterval(const int autoReconnectInterval)
 {
     _autoReconnectInterval = autoReconnectInterval;
+    _autoReconnectTimer->setInterval(_autoReconnectInterval);
 }
 
 void QMQTT::Network::onSocketReadReady()
