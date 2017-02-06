@@ -78,7 +78,9 @@ void QMQTT::SslSocket::connectToHost(const QHostAddress& address, quint16 port)
 void QMQTT::SslSocket::connectToHost(const QString& hostName, quint16 port)
 {
     QSslConfiguration sslConf = _socket.data()->sslConfiguration();
-    sslConf.setLocalCertificate(QSslCertificate::fromPath(QStringLiteral("./cert.crt")).first());   //LocalCertificate
+    QList<QSslCertificate> certs = QSslCertificate::fromPath(QStringLiteral("./cert.crt"));
+    if (!certs.isEmpty())
+        sslConf.setLocalCertificate(certs.first());   //LocalCertificate
     _socket.data()->setSslConfiguration(sslConf);
     _socket.data()->setPrivateKey(QStringLiteral("./cert.key"));                    //LocalPrivateKey
     _socket->connectToHostEncrypted(hostName, port);
