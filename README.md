@@ -79,6 +79,8 @@ Contributors
 Author
 ======
 
-Feng Lee <feng@emqtt.io>   
+Feng Lee <feng@emqtt.io>
+
 William Guynes <wguynes@gmail.com>
+
 wuming123057 <huacai123057@163.com>
