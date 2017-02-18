@@ -101,13 +101,17 @@ QAbstractSocket::SocketError QMQTT::SslSocket::error() const
 
 void QMQTT::SslSocket::sslErrors(const QList<QSslError> &errors)
 {
-    Q_UNUSED(errors);
-
-    if (_ignoreSelfSigned)
+    if (!_ignoreSelfSigned)
+        return;
+    for (QSslError error: errors)
     {
-        // allow self-signed certificates
-        _socket->ignoreSslErrors();
+        if (error.error() != QSslError::SelfSignedCertificate ||
+            error.error() != QSslError::SelfSignedCertificateInChain)
+        {
+            return;
+        }
     }
+    _socket->ignoreSslErrors();
 }
 
 #endif // QT_NO_SSL
