@@ -44,6 +44,8 @@
 
 #ifndef QT_NO_SSL
 
+QT_FORWARD_DECLARE_CLASS(QSslConfiguration)
+
 namespace QMQTT {
 
 class SocketInterface;
@@ -54,7 +56,7 @@ class SslNetwork : public NetworkInterface
     Q_OBJECT
 
 public:
-    SslNetwork(bool ignoreSelfSigned, QObject* parent = NULL);
+    SslNetwork(const QSslConfiguration& config, bool ignoreSelfSigned, QObject* parent = NULL);
     SslNetwork(SocketInterface* socketInterface, TimerInterface* timerInterface,
             QObject* parent = NULL);
     ~SslNetwork();

@@ -34,6 +34,11 @@
 #include "qmqtt_message.h"
 #include <QLoggingCategory>
 #include <QUuid>
+#ifndef QT_NO_SSL
+#include <QFile>
+#include <QSslConfiguration>
+#include <QSslKey>
+#endif // QT_NO_SSL
 
 Q_LOGGING_CATEGORY(client, "qmqtt.client")
 
@@ -61,42 +66,46 @@ QMQTT::ClientPrivate::~ClientPrivate()
 
 void QMQTT::ClientPrivate::init(const QHostAddress& host, const quint16 port, NetworkInterface* network)
 {
-    Q_Q(Client);
-
     _host = host;
     _port = port;
     if(network == NULL)
     {
-        _network.reset(new Network);
+        init(new Network);
     }
     else
     {
-        _network.reset(network);
+        init(network);
     }
-
-    initializeErrorHash();
-
-    QObject::connect(&_timer, &QTimer::timeout, q, &Client::onTimerPingReq);
-    QObject::connect(_network.data(), &Network::connected,
-                     q, &Client::onNetworkConnected);
-    QObject::connect(_network.data(), &Network::disconnected,
-                     q, &Client::onNetworkDisconnected);
-    QObject::connect(_network.data(), &Network::received,
-                     q, &Client::onNetworkReceived);
-    QObject::connect(_network.data(), &Network::error,
-                     q, &Client::onNetworkError);
 }
 
-void QMQTT::ClientPrivate::init(const QString& hostName, const quint16 port, const bool ssl, const bool ignoreSelfSigned)
+#ifndef QT_NO_SSL
+void QMQTT::ClientPrivate::init(const QString& hostName, const quint16 port,
+                                const QSslConfiguration &config, const bool ignoreSelfSigned)
 {
-    Q_Q(Client);
+    _hostName = hostName;
+    _port = port;
+    init(new SslNetwork(config, ignoreSelfSigned));
+}
+#endif // QT_NO_SSL
 
+void QMQTT::ClientPrivate::init(const QString& hostName, const quint16 port, const bool ssl,
+                                const bool ignoreSelfSigned)
+{
     _hostName = hostName;
     _port = port;
     if (ssl)
     {
 #ifndef QT_NO_SSL
-        _network.reset(new SslNetwork(ignoreSelfSigned));
+        QSslConfiguration sslConf = QSslConfiguration::defaultConfiguration();
+        QList<QSslCertificate> certs = QSslCertificate::fromPath(QStringLiteral("./cert.crt"));
+        if (!certs.isEmpty())
+            sslConf.setLocalCertificate(certs.first());
+        QFile file(QStringLiteral("./cert.key"));
+        if (file.open(QIODevice::ReadOnly)) {
+            sslConf.setPrivateKey(QSslKey(file.readAll(), QSsl::Rsa));
+        }
+        sslConf.setPeerVerifyMode(QSslSocket::VerifyNone);
+        init(hostName, port, sslConf, ignoreSelfSigned);
 #else
         Q_UNUSED(ignoreSelfSigned)
         qCritical() << "SSL not supported in this QT build";
@@ -104,8 +113,15 @@ void QMQTT::ClientPrivate::init(const QString& hostName, const quint16 port, con
     }
     else
     {
-        _network.reset(new Network);
+        init(new Network);
     }
+}
+
+void QMQTT::ClientPrivate::init(NetworkInterface* network)
+{
+    Q_Q(Client);
+
+    _network.reset(network);
 
     initializeErrorHash();
 

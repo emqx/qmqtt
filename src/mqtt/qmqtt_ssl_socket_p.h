@@ -41,6 +41,7 @@
 
 QT_FORWARD_DECLARE_CLASS(QSslSocket)
 QT_FORWARD_DECLARE_CLASS(QSslError)
+QT_FORWARD_DECLARE_CLASS(QSslConfiguration)
 
 namespace QMQTT
 {
@@ -49,7 +50,7 @@ class SslSocket : public SocketInterface
 {
     Q_OBJECT
 public:
-    explicit SslSocket(bool ignoreSelfSigned, QObject* parent = NULL);
+    explicit SslSocket(const QSslConfiguration &config, bool ignoreSelfSigned, QObject* parent = NULL);
     virtual ~SslSocket();
 
     virtual QIODevice *ioDevice();
