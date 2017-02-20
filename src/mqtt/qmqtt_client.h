@@ -39,6 +39,10 @@
 #include <QScopedPointer>
 #include <QHostAddress>
 
+#ifndef QT_NO_SSL
+QT_FORWARD_DECLARE_CLASS(QSslConfiguration)
+#endif // QT_NO_SSL
+
 namespace QMQTT {
 
 static const quint8 LIBRARY_VERSION_MAJOR = 0;
@@ -116,6 +120,18 @@ public:
            const quint16 port = 1883,
            QObject* parent = NULL);
 
+#ifndef QT_NO_SSL
+    Client(const QString& hostName,
+           const quint16 port,
+           const QSslConfiguration& config,
+           const bool ignoreSelfSigned=false,
+           QObject* parent = NULL);
+#endif // QT_NO_SSL
+
+    // This function is provided for backward compatibility with older versions of QMQTT.
+    // If the ssl parameter is true, this function will load a private key ('cert.key') and a local
+    // certificate ('cert.crt') from the current working directory. It will also set PeerVerifyMode
+    // to None. This may not be the safest way to set up a SSL connection.
     Client(const QString& hostName,
            const quint16 port,
            const bool ssl,

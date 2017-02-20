@@ -42,14 +42,14 @@ const quint16 DEFAULT_PORT = 8883;
 const bool DEFAULT_AUTORECONNECT = false;
 const int DEFAULT_AUTORECONNECT_INTERVAL_MS = 5000;
 
-QMQTT::SslNetwork::SslNetwork(bool ignoreSelfSigned, QObject* parent)
+QMQTT::SslNetwork::SslNetwork(const QSslConfiguration &config, bool ignoreSelfSigned, QObject* parent)
     : NetworkInterface(parent)
     , _port(DEFAULT_PORT)
     , _hostName(DEFAULT_HOST_NAME)
     , _autoReconnect(DEFAULT_AUTORECONNECT)
     , _autoReconnectInterval(DEFAULT_AUTORECONNECT_INTERVAL_MS)
     , _bytesRemaining(0)
-    , _socket(new QMQTT::SslSocket(ignoreSelfSigned))
+    , _socket(new QMQTT::SslSocket(config, ignoreSelfSigned))
     , _autoReconnectTimer(new QMQTT::Timer)
 {
     initialize();
