@@ -32,43 +32,48 @@
 #ifndef QMQTT_MESSAGE_P_H
 #define QMQTT_MESSAGE_P_H
 
-#include <QString>
-#include <QByteArray>
+#include <QtCore/qshareddata.h>
 
 namespace QMQTT {
 
-class MessagePrivate
+class MessagePrivate : public QSharedData
 {
 public:
-    explicit MessagePrivate();
-    virtual ~MessagePrivate();
+    inline MessagePrivate()
+        : QSharedData(),
+          id(0),
+          qos(0),
+          retain(false),
+          dup(false)
+    {}
 
-    void init(const quint16 id, const QString &topic, const QByteArray &payload,
-              const quint8 qos, const bool retain, const bool dup);
+    inline MessagePrivate(const MessagePrivate &other)
+        : QSharedData(other),
+          id(other.id),
+          qos(other.qos),
+          retain(other.retain),
+          dup(other.dup),
+          topic(other.topic),
+          payload(other.payload)
+    {}
 
-    MessagePrivate(const MessagePrivate& other);
-    MessagePrivate& operator=(const MessagePrivate& other);
-    bool operator==(const MessagePrivate& other) const;
+    inline MessagePrivate(quint16 id, const QString &topic, const QByteArray &payload,
+                          quint8 qos, bool retain, bool dup)
+        : QSharedData(),
+          id(id),
+          qos(qos),
+          retain(retain),
+          dup(dup),
+          topic(topic),
+          payload(payload)
+    {}
 
-    quint16 id() const;
-    void setId(const quint16 id);
-    quint8 qos() const;
-    void setQos(const quint8 qos);
-    bool retain() const;
-    void setRetain(const bool retain);
-    bool dup() const;
-    void setDup(const bool dup);
-    QString topic() const;
-    void setTopic(const QString& topic);
-    QByteArray payload() const;
-    void setPayload(const QByteArray& payload);
-
-    quint16 _id;
-    QString _topic;
-    QByteArray _payload;
-    quint8 _qos;
-    bool _retain;
-    bool _dup;
+    quint16 id;
+    quint8 qos : 2;
+    quint8 retain: 1;
+    quint8 dup: 1;
+    QString topic;
+    QByteArray payload;
 };
 
 } // namespace QMQTT

@@ -27,7 +27,6 @@ SOURCES += \
     $$PWD/qmqtt_network.cpp \
     $$PWD/qmqtt_routesubscription.cpp \
     $$PWD/qmqtt_router.cpp \
-    $$PWD/qmqtt_message_p.cpp \
     $$PWD/qmqtt_socket.cpp \
     $$PWD/qmqtt_ssl_socket.cpp \
     $$PWD/qmqtt_timer.cpp
