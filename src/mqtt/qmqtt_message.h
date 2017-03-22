@@ -53,6 +53,8 @@ public:
     Message& operator=(const Message& other);
 
     bool operator==(const Message& other) const;
+    inline bool operator!=(const Message &other) const
+    { return !operator==(other); }
 
     quint16 id() const;
     void setId(const quint16 id);
