@@ -3,22 +3,18 @@ QMQTT
 
 mqtt client for Qt
 
-**Please compile the library with >=Qt 5.3 version.**
+**Please compile the library with Qt >= 5.3 version. On Windows you need to specify `CONFIG += NO_UNIT_TESTS`, since gtest is not supported.**
+
 Usage
 =====
 
-	#include "qmqtt.h"
+    #include "qmqtt.h"
 
-        QMQTT::Client *client = new QMQTT::Client(QHostAddress::LocalHost, 1883);
-
-	client->setClientId("clientId");
-
-	client->setUsername("user");
-
-	client->setPassword("password");
-
-	client->connectToHost();
-
+    QMQTT::Client *client = new QMQTT::Client(QHostAddress::LocalHost, 1883);
+    client->setClientId("clientId");
+    client->setUsername("user");
+    client->setPassword("password");
+    client->connectToHost();
 
 Slots
 =====
