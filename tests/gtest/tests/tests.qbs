@@ -45,9 +45,4 @@ Product {
     Depends {
         name: "qmqtt"
     }
-
-    Depends {
-        /* TODO: if needed, create mqtt-private */
-        name: "mqtt-private"
-    }
 }
