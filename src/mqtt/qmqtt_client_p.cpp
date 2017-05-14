@@ -84,7 +84,7 @@ void QMQTT::ClientPrivate::init(const QString& hostName, const quint16 port,
 {
     _hostName = hostName;
     _port = port;
-    init(new SslNetwork(config, ignoreSelfSigned));
+    init(new Network(config, ignoreSelfSigned));
 }
 #endif // QT_NO_SSL
 
