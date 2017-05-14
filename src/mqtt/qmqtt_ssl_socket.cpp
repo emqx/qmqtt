@@ -103,7 +103,7 @@ void QMQTT::SslSocket::sslErrors(const QList<QSslError> &errors)
 {
     if (!_ignoreSelfSigned)
         return;
-    for (QSslError error: errors)
+    foreach (QSslError error, errors)
     {
         if (error.error() != QSslError::SelfSignedCertificate &&
             error.error() != QSslError::SelfSignedCertificateInChain)
