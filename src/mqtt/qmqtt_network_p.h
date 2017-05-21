@@ -41,6 +41,10 @@
 #include <QByteArray>
 #include <QHostAddress>
 
+#ifndef QT_NO_SSL
+QT_FORWARD_DECLARE_CLASS(QSslConfiguration)
+#endif // QT_NO_SSL
+
 namespace QMQTT {
 
 class SocketInterface;
@@ -52,6 +56,9 @@ class Network : public NetworkInterface
 
 public:
     Network(QObject* parent = NULL);
+#ifndef QT_NO_SSL
+    Network(const QSslConfiguration& config, bool ignoreSelfSigned, QObject* parent = NULL);
+#endif // QT_NO_SSL
     Network(SocketInterface* socketInterface, TimerInterface* timerInterface,
             QObject* parent = NULL);
     ~Network();

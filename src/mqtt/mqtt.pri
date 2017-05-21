@@ -16,7 +16,6 @@ PRIVATE_HEADERS += \
     $$PWD/qmqtt_message_p.h \
     $$PWD/qmqtt_network_p.h \
     $$PWD/qmqtt_socket_p.h \
-    $$PWD/qmqtt_ssl_network_p.h \
     $$PWD/qmqtt_ssl_socket_p.h \
     $$PWD/qmqtt_timer_p.h
 
@@ -26,7 +25,6 @@ SOURCES += \
     $$PWD/qmqtt_frame.cpp \
     $$PWD/qmqtt_message.cpp \
     $$PWD/qmqtt_network.cpp \
-    $$PWD/qmqtt_ssl_network.cpp \
     $$PWD/qmqtt_routesubscription.cpp \
     $$PWD/qmqtt_routedmessage.cpp \
     $$PWD/qmqtt_router.cpp \
