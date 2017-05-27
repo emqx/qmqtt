@@ -52,9 +52,9 @@ public:
         return actualLength;
     }
 
-    bool fixtureByteArrayIsEmpty() const
+    qint64 fixtureBytesAvailable() const
     {
-        return _byteArray.isEmpty();
+        return _byteArray.size();
     }
 
     SocketMock* _socketMock;
@@ -164,8 +164,8 @@ TEST_F(NetworkTest, networkEmitsReceivedSignalOnceAFrameIsReceived_Test)
     buffer.close();
     EXPECT_EQ(132, _byteArray.size());
 
-    EXPECT_CALL(*_socketMock->mockIoDevice, atEnd())
-        .WillRepeatedly(Invoke(this, &NetworkTest::fixtureByteArrayIsEmpty));
+    EXPECT_CALL(*_socketMock->mockIoDevice, bytesAvailable())
+        .WillRepeatedly(Invoke(this, &NetworkTest::fixtureBytesAvailable));
     EXPECT_CALL(*_socketMock->mockIoDevice, readData(_, _))
         .WillRepeatedly(Invoke(this, &NetworkTest::readDataFromFixtureByteArray));
 

@@ -48,9 +48,9 @@ QMQTT::Network::Network(QObject* parent)
     , _host(DEFAULT_HOST)
     , _autoReconnect(DEFAULT_AUTORECONNECT)
     , _autoReconnectInterval(DEFAULT_AUTORECONNECT_INTERVAL_MS)
-    , _bytesRemaining(0)
     , _socket(new QMQTT::Socket)
     , _autoReconnectTimer(new QMQTT::Timer)
+    , _readState(Header)
 {
     initialize();
 }
@@ -62,9 +62,9 @@ QMQTT::Network::Network(const QSslConfiguration &config, bool ignoreSelfSigned, 
     , _hostName(DEFAULT_HOST_NAME)
     , _autoReconnect(DEFAULT_AUTORECONNECT)
     , _autoReconnectInterval(DEFAULT_AUTORECONNECT_INTERVAL_MS)
-    , _bytesRemaining(0)
     , _socket(new QMQTT::SslSocket(config, ignoreSelfSigned))
     , _autoReconnectTimer(new QMQTT::Timer)
+    , _readState(Header)
 {
     initialize();
 }
@@ -77,9 +77,9 @@ QMQTT::Network::Network(SocketInterface* socketInterface, TimerInterface* timerI
     , _host(DEFAULT_HOST)
     , _autoReconnect(DEFAULT_AUTORECONNECT)
     , _autoReconnectInterval(DEFAULT_AUTORECONNECT_INTERVAL_MS)
-    , _bytesRemaining(0)
     , _socket(socketInterface)
     , _autoReconnectTimer(timerInterface)
+    , _readState(Header)
 {
     initialize();
 }
@@ -127,7 +127,7 @@ void QMQTT::Network::connectToHost(const QString& hostName, const quint16 port)
 
 void QMQTT::Network::connectToHost()
 {
-    _bytesRemaining = 0;
+    _readState = Header;
     if (_hostName.isEmpty())
     {
         _socket->connectToHost(_host, _port);
@@ -190,57 +190,41 @@ void QMQTT::Network::setAutoReconnectInterval(const int autoReconnectInterval)
 void QMQTT::Network::onSocketReadReady()
 {
     QIODevice *ioDevice = _socket->ioDevice();
-    while(!ioDevice->atEnd())
-    {
-        if(_bytesRemaining == 0)
-        {
-            if (!ioDevice->getChar(reinterpret_cast<char *>(&_header)))
-            {
-                // malformed packet
-                emit error(QAbstractSocket::OperationError);
-                ioDevice->close();
-                return;
+    // Only read the available (cached) bytes, so the read will never block.
+    QByteArray data = ioDevice->read(ioDevice->bytesAvailable());
+    foreach(char byte, data) {
+        switch (_readState) {
+        case Header:
+            _header = static_cast<quint8>(byte);
+            _readState = Length;
+            _length = 0;
+            _shift = 0;
+            break;
+        case Length:
+            _length |= (byte & 0x7F) << _shift;
+            _shift += 7;
+            if ((byte & 0x80) != 0)
+                break;
+            if (_length == 0) {
+                _readState = Header;
+                Frame frame(_header, _data);
+                emit received(frame);
+                break;
             }
-
-            _bytesRemaining = readRemainingLength();
-            if (_bytesRemaining < 0)
-            {
-                // malformed remaining length
-                emit error(QAbstractSocket::OperationError);
-                ioDevice->close();
-                return;
-            }
-        }
-
-        QByteArray data = ioDevice->read(_bytesRemaining);
-        _buffer.append(data);
-        _bytesRemaining -= data.size();
-
-        if(_bytesRemaining == 0)
-        {
-            Frame frame(_header, _buffer);
-            _buffer.clear();
+            _readState = PayLoad;
+            _data.clear();
+            break;
+        case PayLoad:
+            _data.append(byte);
+            --_length;
+            if (_length > 0)
+                break;
+            _readState = Header;
+            Frame frame(_header, _data);
             emit received(frame);
+            break;
         }
     }
-}
-
-int QMQTT::Network::readRemainingLength()
-{
-     quint8 byte = 0;
-     int length = 0;
-     int multiplier = 1;
-     QIODevice *ioDevice = _socket->ioDevice();
-     do {
-         if (!ioDevice->getChar(reinterpret_cast<char *>(&byte)))
-             return -1;
-         length += (byte & 127) * multiplier;
-         multiplier *= 128;
-         if (multiplier > 128*128*128)
-             return -1;
-     } while ((byte & 128) != 0);
-
-     return length;
 }
 
 void QMQTT::Network::onDisconnected()
