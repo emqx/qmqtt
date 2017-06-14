@@ -320,7 +320,11 @@ quint16 QMQTT::ClientPrivate::publish(const Message& message)
 {
     Q_Q(Client);
     quint16 msgid = sendPublish(message);
-    emit q->published(message);
+
+    // Emit published only at QOS0
+    if (message.qos() == QOS0)
+        emit q->published(message.id(), QOS0);
+
     return msgid;
 }
 
@@ -331,17 +335,13 @@ void QMQTT::ClientPrivate::puback(const quint8 type, const quint16 msgid)
 
 quint16 QMQTT::ClientPrivate::subscribe(const QString& topic, const quint8 qos)
 {
-    Q_Q(Client);
     quint16 msgid = sendSubscribe(topic, qos);
-    emit q->subscribed(topic);
     return msgid;
 }
 
 void QMQTT::ClientPrivate::unsubscribe(const QString& topic)
 {
-    Q_Q(Client);
     sendUnsubscribe(topic);
-    emit q->unsubscribed(topic);
 }
 
 void QMQTT::ClientPrivate::onNetworkDisconnected()
@@ -395,13 +395,13 @@ void QMQTT::ClientPrivate::onNetworkReceived(const QMQTT::Frame& frm)
     case SUBACK:
         mid = frame.readInt();
         qos = frame.readChar();
-        // todo: send a subscribed signal (only in certain cases? mid? qos?)
+        handleSuback(topic, qos);
         break;
     case UNSUBACK:
-        // todo: send an unsubscribed signal (only certain cases? mid?)
+        handleUnsuback(topic);
         break;
     case PINGRESP:
-        // todo: I know I'm suppose to do something with this. Look at specifications.
+
         break;
     default:
         break;
@@ -432,6 +432,8 @@ void QMQTT::ClientPrivate::handlePublish(const Message& message)
 
 void QMQTT::ClientPrivate::handlePuback(const quint8 type, const quint16 msgid)
 {
+    Q_Q(Client);
+
     if(type == PUBREC)
     {
         sendPuback(PUBREL, msgid);
@@ -440,7 +442,30 @@ void QMQTT::ClientPrivate::handlePuback(const quint8 type, const quint16 msgid)
     {
         sendPuback(PUBCOMP, msgid);
     }
-    // todo: emit published signal (type? msgid?)
+
+    // Emit published on PUBACK at QOS1
+    if (type == PUBACK)
+        emit q->published(msgid, QOS1);
+
+    // Emit published on PUBCOMP at QOS2
+    if (type == PUBCOMP)
+        emit q->published(msgid, QOS2);
+
+}
+
+void QMQTT::ClientPrivate::handlePingresp() {
+    Q_Q(Client);
+    emit q->pingresp();
+}
+
+void QMQTT::ClientPrivate::handleSuback(const QString &topic, const quint8 qos) {
+    Q_Q(Client);
+    emit q->subscribed(topic, qos);
+}
+
+void QMQTT::ClientPrivate::handleUnsuback(const QString &topic) {
+    Q_Q(Client);
+    emit q->unsubscribed(topic);
 }
 
 bool QMQTT::ClientPrivate::autoReconnect() const

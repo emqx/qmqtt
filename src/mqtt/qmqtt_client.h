@@ -193,14 +193,11 @@ signals:
     void disconnected();
     void error(const QMQTT::ClientError error);
 
-    // todo: should emit on server suback (or is that only at specific QoS levels?)
-    void subscribed(const QString& topic);
-    // todo: should emit on server unsuback (or is that only at specific QoS levels?)
+    void subscribed(const QString& topic, const quint8 qos);
     void unsubscribed(const QString& topic);
-    // todo: should emit on server puback (or is that only at specific QoS levels?)
-    void published(const QMQTT::Message& message);
-
+    void published(const quint16 msgid, const quint8 qos);
     void received(const QMQTT::Message& message);
+    void pingresp();
 
 protected slots:
     void onNetworkConnected();

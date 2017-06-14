@@ -99,6 +99,10 @@ public:
     void handleConnack(const quint8 ack);
     void handlePublish(const Message& message);
     void handlePuback(const quint8 type, const quint16 msgid);
+    void handleSuback(const QString& topic, const quint8 qos);
+    void handleUnsuback(const QString& topic);
+    void handlePubcomp(const Message& message);
+    void handlePingresp();
     bool autoReconnect() const;
     void setAutoReconnect(const bool autoReconnect);
     bool autoReconnectInterval() const;
