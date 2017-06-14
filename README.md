@@ -68,6 +68,18 @@ Contributors
 
 [@rafaeldelucena](https://github.com/rafaeldelucena)
 
+[@Vortex375](https://github.com/Vortex375)
+
+[@mwallnoefer](https://github.com/mwallnoefer)
+
+[@KonstantinRitt](https://github.com/KonstantinRitt)
+
+[@cncap](https://github.com/cncap)
+
+[@Psy-Kai](https://github.com/Psy-Kai)
+
+[@ejvr](https://github.com/ejvr)
+
 [@keytee](https://github.com/keytee)
 
 
