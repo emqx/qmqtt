@@ -407,8 +407,9 @@ TEST_F(ClientTest, publishEmitsPublishedSignal_Test)
 
     _client->publish(message);
 
-    EXPECT_EQ(1, spy.count());
-    EXPECT_EQ(message, spy.at(0).at(0).value<QMQTT::Message>());
+    ASSERT_EQ(1, spy.count());
+    EXPECT_EQ(message.id(), spy.at(0).at(0).value<quint16>());
+    EXPECT_EQ(QOS0, spy.at(0).at(1).value<quint8>());
 }
 
 // todo: network received sends a puback, test what happens
@@ -433,8 +434,15 @@ TEST_F(ClientTest, subscribeEmitsSubscribedSignal_Test)
 
     _client->subscribe("topic", QOS2);
 
-    EXPECT_EQ(1, spy.count());
-    EXPECT_EQ("topic", spy.at(0).at(0).toString());
+    QByteArray payLoad;
+    payLoad.append((char)0x12); // message ID
+    payLoad.append((char)0x23); // message ID
+    payLoad.append((char)QOS2); // QOS
+    QMQTT::Frame frame(SUBACK_TYPE, payLoad);
+    emit _networkMock->received(frame);
+
+    ASSERT_EQ(1, spy.count());
+    EXPECT_EQ(QOS2, spy.at(0).at(1).toInt());
 }
 
 // todo: network received sends suback triggers a subscribed signal (other things?)
@@ -447,8 +455,11 @@ TEST_F(ClientTest, unsubscribeEmitsUnsubscribedSignal_Test)
 
     _client->unsubscribe("topic");
 
+    QMQTT::Frame frame(UNSUBACK_TYPE, QByteArray());
+    emit _networkMock->received(frame);
+
     EXPECT_EQ(1, spy.count());
-    EXPECT_EQ("topic", spy.at(0).at(0).toString());
+    // EXPECT_EQ("topic", spy.at(0).at(0).toString());
 }
 
 // todo: network received sends unsuback then emit unsubscribed signal (only then?)
@@ -466,7 +477,7 @@ TEST_F(ClientTest, clientEmitsErrorWhenNetworkEmitsError_Test)
 {
     QSignalSpy spy(_client.data(), &QMQTT::Client::error);
     emit _networkMock->error(QAbstractSocket::ConnectionRefusedError);
-    EXPECT_EQ(1, spy.count());
+    ASSERT_EQ(1, spy.count());
     EXPECT_EQ(QMQTT::SocketConnectionRefusedError,
               spy.at(0).at(0).value<QMQTT::ClientError>());
 }

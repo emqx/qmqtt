@@ -81,18 +81,26 @@ protected slots:
 
 protected:
     void initialize();
-    int readRemainingLength();
 
     quint16 _port;
     QHostAddress _host;
     QString _hostName;
-    QByteArray _buffer;
     bool _autoReconnect;
     int _autoReconnectInterval;
-    int _bytesRemaining;
-    quint8 _header;
     SocketInterface* _socket;
     TimerInterface* _autoReconnectTimer;
+
+    enum ReadState {
+        Header,
+        Length,
+        PayLoad
+    };
+
+    ReadState _readState;
+    quint8 _header;
+    int _length;
+    int _shift;
+    QByteArray _data;
 
 protected slots:
     void onSocketReadReady();

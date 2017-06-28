@@ -13,6 +13,7 @@ public:
     MOCK_METHOD2(readData, qint64(char*, qint64));
     MOCK_METHOD2(writeData, qint64(const char *, qint64));
     MOCK_CONST_METHOD0(openMode, QIODevice::OpenMode());
+    MOCK_CONST_METHOD0(bytesAvailable, qint64());
 
     MOCK_METHOD2(write, qint64(const char*, qint64));
     MOCK_METHOD1(write, qint64(const char*));
