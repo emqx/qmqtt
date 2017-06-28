@@ -61,6 +61,7 @@ public:
     QString _hostName;
     quint16 _port;
     quint16 _gmid;
+    MQTTVersion _version;
     QString _clientId;
     QString _username;
     QString _password;
@@ -74,6 +75,7 @@ public:
     bool _willRetain;
     QString _willMessage;
     QHash<QAbstractSocket::SocketError, ClientError> _socketErrorHash;
+    
 
     Client* const q_ptr;
 
@@ -117,6 +119,8 @@ public:
     QString password() const;
     void setUsername(const QString& username);
     QString username() const;
+    void setVersion(const MQTTVersion);
+    MQTTVersion version() const;
     void setClientId(const QString& clientId);
     QString clientId() const;
     void setPort(const quint16 port);

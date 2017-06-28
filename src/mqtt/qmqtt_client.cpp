@@ -143,6 +143,18 @@ void QMQTT::Client::setUsername(const QString& username)
     d->setUsername(username);
 }
 
+QMQTT::MQTTVersion QMQTT::Client::version() const
+{
+    Q_D(const Client);
+    return d->version();
+}
+
+void QMQTT::Client::setVersion(const QMQTT::MQTTVersion version)
+{
+    Q_D(Client);
+    d->setVersion(version);
+}
+
 QString QMQTT::Client::password() const
 {
     Q_D(const Client);

@@ -50,10 +50,16 @@ static const quint8 LIBRARY_VERSION_MINOR = 3;
 static const quint8 LIBRARY_VERSION_REVISION = 1;
 //static const char* LIBRARY_VERSION = "0.3.1";
 
-static const quint8 PROTOCOL_VERSION_MAJOR = 3;
-static const quint8 PROTOCOL_VERSION_MINOR = 1;
-static const quint8 PROTOCOL_VERSION_REVISION = 1;
+//static const quint8 PROTOCOL_VERSION_MAJOR = 3;
+//static const quint8 PROTOCOL_VERSION_MINOR = 1;
+//static const quint8 PROTOCOL_VERSION_REVISION = 1;
 //static const char* PROTOCOL_VERSION = "MQTT/3.1";
+
+enum MQTTVersion
+{
+    V3_1_0 = 3,
+    V3_1_1 = 4
+};
 
 enum ConnectionState
 {
@@ -106,6 +112,7 @@ class Q_MQTT_EXPORT Client : public QObject
     Q_PROPERTY(QString _username READ username WRITE setUsername)
     Q_PROPERTY(QString _password READ password WRITE setPassword)
     Q_PROPERTY(quint16 _keepAlive READ keepAlive WRITE setKeepAlive)
+    Q_PROPERTY(MQTTVersion _version READ version WRITE setVersion)
     Q_PROPERTY(bool _autoReconnect READ autoReconnect WRITE setAutoReconnect)
     Q_PROPERTY(int _autoReconnectInterval READ autoReconnectInterval WRITE setAutoReconnectInterval)
     Q_PROPERTY(bool _cleanSession READ cleanSession WRITE setCleanSession)
@@ -152,6 +159,7 @@ public:
     QString clientId() const;
     QString username() const;
     QString password() const;
+    QMQTT::MQTTVersion version() const;
     quint16 keepAlive() const;
     bool cleanSession() const;
     bool autoReconnect() const;
@@ -171,6 +179,7 @@ public slots:
     void setClientId(const QString& clientId);
     void setUsername(const QString& username);
     void setPassword(const QString& password);
+    void setVersion(const MQTTVersion version);
     void setKeepAlive(const quint16 keepAlive);
     void setCleanSession(const bool cleanSession);
     void setAutoReconnect(const bool value);

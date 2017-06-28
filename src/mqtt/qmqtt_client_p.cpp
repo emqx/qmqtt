@@ -50,6 +50,7 @@ QMQTT::ClientPrivate::ClientPrivate(Client* qq_ptr)
     : _host(QHostAddress::LocalHost)
     , _port(1883)
     , _gmid(1)
+    , _version(MQTTVersion::V3_1_0)
     , _clientId(QUuid::createUuid().toString())
     , _cleanSession(false)
     , _keepAlive(300)
@@ -207,8 +208,15 @@ void QMQTT::ClientPrivate::sendConnect()
     }
 
     //payload
-    frame.writeString(QStringLiteral(PROTOCOL_MAGIC));
-    frame.writeChar(PROTOCOL_VERSION_MAJOR);
+    if(_version == V3_1_1)
+    {
+        frame.writeString(QStringLiteral(PROTOCOL_MAGIC_3_1_1));
+    }
+    else
+    {
+        frame.writeString(QStringLiteral(PROTOCOL_MAGIC_3_1_0));
+    }
+    frame.writeChar(_version);
     frame.writeChar(flags);
     frame.writeInt(_keepAlive);
     frame.writeString(_clientId);
@@ -536,6 +544,16 @@ void QMQTT::ClientPrivate::setUsername(const QString& username)
 QString QMQTT::ClientPrivate::username() const
 {
     return _username;
+}
+
+void QMQTT::ClientPrivate::setVersion(const MQTTVersion version)
+{
+    _version = version;
+}
+
+QMQTT::MQTTVersion QMQTT::ClientPrivate::version() const
+{
+    return _version;
 }
 
 void QMQTT::ClientPrivate::setClientId(const QString& clientId)
