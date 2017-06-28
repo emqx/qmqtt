@@ -401,7 +401,7 @@ void QMQTT::ClientPrivate::onNetworkReceived(const QMQTT::Frame& frm)
         handleUnsuback(topic);
         break;
     case PINGRESP:
-
+        handlePingresp();
         break;
     default:
         break;
