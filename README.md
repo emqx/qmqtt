@@ -83,11 +83,11 @@ Contributors
 [@keytee](https://github.com/keytee)
 
 
-Author
-======
+Authors
+=======
 
-Feng Lee <feng@emqtt.io>
+[@emqplus](https://github.com/emqplus) Feng Lee <feng@emqtt.io>
 
-William Guynes <wguynes@gmail.com>
+[@wguynes](https://github.com/wguynes) William Guynes <wguynes@gmail.com>
 
-wuming123057 <huacai123057@163.com>
+[@wuming123057](https://github.com/wuming123057) Xuan <huacai123057@163.com>
