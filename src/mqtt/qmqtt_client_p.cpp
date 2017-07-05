@@ -344,12 +344,14 @@ void QMQTT::ClientPrivate::puback(const quint8 type, const quint16 msgid)
 quint16 QMQTT::ClientPrivate::subscribe(const QString& topic, const quint8 qos)
 {
     quint16 msgid = sendSubscribe(topic, qos);
+    _midToTopic[msgid] = topic;
     return msgid;
 }
 
 void QMQTT::ClientPrivate::unsubscribe(const QString& topic)
 {
-    sendUnsubscribe(topic);
+    quint16 msgid = sendUnsubscribe(topic);
+    _midToTopic[msgid] = topic;
 }
 
 void QMQTT::ClientPrivate::onNetworkDisconnected()
@@ -357,6 +359,7 @@ void QMQTT::ClientPrivate::onNetworkDisconnected()
     Q_Q(Client);
 
     stopKeepAlive();
+    clearMidToTopic();
     emit q->disconnected();
 }
 
@@ -403,10 +406,11 @@ void QMQTT::ClientPrivate::onNetworkReceived(const QMQTT::Frame& frm)
     case SUBACK:
         mid = frame.readInt();
         qos = frame.readChar();
-        handleSuback(topic, qos);
+        handleSuback(midToTopic(mid), qos);
         break;
     case UNSUBACK:
-        handleUnsuback(topic);
+        mid = frame.readInt();
+        handleUnsuback(midToTopic(mid));
         break;
     case PINGRESP:
 
@@ -474,6 +478,22 @@ void QMQTT::ClientPrivate::handleSuback(const QString &topic, const quint8 qos) 
 void QMQTT::ClientPrivate::handleUnsuback(const QString &topic) {
     Q_Q(Client);
     emit q->unsubscribed(topic);
+}
+
+QString QMQTT::ClientPrivate::midToTopic(const quint16 mid)
+{
+    QString result;
+    QHash<quint16, QString>::Iterator it = _midToTopic.find(mid);
+    if (it != _midToTopic.end()) {
+        result = it.value();
+        _midToTopic.erase(it);
+    }
+    return result;
+}
+
+void QMQTT::ClientPrivate::clearMidToTopic()
+{
+    _midToTopic.clear();
 }
 
 bool QMQTT::ClientPrivate::autoReconnect() const

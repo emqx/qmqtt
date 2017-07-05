@@ -75,7 +75,7 @@ public:
     bool _willRetain;
     QString _willMessage;
     QHash<QAbstractSocket::SocketError, ClientError> _socketErrorHash;
-    
+    QHash<quint16, QString> _midToTopic;
 
     Client* const q_ptr;
 
@@ -105,6 +105,8 @@ public:
     void handleUnsuback(const QString& topic);
     void handlePubcomp(const Message& message);
     void handlePingresp();
+    QString midToTopic(const quint16 mid);
+    void clearMidToTopic();
     bool autoReconnect() const;
     void setAutoReconnect(const bool autoReconnect);
     bool autoReconnectInterval() const;

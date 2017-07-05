@@ -56,8 +56,8 @@
 #define PINGRESP 0xD0
 #define DISCONNECT 0xE0
 
-#define LSB(A) (quint8)(A & 0x00FF)
-#define MSB(A) (quint8)((A & 0xFF00) >> 8)
+#define LSB(A) quint8(A & 0x00FF)
+#define MSB(A) quint8((A & 0xFF00) >> 8)
 
 /*
 |--------------------------------------

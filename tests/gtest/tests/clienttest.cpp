@@ -426,28 +426,27 @@ TEST_F(ClientTest, networkReceivedSendsPublishEmitsReceivedSignal_Test)
     EXPECT_EQ(1, spy.count());
 }
 
-// todo: should happen on suback
 TEST_F(ClientTest, subscribeEmitsSubscribedSignal_Test)
 {
     EXPECT_CALL(*_networkMock, sendFrame(_));
     QSignalSpy spy(_client.data(), &QMQTT::Client::subscribed);
 
-    _client->subscribe("topic", QOS2);
+    quint16 msgid = _client->subscribe("topic", QOS2);
 
     QByteArray payLoad;
-    payLoad.append((char)0x12); // message ID
-    payLoad.append((char)0x23); // message ID
+    payLoad.append((char)(msgid >> 8)); // message ID MSB
+    payLoad.append((char)(msgid && 0xFF)); // message ID LSB
     payLoad.append((char)QOS2); // QOS
     QMQTT::Frame frame(SUBACK_TYPE, payLoad);
     emit _networkMock->received(frame);
 
     ASSERT_EQ(1, spy.count());
+    EXPECT_EQ("topic", spy.at(0).at(0).toString());
     EXPECT_EQ(QOS2, spy.at(0).at(1).toInt());
 }
 
 // todo: network received sends suback triggers a subscribed signal (other things?)
 
-// todo: should happen on unsuback
 TEST_F(ClientTest, unsubscribeEmitsUnsubscribedSignal_Test)
 {
     EXPECT_CALL(*_networkMock, sendFrame(_));
@@ -455,11 +454,14 @@ TEST_F(ClientTest, unsubscribeEmitsUnsubscribedSignal_Test)
 
     _client->unsubscribe("topic");
 
-    QMQTT::Frame frame(UNSUBACK_TYPE, QByteArray());
+    QByteArray payLoad;
+    payLoad.append((char)0x00); // message ID MSB
+    payLoad.append((char)0x01); // message ID LSB
+    QMQTT::Frame frame(UNSUBACK_TYPE, payLoad);
     emit _networkMock->received(frame);
 
-    EXPECT_EQ(1, spy.count());
-    // EXPECT_EQ("topic", spy.at(0).at(0).toString());
+    ASSERT_EQ(1, spy.count());
+    EXPECT_EQ("topic", spy.at(0).at(0).toString());
 }
 
 // todo: network received sends unsuback then emit unsubscribed signal (only then?)
