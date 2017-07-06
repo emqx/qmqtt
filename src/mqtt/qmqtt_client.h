@@ -50,11 +50,6 @@ static const quint8 LIBRARY_VERSION_MINOR = 3;
 static const quint8 LIBRARY_VERSION_REVISION = 1;
 //static const char* LIBRARY_VERSION = "0.3.1";
 
-//static const quint8 PROTOCOL_VERSION_MAJOR = 3;
-//static const quint8 PROTOCOL_VERSION_MINOR = 1;
-//static const quint8 PROTOCOL_VERSION_REVISION = 1;
-//static const char* PROTOCOL_VERSION = "MQTT/3.1";
-
 enum MQTTVersion
 {
     V3_1_0 = 3,
