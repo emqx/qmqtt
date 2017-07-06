@@ -61,6 +61,7 @@ public:
     QString _hostName;
     quint16 _port;
     quint16 _gmid;
+    MQTTVersion _version;
     QString _clientId;
     QString _username;
     QString _password;
@@ -120,6 +121,8 @@ public:
     QString password() const;
     void setUsername(const QString& username);
     QString username() const;
+    void setVersion(const MQTTVersion);
+    MQTTVersion version() const;
     void setClientId(const QString& clientId);
     QString clientId() const;
     void setPort(const quint16 port);
