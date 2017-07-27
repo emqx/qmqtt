@@ -37,7 +37,6 @@
 #include <QByteArray>
 #include <QObject>
 #include <QTcpSocket>
-#include <QPointer>
 #include <QByteArray>
 #include <QHostAddress>
 
