@@ -199,6 +199,7 @@ void QMQTT::Network::onSocketReadReady()
             _readState = Length;
             _length = 0;
             _shift = 0;
+            _data.clear();
             break;
         case Length:
             _length |= (byte & 0x7F) << _shift;
@@ -212,7 +213,6 @@ void QMQTT::Network::onSocketReadReady()
                 break;
             }
             _readState = PayLoad;
-            _data.clear();
             break;
         case PayLoad:
             _data.append(byte);
