@@ -201,10 +201,7 @@ void QMQTT::ClientPrivate::sendConnect()
     if (!username().isEmpty())
     {
         flags = FLAG_USERNAME(flags, 1);
-    }
-    if (!password().isEmpty())
-    {
-        flags = FLAG_PASSWD(flags, 1);
+        flags = FLAG_PASSWD(flags, !password().isEmpty() ? 1 : 0);
     }
 
     //payload
@@ -231,10 +228,10 @@ void QMQTT::ClientPrivate::sendConnect()
     if (!_username.isEmpty())
     {
         frame.writeString(_username);
-    }
-    if (!_password.isEmpty())
-    {
-        frame.writeString(_password);
+        if (!_password.isEmpty())
+        {
+            frame.writeString(_password);
+        }
     }
     _network->sendFrame(frame);
 }
