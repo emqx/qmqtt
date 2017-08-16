@@ -39,15 +39,17 @@
 
 namespace QMQTT {
 
-class Message;
-
-class Q_MQTT_EXPORT RoutedMessage
+class RoutedMessage
 {
 public:
-    explicit RoutedMessage(const Message &message);
+    inline RoutedMessage(const Message &message)
+        : _message(message)
+    {}
 
-    const Message &message() const;
-    QHash<QString, QString> parameters() const;
+    inline const Message &message() const
+    { return _message; }
+    inline QHash<QString, QString> parameters() const
+    { return _parameters; }
 
 private:
     friend class RouteSubscription;
