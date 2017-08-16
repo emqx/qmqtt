@@ -105,7 +105,7 @@ class Q_MQTT_EXPORT Client : public QObject
     Q_PROPERTY(QString _hostName READ hostName WRITE setHostName)
     Q_PROPERTY(QString _clientId READ clientId WRITE setClientId)
     Q_PROPERTY(QString _username READ username WRITE setUsername)
-    Q_PROPERTY(QString _password READ password WRITE setPassword)
+    Q_PROPERTY(QByteArray _password READ password WRITE setPassword)
     Q_PROPERTY(quint16 _keepAlive READ keepAlive WRITE setKeepAlive)
     Q_PROPERTY(MQTTVersion _version READ version WRITE setVersion)
     Q_PROPERTY(bool _autoReconnect READ autoReconnect WRITE setAutoReconnect)
@@ -114,7 +114,7 @@ class Q_MQTT_EXPORT Client : public QObject
     Q_PROPERTY(QString _willTopic READ willTopic WRITE setWillTopic)
     Q_PROPERTY(quint8 _willQos READ willQos WRITE setWillQos)
     Q_PROPERTY(bool _willRetain READ willRetain WRITE setWillRetain)
-    Q_PROPERTY(QString _willMessage READ willMessage WRITE setWillMessage)
+    Q_PROPERTY(QByteArray _willMessage READ willMessage WRITE setWillMessage)
     Q_PROPERTY(QString _connectionState READ connectionState)
 
 public:
@@ -153,7 +153,7 @@ public:
     quint16 port() const;
     QString clientId() const;
     QString username() const;
-    QString password() const;
+    QByteArray password() const;
     QMQTT::MQTTVersion version() const;
     quint16 keepAlive() const;
     bool cleanSession() const;
@@ -163,7 +163,7 @@ public:
     QString willTopic() const;
     quint8 willQos() const;
     bool willRetain() const;
-    QString willMessage() const;
+    QByteArray willMessage() const;
 
     bool isConnectedToHost() const;
 
@@ -173,7 +173,7 @@ public slots:
     void setPort(const quint16 port);
     void setClientId(const QString& clientId);
     void setUsername(const QString& username);
-    void setPassword(const QString& password);
+    void setPassword(const QByteArray& password);
     void setVersion(const MQTTVersion version);
     void setKeepAlive(const quint16 keepAlive);
     void setCleanSession(const bool cleanSession);
@@ -182,7 +182,7 @@ public slots:
     void setWillTopic(const QString& willTopic);
     void setWillQos(const quint8 willQos);
     void setWillRetain(const bool willRetain);
-    void setWillMessage(const QString& willMessage);
+    void setWillMessage(const QByteArray& willMessage);
 
     void connectToHost();
     void disconnectFromHost();

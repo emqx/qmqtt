@@ -64,7 +64,7 @@ public:
     MQTTVersion _version;
     QString _clientId;
     QString _username;
-    QString _password;
+    QByteArray _password;
     bool _cleanSession;
     quint16 _keepAlive;
     ConnectionState _connectionState;
@@ -73,7 +73,7 @@ public:
     QString _willTopic;
     quint8 _willQos;
     bool _willRetain;
-    QString _willMessage;
+    QByteArray _willMessage;
     QHash<QAbstractSocket::SocketError, ClientError> _socketErrorHash;
     QHash<quint16, QString> _midToTopic;
 
@@ -117,8 +117,8 @@ public:
     bool cleanSession() const;
     void setKeepAlive(const quint16 keepAlive);
     quint16 keepAlive() const;
-    void setPassword(const QString& password);
-    QString password() const;
+    void setPassword(const QByteArray& password);
+    QByteArray password() const;
     void setUsername(const QString& username);
     QString username() const;
     void setVersion(const MQTTVersion);
@@ -134,11 +134,11 @@ public:
     void setWillTopic(const QString& willTopic);
     void setWillQos(const quint8 willQos);
     void setWillRetain(const bool willRetain);
-    void setWillMessage(const QString& willMessage);
+    void setWillMessage(const QByteArray& willMessage);
     QString willTopic() const;
     quint8 willQos() const;
     bool willRetain() const;
-    QString willMessage() const;
+    QByteArray willMessage() const;
     void initializeErrorHash();
     void onNetworkError(QAbstractSocket::SocketError error);
 

@@ -106,10 +106,12 @@ public:
 
     quint16 readInt();
     quint8 readChar();
+    QByteArray readByteArray();
     QString readString();
 
     void writeInt(const quint16 i);
     void writeChar(const quint8 c);
+    void writeByteArray(const QByteArray &data);
     void writeString(const QString &string);
     void writeRawData(const QByteArray &data);
 
