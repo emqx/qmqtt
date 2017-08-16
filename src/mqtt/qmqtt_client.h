@@ -187,7 +187,7 @@ public slots:
     void connectToHost();
     void disconnectFromHost();
 
-    quint16 subscribe(const QString& topic, const quint8 qos);
+    void subscribe(const QString& topic, const quint8 qos = 0);
     void unsubscribe(const QString& topic);
 
     quint16 publish(const Message& message);
@@ -197,7 +197,7 @@ signals:
     void disconnected();
     void error(const QMQTT::ClientError error);
 
-    void subscribed(const QString& topic, const quint8 qos);
+    void subscribed(const QString& topic, const quint8 qos = 0);
     void unsubscribed(const QString& topic);
     void published(const quint16 msgid, const quint8 qos);
     void received(const QMQTT::Message& message);

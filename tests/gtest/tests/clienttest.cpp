@@ -431,11 +431,11 @@ TEST_F(ClientTest, subscribeEmitsSubscribedSignal_Test)
     EXPECT_CALL(*_networkMock, sendFrame(_));
     QSignalSpy spy(_client.data(), &QMQTT::Client::subscribed);
 
-    quint16 msgid = _client->subscribe("topic", QOS2);
+    _client->subscribe("topic", QOS2);
 
     QByteArray payLoad;
-    payLoad.append((char)(msgid >> 8)); // message ID MSB
-    payLoad.append((char)(msgid && 0xFF)); // message ID LSB
+    payLoad.append((char)0x00); // message ID MSB
+    payLoad.append((char)0x01); // message ID LSB
     payLoad.append((char)QOS2); // QOS
     QMQTT::Frame frame(SUBACK_TYPE, payLoad);
     emit _networkMock->received(frame);
