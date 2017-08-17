@@ -85,7 +85,7 @@ public:
     void onTimerPingReq();
     quint16 sendUnsubscribe(const QString &topic);
     quint16 sendSubscribe(const QString &topic, const quint8 qos);
-    quint16 sendPublish(const Message &msg);
+    quint16 sendPublish(const Message &message);
     void sendPuback(const quint8 type, const quint16 mid);
     void sendDisconnect();
     void disconnectFromHost();
