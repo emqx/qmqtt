@@ -239,9 +239,9 @@ void QMQTT::ClientPrivate::sendConnect()
     _network->sendFrame(frame);
 }
 
-quint16 QMQTT::ClientPrivate::sendPublish(const Message& msg)
+quint16 QMQTT::ClientPrivate::sendPublish(const Message &message)
 {
-    Message message(msg);
+    quint16 msgid = message.id();
 
     quint8 header = PUBLISH;
     header = SETRETAIN(header, message.retain() ? 1 : 0);
@@ -250,16 +250,15 @@ quint16 QMQTT::ClientPrivate::sendPublish(const Message& msg)
     Frame frame(header);
     frame.writeString(message.topic());
     if(message.qos() > QOS0) {
-        if(message.id() == 0) {
-            message.setId(nextmid());
-        }
-        frame.writeInt(message.id());
+        if (msgid == 0)
+            msgid = nextmid();
+        frame.writeInt(msgid);
     }
     if(!message.payload().isEmpty()) {
         frame.writeRawData(message.payload());
     }
     _network->sendFrame(frame);
-    return message.id();
+    return msgid;
 }
 
 void QMQTT::ClientPrivate::sendPuback(const quint8 type, const quint16 mid)
@@ -331,7 +330,7 @@ quint16 QMQTT::ClientPrivate::publish(const Message& message)
 
     // Emit published only at QOS0
     if (message.qos() == QOS0)
-        emit q->published(message.id(), QOS0);
+        emit q->published(msgid, QOS0);
 
     return msgid;
 }
@@ -371,7 +370,6 @@ void QMQTT::ClientPrivate::onNetworkReceived(const QMQTT::Frame& frm)
     quint16 mid = 0;
     quint8 header = frame.header();
     quint8 type = GETTYPE(header);
-    Message message;
 
     switch(type)
     {
@@ -387,13 +385,7 @@ void QMQTT::ClientPrivate::onNetworkReceived(const QMQTT::Frame& frm)
         if( qos > QOS0) {
             mid = frame.readInt();
         }
-        message.setId(mid);
-        message.setTopic(topic);
-        message.setPayload(frame.data());
-        message.setQos(qos);
-        message.setRetain(retain);
-        message.setDup(dup);
-        handlePublish(message);
+        handlePublish(Message(mid, topic, frame.data(), qos, retain, dup));
         break;
     case PUBACK:
     case PUBREC:
