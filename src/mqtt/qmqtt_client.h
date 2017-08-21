@@ -199,7 +199,7 @@ signals:
 
     void subscribed(const QString& topic, const quint8 qos = 0);
     void unsubscribed(const QString& topic);
-    void published(const quint16 msgid, const quint8 qos);
+    void published(const QMQTT::Message& message, quint16 msgid = 0);
     void received(const QMQTT::Message& message);
     void pingresp();
 

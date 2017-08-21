@@ -76,6 +76,7 @@ public:
     QByteArray _willMessage;
     QHash<QAbstractSocket::SocketError, ClientError> _socketErrorHash;
     QHash<quint16, QString> _midToTopic;
+    QHash<quint16, Message> _midToMessage;
 
     Client* const q_ptr;
 
