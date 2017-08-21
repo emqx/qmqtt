@@ -100,6 +100,8 @@ public:
     Frame& operator=(const Frame& other);
 
     bool operator==(const Frame& other) const;
+    inline bool operator!=(const Frame& other) const
+    { return !operator==(other); }
 
     quint8 header() const;
     QByteArray data() const;
