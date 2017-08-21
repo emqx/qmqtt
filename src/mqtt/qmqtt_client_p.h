@@ -95,7 +95,7 @@ public:
     void onNetworkDisconnected();
     quint16 publish(const Message& message);
     void puback(const quint8 type, const quint16 msgid);
-    quint16 subscribe(const QString& topic, const quint8 qos);
+    void subscribe(const QString& topic, const quint8 qos);
     void unsubscribe(const QString& topic);
     void onNetworkReceived(const QMQTT::Frame& frame);
     void handleConnack(const quint8 ack);
@@ -105,8 +105,6 @@ public:
     void handleUnsuback(const QString& topic);
     void handlePubcomp(const Message& message);
     void handlePingresp();
-    QString midToTopic(const quint16 mid);
-    void clearMidToTopic();
     bool autoReconnect() const;
     void setAutoReconnect(const bool autoReconnect);
     bool autoReconnectInterval() const;
