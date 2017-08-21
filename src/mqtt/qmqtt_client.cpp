@@ -155,13 +155,13 @@ void QMQTT::Client::setVersion(const QMQTT::MQTTVersion version)
     d->setVersion(version);
 }
 
-QString QMQTT::Client::password() const
+QByteArray QMQTT::Client::password() const
 {
     Q_D(const Client);
     return d->password();
 }
 
-void QMQTT::Client::setPassword(const QString& password)
+void QMQTT::Client::setPassword(const QByteArray &password)
 {
     Q_D(Client);
     d->setPassword(password);
@@ -251,13 +251,13 @@ void QMQTT::Client::setWillRetain(const bool willRetain)
     d->setWillRetain(willRetain);
 }
 
-QString QMQTT::Client::willMessage() const
+QByteArray QMQTT::Client::willMessage() const
 {
     Q_D(const Client);
     return d->willMessage();
 }
 
-void QMQTT::Client::setWillMessage(const QString& willMessage)
+void QMQTT::Client::setWillMessage(const QByteArray &willMessage)
 {
     Q_D(Client);
     d->setWillMessage(willMessage);

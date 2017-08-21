@@ -201,10 +201,7 @@ void QMQTT::ClientPrivate::sendConnect()
     if (!username().isEmpty())
     {
         flags = FLAG_USERNAME(flags, 1);
-    }
-    if (!password().isEmpty())
-    {
-        flags = FLAG_PASSWD(flags, 1);
+        flags = FLAG_PASSWD(flags, !password().isEmpty() ? 1 : 0);
     }
 
     //payload
@@ -225,16 +222,16 @@ void QMQTT::ClientPrivate::sendConnect()
         frame.writeString(willTopic());
         if(!willMessage().isEmpty())
         {
-            frame.writeString(willMessage());
+            frame.writeByteArray(_willMessage);
         }
     }
     if (!_username.isEmpty())
     {
         frame.writeString(_username);
-    }
-    if (!_password.isEmpty())
-    {
-        frame.writeString(_password);
+        if (!_password.isEmpty())
+        {
+            frame.writeByteArray(_password);
+        }
     }
     _network->sendFrame(frame);
 }
@@ -523,12 +520,12 @@ quint16 QMQTT::ClientPrivate::keepAlive() const
     return _keepAlive;
 }
 
-void QMQTT::ClientPrivate::setPassword(const QString& password)
+void QMQTT::ClientPrivate::setPassword(const QByteArray& password)
 {
     _password = password;
 }
 
-QString QMQTT::ClientPrivate::password() const
+QByteArray QMQTT::ClientPrivate::password() const
 {
     return _password;
 }
@@ -630,12 +627,12 @@ void QMQTT::ClientPrivate::setWillRetain(const bool willRetain)
     _willRetain = willRetain;
 }
 
-QString QMQTT::ClientPrivate::willMessage() const
+QByteArray QMQTT::ClientPrivate::willMessage() const
 {
     return _willMessage;
 }
 
-void QMQTT::ClientPrivate::setWillMessage(const QString& willMessage)
+void QMQTT::ClientPrivate::setWillMessage(const QByteArray& willMessage)
 {
     _willMessage = willMessage;
 }
