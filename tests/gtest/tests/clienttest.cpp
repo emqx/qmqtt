@@ -405,11 +405,11 @@ TEST_F(ClientTest, publishEmitsPublishedSignal_Test)
     QSignalSpy spy(_client.data(), &QMQTT::Client::published);
     QMQTT::Message message(222, "topic", QByteArray("payload"));
 
-    _client->publish(message);
+    quint16 msgid = _client->publish(message);
 
     ASSERT_EQ(1, spy.count());
-    EXPECT_EQ(message.id(), spy.at(0).at(0).value<quint16>());
-    EXPECT_EQ(QOS0, spy.at(0).at(1).value<quint8>());
+    EXPECT_EQ(message, spy.at(0).at(0).value<QMQTT::Message>());
+    EXPECT_EQ(msgid, spy.at(0).at(1).value<quint16>());
 }
 
 // todo: network received sends a puback, test what happens

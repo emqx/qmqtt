@@ -327,7 +327,9 @@ quint16 QMQTT::ClientPrivate::publish(const Message& message)
 
     // Emit published only at QOS0
     if (message.qos() == QOS0)
-        emit q->published(msgid, QOS0);
+        emit q->published(message, msgid);
+    else
+        _midToMessage[msgid] = message;
 
     return msgid;
 }
@@ -355,6 +357,7 @@ void QMQTT::ClientPrivate::onNetworkDisconnected()
 
     stopKeepAlive();
     _midToTopic.clear();
+    _midToMessage.clear();
     emit q->disconnected();
 }
 
@@ -444,15 +447,12 @@ void QMQTT::ClientPrivate::handlePuback(const quint8 type, const quint16 msgid)
     {
         sendPuback(PUBCOMP, msgid);
     }
-
-    // Emit published on PUBACK at QOS1
-    if (type == PUBACK)
-        emit q->published(msgid, QOS1);
-
-    // Emit published on PUBCOMP at QOS2
-    if (type == PUBCOMP)
-        emit q->published(msgid, QOS2);
-
+    else if (type == PUBACK || type == PUBCOMP)
+    {
+        // Emit published on PUBACK at QOS1 and on PUBCOMP at QOS2
+        const Message &message = _midToMessage.take(msgid);
+        emit q->published(message, msgid);
+    }
 }
 
 void QMQTT::ClientPrivate::handlePingresp() {
