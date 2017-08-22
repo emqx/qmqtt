@@ -34,8 +34,8 @@
 
 #include <qmqtt_global.h>
 
-#include <QScopedPointer>
-#include <QMetaType>
+#include <QtCore/qmetatype.h>
+#include <QtCore/qshareddata.h>
 
 namespace QMQTT {
 
@@ -44,17 +44,24 @@ class MessagePrivate;
 class Q_MQTT_EXPORT Message
 {
 public:
-    explicit Message();
+    Message();
     explicit Message(const quint16 id, const QString &topic, const QByteArray &payload,
                      const quint8 qos = 0, const bool retain = false, const bool dup = false);
-    virtual ~Message();
+    Message(const Message &other);
+    ~Message();
 
-    Message(const Message& other);
-    Message& operator=(const Message& other);
+    Message &operator=(const Message &other);
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline Message &operator=(Message &&other) Q_DECL_NOTHROW
+    { swap(other); return *this; }
+#endif
 
-    bool operator==(const Message& other) const;
+    bool operator==(const Message &other) const;
     inline bool operator!=(const Message &other) const
     { return !operator==(other); }
+
+    inline void swap(Message &other) Q_DECL_NOTHROW
+    { qSwap(d, other.d); }
 
     quint16 id() const;
     void setId(const quint16 id);
@@ -72,17 +79,16 @@ public:
     void setTopic(const QString &topic);
 
     QByteArray payload() const;
-    void setPayload(const QByteArray & payload);
-
-protected:
-    QScopedPointer<MessagePrivate> d_ptr;
+    void setPayload(const QByteArray &payload);
 
 private:
-    Q_DECLARE_PRIVATE(Message)
+    QSharedDataPointer<MessagePrivate> d;
 };
 
 } // namespace QMQTT
 
-Q_DECLARE_METATYPE(QMQTT::Message);
+Q_DECLARE_SHARED(QMQTT::Message)
+
+Q_DECLARE_METATYPE(QMQTT::Message)
 
 #endif // QMQTT_MESSAGE_H

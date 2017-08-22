@@ -32,111 +32,104 @@
 #include "qmqtt_message.h"
 #include "qmqtt_message_p.h"
 
-QMQTT::Message::Message()
-    : d_ptr(new MessagePrivate)
+namespace QMQTT {
+
+Message::Message()
+    : d(new MessagePrivate)
 {
-    Q_D(Message);
-    d->init(0, QString(), QByteArray(), 0, false, false);
 }
 
-QMQTT::Message::Message(const quint16 id, const QString &topic, const QByteArray &payload,
+Message::Message(const quint16 id, const QString &topic, const QByteArray &payload,
                  const quint8 qos, const bool retain, const bool dup)
-    : d_ptr(new MessagePrivate)
-{
-    Q_D(Message);
-    d->init(id, topic, payload, qos, retain, dup);
-}
-
-QMQTT::Message::~Message()
+    : d(new MessagePrivate(id, topic, payload, qos, retain, dup))
 {
 }
 
-QMQTT::Message::Message(const Message& other)
-    : d_ptr(new MessagePrivate(*(other.d_ptr)))
+Message::Message(const Message &other)
+    : d(other.d)
 {
 }
 
-QMQTT::Message& QMQTT::Message::operator=(const Message& other)
+Message::~Message()
 {
-    Q_D(Message);
-    *d = *(other.d_ptr);
+}
+
+Message &Message::operator=(const Message &other)
+{
+    d = other.d;
     return *this;
 }
 
-bool QMQTT::Message::operator==(const Message& other) const
+bool Message::operator==(const Message &other) const
 {
-    Q_D(const Message);
-    return *d == *(other.d_ptr);
+    if (d == other.d)
+        return true;
+    return d->id == other.d->id
+            && d->qos == other.d->qos
+            && d->retain == other.d->retain
+            && d->dup == other.d->dup
+            && d->topic == other.d->topic
+            && d->payload == other.d->payload;
 }
 
-quint16 QMQTT::Message::id() const
+quint16 Message::id() const
 {
-    Q_D(const Message);
-    return d->id();
+    return d->id;
 }
 
-void QMQTT::Message::setId(const quint16 id)
+void Message::setId(const quint16 id)
 {
-    Q_D(Message);
-    d->setId(id);
+    d->id = id;
 }
 
-quint8 QMQTT::Message::qos() const
+quint8 Message::qos() const
 {
-    Q_D(const Message);
-    return d->qos();
+    return d->qos;
 }
 
-void QMQTT::Message::setQos(const quint8 qos)
+void Message::setQos(const quint8 qos)
 {
-    Q_D(Message);
-    d->setQos(qos);
+    d->qos = qos;
 }
 
-bool QMQTT::Message::retain() const
+bool Message::retain() const
 {
-    Q_D(const Message);
-    return d->retain();
+    return d->retain;
 }
 
-void QMQTT::Message::setRetain(const bool retain)
+void Message::setRetain(const bool retain)
 {
-    Q_D(Message);
-    d->setRetain(retain);
+    d->retain = retain;
 }
 
-bool QMQTT::Message::dup() const
+bool Message::dup() const
 {
-    Q_D(const Message);
-    return d->dup();
+    return d->dup;
 }
 
-void QMQTT::Message::setDup(const bool dup)
+void Message::setDup(const bool dup)
 {
-    Q_D(Message);
-    d->setDup(dup);
+    d->dup = dup;
 }
 
-QString QMQTT::Message::topic() const
+QString Message::topic() const
 {
-    Q_D(const Message);
-    return d->topic();
+    return d->topic;
 }
 
-void QMQTT::Message::setTopic(const QString& topic)
+void Message::setTopic(const QString &topic)
 {
-    Q_D(Message);
-    d->setTopic(topic);
+    d->topic = topic;
 }
 
-QByteArray QMQTT::Message::payload() const
+QByteArray Message::payload() const
 {
-    Q_D(const Message);
-    return d->payload();
+    return d->payload;
 }
 
-void QMQTT::Message::setPayload(const QByteArray& payload)
+void Message::setPayload(const QByteArray &payload)
 {
-    Q_D(Message);
-    d->setPayload(payload);
+    d->payload = payload;
 }
+
+} // namespace QMQTT
