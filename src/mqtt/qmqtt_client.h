@@ -190,7 +190,7 @@ public slots:
     void subscribe(const QString& topic, const quint8 qos = 0);
     void unsubscribe(const QString& topic);
 
-    quint16 publish(const Message& message);
+    quint16 publish(const QMQTT::Message& message);
 
 signals:
     void connected();
