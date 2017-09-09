@@ -37,6 +37,10 @@
 #include "qmqtt_network_p.h"
 #include <QTimer>
 
+#ifdef QT_WEBSOCKETS_LIB
+#include <QWebSocket>
+#endif // QT_WEBSOCKETS_LIB
+
 #ifndef QT_NO_SSL
 QT_FORWARD_DECLARE_CLASS(QSslConfiguration)
 #endif // QT_NO_SSL
@@ -55,11 +59,18 @@ public:
               const bool ignoreSelfSigned=false);
 #endif // QT_NO_SSL
     void init(const QString& hostName, const quint16 port, const bool ssl, const bool ignoreSelfSigned);
+#ifdef QT_WEBSOCKETS_LIB
+    void init(const QString& url, const QString &origin, QWebSocketProtocol::Version version,
+              bool ignoreSelfSigned);
+#endif // QT_WEBSOCKETS_LIB
     void init(NetworkInterface* network);
 
     QHostAddress _host;
     QString _hostName;
     quint16 _port;
+#ifdef QT_WEBSOCKETS_LIB
+    QWebSocketProtocol::Version _webSocketVersion;
+#endif // QT_WEBSOCKETS_LIB
     quint16 _gmid;
     MQTTVersion _version;
     QString _clientId;

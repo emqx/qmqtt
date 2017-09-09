@@ -7,6 +7,7 @@ Product {
         libraryType,
         "mqttmodule",
     ]
+    property bool webSocketSupport: false
     property string libraryType: "dynamiclibrary"
     targetName: "qmqtt"
 
@@ -87,10 +88,16 @@ Product {
 
     Depends {
         name: "Qt"
-        submodules: [
-            "core",
-            "network",
-        ]
+        property var baseModules: ["core", "network"]
+
+        Properties {
+            condition: webSocketSupport
+            submodules: baseModules.concat(["websockets"])
+        }
+        Properties {
+            condition: !webSocketSupport
+            submodules: baseModules
+        }
     }
 
     Export {
@@ -100,10 +107,15 @@ Product {
 
         Depends {
             name: "Qt"
-            submodules: [
-                "core",
-                "network",
-            ]
+            property var baseModules: ["core", "network"]
+            Properties {
+                condition: product.webSocketSupport
+                submodules: baseModules.concat(["websockets"])
+            }
+            Properties {
+                condition: !product.webSocketSupport
+                submodules: baseModules
+            }
         }
 
         cpp.includePaths: product.sourceDirectory

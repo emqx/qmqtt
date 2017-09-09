@@ -1,10 +1,15 @@
+language: cpp
+compiler:
+ - gcc
+
 before_install:
  - sudo apt-add-repository -y ppa:ubuntu-toolchain-r/test
- - sudo apt-add-repository -y ppa:beineri/opt-qt56
+ - sudo apt-add-repository -y ppa:beineri/opt-qt571-trusty
  - sudo apt-get update -qq
- - sudo apt-get install -qq qt56base qt56tools g++-4.8
- - source /opt/qt56/bin/qt56-env.sh
- - export CXX="g++-4.8"
+ - sudo apt-get install -qq qt57base qt57tools qt57websockets g++-5
+ - source /opt/qt57/bin/qt57-env.sh
+ - export CXX="g++-5"
+ - export CC="gcc-5"
 
 script:
  - qmake --version

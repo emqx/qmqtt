@@ -39,6 +39,10 @@
 #include <QScopedPointer>
 #include <QHostAddress>
 
+#ifdef QT_WEBSOCKETS_LIB
+#include <QWebSocket>
+#endif // QT_WEBSOCKETS_LIB
+
 #ifndef QT_NO_SSL
 QT_FORWARD_DECLARE_CLASS(QSslConfiguration)
 #endif // QT_NO_SSL
@@ -139,6 +143,15 @@ public:
            const bool ssl,
            const bool ignoreSelfSigned,
            QObject* parent = NULL);
+
+#ifdef QT_WEBSOCKETS_LIB
+    // Create a connection over websockets
+    Client(const QString& url,
+           const QString& origin,
+           QWebSocketProtocol::Version version,
+           bool ignoreSelfSigned = false,
+           QObject* parent = NULL);
+#endif // QT_WEBSOCKETS_LIB
 
     // for testing purposes only
     Client(NetworkInterface* network,
