@@ -37,9 +37,9 @@ TEST_F(MessageTest, constructorWithParametersHasDefaultValues_Test)
 
 TEST_F(MessageTest, constructorWithParameters_Test)
 {
-    _message.reset(new QMQTT::Message(5, "topic", "payload", 5, true, true));
+    _message.reset(new QMQTT::Message(5, "topic", "payload", 2, true, true));
     EXPECT_EQ(5, _message->id());
-    EXPECT_EQ(5, _message->qos());
+    EXPECT_EQ(2, _message->qos());
     EXPECT_TRUE(_message->retain());
     EXPECT_TRUE(_message->dup());
     EXPECT_EQ(QString("topic"), _message->topic());
@@ -48,11 +48,11 @@ TEST_F(MessageTest, constructorWithParameters_Test)
 
 TEST_F(MessageTest, copyConstructor_Test)
 {
-    QMQTT::Message originalMessage(5, "topic", "payload", 5, true, true);
+    QMQTT::Message originalMessage(5, "topic", "payload", 1, true, true);
     QMQTT::Message copy(originalMessage);
-    _message.reset(new QMQTT::Message(5, "topic", "payload", 5, true, true));
+    _message.reset(new QMQTT::Message(5, "topic", "payload", 1, true, true));
     EXPECT_EQ(5, copy.id());
-    EXPECT_EQ(5, copy.qos());
+    EXPECT_EQ(1, copy.qos());
     EXPECT_TRUE(copy.retain());
     EXPECT_TRUE(copy.dup());
     EXPECT_EQ(QString("topic"), copy.topic());
@@ -61,13 +61,13 @@ TEST_F(MessageTest, copyConstructor_Test)
 
 TEST_F(MessageTest, assignmentOperator_Test)
 {
-    QMQTT::Message originalMessage(5, "topic", "payload", 5, true, true);
+    QMQTT::Message originalMessage(5, "topic", "payload", 2, true, true);
     QMQTT::Message copy;
 
     copy = originalMessage;
 
     EXPECT_EQ(5, copy.id());
-    EXPECT_EQ(5, copy.qos());
+    EXPECT_EQ(2, copy.qos());
     EXPECT_TRUE(copy.retain());
     EXPECT_TRUE(copy.dup());
     EXPECT_EQ(QString("topic"), copy.topic());
@@ -83,8 +83,8 @@ TEST_F(MessageTest, idSettable_Test)
 
 TEST_F(MessageTest, qosSettable_Test)
 {
-    _message->setQos(5);
-    EXPECT_EQ(5, _message->qos());
+    _message->setQos(1);
+    EXPECT_EQ(1, _message->qos());
 }
 
 TEST_F(MessageTest, retainSettable_Test)
