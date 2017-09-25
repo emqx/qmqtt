@@ -16,6 +16,16 @@ Usage
     client->setPassword("password");
     client->connectToHost();
 
+Connect using ssl:
+
+    QSslConfiguration sslConfig = QSslConfiguration::defaultConfiguration();
+    // Add custom SSL options here (for example extra certificates)
+    QMQTT::Client *client = new QMQTT::Client("example.com", 8883, sslConfig);
+    client->setClientId("clientId");
+    client->setUsername("user");
+    client->setPassword("password");
+    client->connectToHost();
+
 Slots
 =====
 
