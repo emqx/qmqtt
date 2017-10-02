@@ -34,6 +34,7 @@
 #include "qmqtt_socket_p.h"
 #include "qmqtt_ssl_socket_p.h"
 #include "qmqtt_timer_p.h"
+#include "qmqtt_websocket_p.h"
 
 const QString DEFAULT_HOST_NAME = QStringLiteral("localhost");
 const QHostAddress DEFAULT_HOST = QHostAddress::LocalHost;
@@ -69,6 +70,22 @@ QMQTT::Network::Network(const QSslConfiguration &config, bool ignoreSelfSigned, 
     initialize();
 }
 #endif // QT_NO_SSL
+
+#ifdef QT_WEBSOCKETS_LIB
+QMQTT::Network::Network(const QString& origin, QWebSocketProtocol::Version version,
+                        bool ignoreSelfSigned, QObject* parent)
+    : NetworkInterface(parent)
+    , _port(DEFAULT_SSL_PORT)
+    , _hostName(DEFAULT_HOST_NAME)
+    , _autoReconnect(DEFAULT_AUTORECONNECT)
+    , _autoReconnectInterval(DEFAULT_AUTORECONNECT_INTERVAL_MS)
+    , _socket(new QMQTT::WebSocket(origin, version, ignoreSelfSigned))
+    , _autoReconnectTimer(new QMQTT::Timer)
+    , _readState(Header)
+{
+    initialize();
+}
+#endif // QT_WEBSOCKETS_LIB
 
 QMQTT::Network::Network(SocketInterface* socketInterface, TimerInterface* timerInterface,
                         QObject* parent)

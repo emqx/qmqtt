@@ -5,12 +5,32 @@ mqtt client for Qt
 
 **Please compile the library with Qt >= 5.3 version. On Windows you need to specify `CONFIG += NO_UNIT_TESTS`, since gtest is not supported.**
 
+To add websocket support, compile the library with Qt >= 5.7, and specify 'CONFIG += QMQTT_WEBSOCKETS'.
+
 Usage
 =====
 
     #include "qmqtt.h"
 
     QMQTT::Client *client = new QMQTT::Client(QHostAddress::LocalHost, 1883);
+    client->setClientId("clientId");
+    client->setUsername("user");
+    client->setPassword("password");
+    client->connectToHost();
+
+Connect using ssl:
+
+    QSslConfiguration sslConfig = QSslConfiguration::defaultConfiguration();
+    // Add custom SSL options here (for example extra certificates)
+    QMQTT::Client *client = new QMQTT::Client("example.com", 8883, sslConfig);
+    client->setClientId("clientId");
+    client->setUsername("user");
+    client->setPassword("password");
+    client->connectToHost();
+
+Connect using websockets:
+
+    QMQTT::Client *client = new QMQTT::Client("ws://www.example.com/mqtt", "<origin>", QWebSocketProtocol::VersionLatest);
     client->setClientId("clientId");
     client->setUsername("user");
     client->setPassword("password");

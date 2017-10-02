@@ -68,6 +68,20 @@ QMQTT::Client::Client(const QString &hostName,
     d->init(hostName, port, ssl, ignoreSelfSigned);
 }
 
+#ifdef QT_WEBSOCKETS_LIB
+QMQTT::Client::Client(const QString& url,
+                      const QString& origin,
+                      QWebSocketProtocol::Version version,
+                      bool ignoreSelfSigned,
+                      QObject* parent)
+    : QObject(parent)
+    , d_ptr(new ClientPrivate(this))
+{
+    Q_D(Client);
+    d->init(url, origin, version, ignoreSelfSigned);
+}
+#endif // QT_WEBSOCKETS_LIB
+
 QMQTT::Client::Client(NetworkInterface* network,
                       const QHostAddress& host,
                       const quint16 port,
