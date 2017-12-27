@@ -42,7 +42,7 @@ void QMQTT::WebSocket::connectToHost(const QString& hostName, quint16 port)
 
 void QMQTT::WebSocket::disconnectFromHost()
 {
-    _socket->disconnect();
+    _socket->close();
 }
 
 QAbstractSocket::SocketState QMQTT::WebSocket::state() const
