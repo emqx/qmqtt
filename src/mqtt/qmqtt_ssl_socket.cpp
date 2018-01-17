@@ -67,11 +67,7 @@ QIODevice *QMQTT::SslSocket::ioDevice()
 
 void QMQTT::SslSocket::connectToHost(const QHostAddress& address, quint16 port)
 {
-    Q_UNUSED(address);
-    Q_UNUSED(port);
-
-    qCritical("qmqtt: SSL does not work with host addresses!");
-    emit _socket->error(QAbstractSocket::ConnectionRefusedError);
+    _socket->connectToHostEncrypted(address.toString(), port);
 }
 
 void QMQTT::SslSocket::connectToHost(const QString& hostName, quint16 port)
