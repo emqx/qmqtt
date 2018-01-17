@@ -77,11 +77,6 @@ void QMQTT::SslSocket::connectToHost(const QHostAddress& address, quint16 port)
 void QMQTT::SslSocket::connectToHost(const QString& hostName, quint16 port)
 {
     _socket->connectToHostEncrypted(hostName, port);
-
-    if (!_socket->waitForEncrypted())
-    {
-        qCritical() << QStringLiteral("qmqtt SSL: ") << _socket->errorString();
-    }
 }
 
 void QMQTT::SslSocket::disconnectFromHost()
