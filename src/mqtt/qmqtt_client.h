@@ -233,6 +233,6 @@ private:
 
 } // namespace QMQTT
 
-Q_DECLARE_METATYPE(QMQTT::ClientError);
+Q_DECLARE_METATYPE(QMQTT::ClientError)
 
 #endif // QMQTT_CLIENT_H
