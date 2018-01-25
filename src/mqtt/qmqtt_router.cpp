@@ -32,6 +32,7 @@
  */
 #include "qmqtt_router.h"
 
+#include "qmqtt_message.h"
 #include "qmqtt_client.h"
 #include "qmqtt_routesubscription.h"
 #include <QLoggingCategory>
