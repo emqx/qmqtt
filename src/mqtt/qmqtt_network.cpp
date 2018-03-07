@@ -130,6 +130,8 @@ bool QMQTT::Network::isConnectedToHost() const
 
 void QMQTT::Network::connectToHost(const QHostAddress& host, const quint16 port)
 {
+    // Reset the hostname, because if it is not empty connectToHost() will use it instead of _host.
+    _hostName.clear();
     _host = host;
     _port = port;
     connectToHost();
