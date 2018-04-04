@@ -63,7 +63,10 @@ public:
     Network(const QSslConfiguration& config, bool ignoreSelfSigned, QObject* parent = NULL);
 #endif // QT_NO_SSL
 #ifdef QT_WEBSOCKETS_LIB
-    Network(const QString& origin, QWebSocketProtocol::Version version, bool ignoreSelfSigned,
+    Network(const QString& origin,
+            QWebSocketProtocol::Version version,
+            const QSslConfiguration* sslConfig,
+            bool ignoreSelfSigned,
             QObject* parent = NULL);
 #endif // QT_WEBSOCKETS_LIB
     Network(SocketInterface* socketInterface, TimerInterface* timerInterface,

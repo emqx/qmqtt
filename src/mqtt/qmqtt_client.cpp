@@ -78,7 +78,20 @@ QMQTT::Client::Client(const QString& url,
     , d_ptr(new ClientPrivate(this))
 {
     Q_D(Client);
-    d->init(url, origin, version, ignoreSelfSigned);
+    d->init(url, origin, version, NULL, ignoreSelfSigned);
+}
+
+QMQTT::Client::Client(const QString& url,
+                      const QString& origin,
+                      QWebSocketProtocol::Version version,
+                      const QSslConfiguration& sslConfig,
+                      const bool ignoreSelfSigned,
+                      QObject* parent)
+    : QObject(parent)
+    , d_ptr(new ClientPrivate(this))
+{
+    Q_D(Client);
+    d->init(url, origin, version, &sslConfig, ignoreSelfSigned);
 }
 #endif // QT_WEBSOCKETS_LIB
 
