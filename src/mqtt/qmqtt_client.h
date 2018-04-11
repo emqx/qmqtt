@@ -206,7 +206,7 @@ public slots:
     quint16 publish(const QMQTT::Message& message);
 
 signals:
-    void connected();
+    void connected(const quint8 ack);
     void disconnected();
     void error(const QMQTT::ClientError error);
 
