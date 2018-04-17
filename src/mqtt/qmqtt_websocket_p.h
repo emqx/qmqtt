@@ -36,6 +36,7 @@
 
 #include "qmqtt_socketinterface.h"
 #include "qmqtt_websocketiodevice_p.h"
+#include <QSslConfiguration>
 #include <QWebSocket>
 
 namespace QMQTT
@@ -44,7 +45,10 @@ namespace QMQTT
 class WebSocket : public SocketInterface
 {
 public:
-    WebSocket(const QString& origin, QWebSocketProtocol::Version version, bool ignoreSelfSigned,
+    WebSocket(const QString& origin,
+              QWebSocketProtocol::Version version,
+              const QSslConfiguration* sslConfig,
+              bool ignoreSelfSigned,
               QObject* parent = NULL);
     virtual ~WebSocket();
 
@@ -58,8 +62,6 @@ public:
     void disconnectFromHost();
     QAbstractSocket::SocketState state() const;
     QAbstractSocket::SocketError error() const;
-
-    // using SocketInterface::error;
 
 private slots:
     void sslErrors(const QList<QSslError> &errors);

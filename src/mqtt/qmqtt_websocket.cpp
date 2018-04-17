@@ -4,13 +4,18 @@
 #include <QUrl>
 #include "qmqtt_websocket_p.h"
 
-QMQTT::WebSocket::WebSocket(const QString& origin, QWebSocketProtocol::Version version,
-                            bool ignoreSelfSigned, QObject* parent)
+QMQTT::WebSocket::WebSocket(const QString& origin,
+                            QWebSocketProtocol::Version version,
+                            const QSslConfiguration* sslConfig,
+                            bool ignoreSelfSigned,
+                            QObject* parent)
     : SocketInterface(parent)
     , _socket(new QWebSocket(origin, version, this))
     , _ioDevice(new WebSocketIODevice(_socket, this))
     , _ignoreSelfSigned(ignoreSelfSigned)
 {
+    if (sslConfig != NULL)
+        _socket->setSslConfiguration(*sslConfig);
     connect(_socket, &QWebSocket::connected, this, &WebSocket::connected);
     connect(_socket, &QWebSocket::disconnected, this, &WebSocket::disconnected);
     connect(_socket,

@@ -151,6 +151,13 @@ public:
            QWebSocketProtocol::Version version,
            bool ignoreSelfSigned = false,
            QObject* parent = NULL);
+
+    Client(const QString& url,
+           const QString& origin,
+           QWebSocketProtocol::Version version,
+           const QSslConfiguration& config,
+           const bool ignoreSelfSigned = false,
+           QObject* parent = NULL);
 #endif // QT_WEBSOCKETS_LIB
 
     // for testing purposes only

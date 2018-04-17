@@ -68,13 +68,16 @@ QMQTT::Network::Network(const QSslConfiguration &config, bool ignoreSelfSigned, 
 #endif // QT_NO_SSL
 
 #ifdef QT_WEBSOCKETS_LIB
-QMQTT::Network::Network(const QString& origin, QWebSocketProtocol::Version version,
-                        bool ignoreSelfSigned, QObject* parent)
+QMQTT::Network::Network(const QString& origin,
+                        QWebSocketProtocol::Version version,
+                        const QSslConfiguration* sslConfig,
+                        bool ignoreSelfSigned,
+                        QObject* parent)
     : NetworkInterface(parent)
     , _port(DEFAULT_SSL_PORT)
     , _autoReconnect(DEFAULT_AUTORECONNECT)
     , _autoReconnectInterval(DEFAULT_AUTORECONNECT_INTERVAL_MS)
-    , _socket(new QMQTT::WebSocket(origin, version, ignoreSelfSigned))
+    , _socket(new QMQTT::WebSocket(origin, version, sslConfig, ignoreSelfSigned))
     , _autoReconnectTimer(new QMQTT::Timer)
     , _readState(Header)
 {
