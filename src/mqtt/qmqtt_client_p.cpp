@@ -429,8 +429,7 @@ void QMQTT::ClientPrivate::onNetworkReceived(const QMQTT::Frame& frm)
 void QMQTT::ClientPrivate::handleConnack(const quint8 ack)
 {
     Q_Q(Client);
-    Q_UNUSED(ack);
-    emit q->connected();
+    emit q->connected(ack);
 }
 
 void QMQTT::ClientPrivate::handlePublish(const Message& message)
