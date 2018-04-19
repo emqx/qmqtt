@@ -175,6 +175,13 @@ void QMQTT::ClientPrivate::initializeErrorHash()
     _socketErrorHash.insert(QAbstractSocket::SslInternalError, SocketSslInternalError);
     _socketErrorHash.insert(QAbstractSocket::SslInvalidUserDataError, SocketSslInvalidUserDataError);
     _socketErrorHash.insert(QAbstractSocket::TemporaryError, SocketTemporaryError);
+
+    _mqttErrorHash.insert(MqttError::MqttUnacceptableProtocolVersionError, MqttUnacceptableProtocolVersionError);
+    _mqttErrorHash.insert(MqttError::MqttIdentifierRejectedError, MqttIdentifierRejectedError);
+    _mqttErrorHash.insert(MqttError::MqttServerUnavailableError, MqttServerUnavailableError);
+    _mqttErrorHash.insert(MqttError::MqttVadUserNameOrPasswordError, MqttVadUserNameOrPasswordError);
+    _mqttErrorHash.insert(MqttError::MqttNotAuthorizedError, MqttNotAuthorizedError);
+
 }
 
 void QMQTT::ClientPrivate::connectToHost()
@@ -429,8 +436,10 @@ void QMQTT::ClientPrivate::onNetworkReceived(const QMQTT::Frame& frm)
 void QMQTT::ClientPrivate::handleConnack(const quint8 ack)
 {
     Q_Q(Client);
-    Q_UNUSED(ack);
-    emit q->connected();
+    if (ack==0) {
+        emit q->connected();
+    }
+    emit q->error(_mqttErrorHash.value(MqttError::MqttError (ack), UnknownError));
 }
 
 void QMQTT::ClientPrivate::handlePublish(const Message& message)
