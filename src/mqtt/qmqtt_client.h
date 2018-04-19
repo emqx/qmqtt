@@ -67,6 +67,16 @@ enum ConnectionState
     STATE_CONNECTED,
     STATE_DISCONNECTED
 };
+namespace MqttError {
+    enum MqttError {
+        UnknownError = 0,
+        MqttUnacceptableProtocolVersionError,
+        MqttIdentifierRejectedError,
+        MqttServerUnavailableError,
+        MqttVadUserNameOrPasswordError,
+        MqttNotAuthorizedError
+    };
+}
 
 enum ClientError
 {
@@ -93,7 +103,12 @@ enum ClientError
     SocketOperationError,
     SocketSslInternalError,
     SocketSslInvalidUserDataError,
-    SocketTemporaryError
+    SocketTemporaryError,
+    MqttUnacceptableProtocolVersionError=1<<16,
+    MqttIdentifierRejectedError,
+    MqttServerUnavailableError,
+    MqttVadUserNameOrPasswordError,
+    MqttNotAuthorizedError
 };
 
 class ClientPrivate;
