@@ -440,8 +440,7 @@ void QMQTT::ClientPrivate::handleConnack(const quint8 ack)
     if (ack==0) {
         emit q->connected();
     }
-   emit q->error(_mqttErrorHash.value(MqttError::MqttError (ack), UnknownError));
-
+    emit q->error(_mqttErrorHash.value(MqttError::MqttError (ack), UnknownError));
 }
 
 void QMQTT::ClientPrivate::handlePublish(const Message& message)
