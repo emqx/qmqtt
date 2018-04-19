@@ -39,7 +39,6 @@
 #include <QSslConfiguration>
 #include <QSslKey>
 #endif // QT_NO_SSL
-#include <QDebug>
 
 Q_LOGGING_CATEGORY(client, "qmqtt.client")
 
