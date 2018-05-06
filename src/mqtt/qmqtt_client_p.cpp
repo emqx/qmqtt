@@ -39,7 +39,6 @@
 #include <QSslConfiguration>
 #include <QSslKey>
 #endif // QT_NO_SSL
-#include <QDebug>
 
 Q_LOGGING_CATEGORY(client, "qmqtt.client")
 
@@ -176,13 +175,6 @@ void QMQTT::ClientPrivate::initializeErrorHash()
     _socketErrorHash.insert(QAbstractSocket::SslInternalError, SocketSslInternalError);
     _socketErrorHash.insert(QAbstractSocket::SslInvalidUserDataError, SocketSslInvalidUserDataError);
     _socketErrorHash.insert(QAbstractSocket::TemporaryError, SocketTemporaryError);
-
-    _mqttErrorHash.insert(MqttError::MqttUnacceptableProtocolVersionError, MqttUnacceptableProtocolVersionError);
-    _mqttErrorHash.insert(MqttError::MqttIdentifierRejectedError, MqttIdentifierRejectedError);
-    _mqttErrorHash.insert(MqttError::MqttServerUnavailableError, MqttServerUnavailableError);
-    _mqttErrorHash.insert(MqttError::MqttVadUserNameOrPasswordError, MqttVadUserNameOrPasswordError);
-    _mqttErrorHash.insert(MqttError::MqttNotAuthorizedError, MqttNotAuthorizedError);
-
 }
 
 void QMQTT::ClientPrivate::connectToHost()
@@ -437,11 +429,31 @@ void QMQTT::ClientPrivate::onNetworkReceived(const QMQTT::Frame& frm)
 void QMQTT::ClientPrivate::handleConnack(const quint8 ack)
 {
     Q_Q(Client);
-    if (ack==0) {
-        emit q->connected();
-    }
-   emit q->error(_mqttErrorHash.value(MqttError::MqttError (ack), UnknownError));
 
+    switch (ack)
+    {
+    case 0:
+        emit q->connected();
+        break;
+    case 1:
+        emit q->error(MqttUnacceptableProtocolVersionError);
+        break;
+    case 2:
+        emit q->error(MqttIdentifierRejectedError);
+        break;
+    case 3:
+        emit q->error(MqttServerUnavailableError);
+        break;
+    case 4:
+        emit q->error(MqttBadUserNameOrPasswordError);
+        break;
+    case 5:
+        emit q->error(MqttNotAuthorizedError);
+        break;
+    default:
+        emit q->error(UnknownError);
+        break;
+    }
 }
 
 void QMQTT::ClientPrivate::handlePublish(const Message& message)

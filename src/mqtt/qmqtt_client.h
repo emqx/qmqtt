@@ -67,16 +67,6 @@ enum ConnectionState
     STATE_CONNECTED,
     STATE_DISCONNECTED
 };
-namespace MqttError {
-    enum MqttError {
-        UnknownError = 0,
-        MqttUnacceptableProtocolVersionError,
-        MqttIdentifierRejectedError,
-        MqttServerUnavailableError,
-        MqttVadUserNameOrPasswordError,
-        MqttNotAuthorizedError
-    };
-}
 
 enum ClientError
 {
@@ -107,7 +97,7 @@ enum ClientError
     MqttUnacceptableProtocolVersionError=1<<16,
     MqttIdentifierRejectedError,
     MqttServerUnavailableError,
-    MqttVadUserNameOrPasswordError,
+    MqttBadUserNameOrPasswordError,
     MqttNotAuthorizedError
 };
 

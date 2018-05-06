@@ -89,7 +89,6 @@ public:
     bool _willRetain;
     QByteArray _willMessage;
     QHash<QAbstractSocket::SocketError, ClientError> _socketErrorHash;
-    QHash<MqttError::MqttError, ClientError> _mqttErrorHash;
     QHash<quint16, QString> _midToTopic;
     QHash<quint16, Message> _midToMessage;
 
