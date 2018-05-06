@@ -88,7 +88,6 @@ public:
     quint8 _willQos;
     bool _willRetain;
     QByteArray _willMessage;
-    QHash<QAbstractSocket::SocketError, ClientError> _socketErrorHash;
     QHash<quint16, QString> _midToTopic;
     QHash<quint16, Message> _midToMessage;
 
@@ -152,7 +151,6 @@ public:
     quint8 willQos() const;
     bool willRetain() const;
     QByteArray willMessage() const;
-    void initializeErrorHash();
     void onNetworkError(QAbstractSocket::SocketError error);
 
     Q_DECLARE_PUBLIC(Client)

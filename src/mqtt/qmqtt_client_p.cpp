@@ -137,8 +137,6 @@ void QMQTT::ClientPrivate::init(NetworkInterface* network)
 
     _network.reset(network);
 
-    initializeErrorHash();
-
     QObject::connect(&_timer, &QTimer::timeout, q, &Client::onTimerPingReq);
     QObject::connect(_network.data(), &Network::connected,
                      q, &Client::onNetworkConnected);
@@ -148,33 +146,6 @@ void QMQTT::ClientPrivate::init(NetworkInterface* network)
                      q, &Client::onNetworkReceived);
     QObject::connect(_network.data(), &Network::error,
                      q, &Client::onNetworkError);
-}
-
-void QMQTT::ClientPrivate::initializeErrorHash()
-{
-    _socketErrorHash.insert(QAbstractSocket::ConnectionRefusedError, SocketConnectionRefusedError);
-    _socketErrorHash.insert(QAbstractSocket::RemoteHostClosedError, SocketRemoteHostClosedError);
-    _socketErrorHash.insert(QAbstractSocket::HostNotFoundError, SocketHostNotFoundError);
-    _socketErrorHash.insert(QAbstractSocket::SocketAccessError, SocketAccessError);
-    _socketErrorHash.insert(QAbstractSocket::SocketResourceError, SocketResourceError);
-    _socketErrorHash.insert(QAbstractSocket::SocketTimeoutError, SocketTimeoutError);
-    _socketErrorHash.insert(QAbstractSocket::DatagramTooLargeError, SocketDatagramTooLargeError);
-    _socketErrorHash.insert(QAbstractSocket::NetworkError, SocketNetworkError);
-    _socketErrorHash.insert(QAbstractSocket::AddressInUseError, SocketAddressInUseError);
-    _socketErrorHash.insert(QAbstractSocket::SocketAddressNotAvailableError, SocketAddressNotAvailableError);
-    _socketErrorHash.insert(QAbstractSocket::UnsupportedSocketOperationError, SocketUnsupportedSocketOperationError);
-    _socketErrorHash.insert(QAbstractSocket::UnfinishedSocketOperationError, SocketUnfinishedSocketOperationError);
-    _socketErrorHash.insert(QAbstractSocket::ProxyAuthenticationRequiredError, SocketProxyAuthenticationRequiredError);
-    _socketErrorHash.insert(QAbstractSocket::SslHandshakeFailedError, SocketSslHandshakeFailedError);
-    _socketErrorHash.insert(QAbstractSocket::ProxyConnectionRefusedError, SocketProxyConnectionRefusedError);
-    _socketErrorHash.insert(QAbstractSocket::ProxyConnectionClosedError, SocketProxyConnectionClosedError);
-    _socketErrorHash.insert(QAbstractSocket::ProxyConnectionTimeoutError, SocketProxyConnectionTimeoutError);
-    _socketErrorHash.insert(QAbstractSocket::ProxyNotFoundError, SocketProxyNotFoundError);
-    _socketErrorHash.insert(QAbstractSocket::ProxyProtocolError, SocketProxyProtocolError);
-    _socketErrorHash.insert(QAbstractSocket::OperationError, SocketOperationError);
-    _socketErrorHash.insert(QAbstractSocket::SslInternalError, SocketSslInternalError);
-    _socketErrorHash.insert(QAbstractSocket::SslInvalidUserDataError, SocketSslInvalidUserDataError);
-    _socketErrorHash.insert(QAbstractSocket::TemporaryError, SocketTemporaryError);
 }
 
 void QMQTT::ClientPrivate::connectToHost()
@@ -676,5 +647,80 @@ void QMQTT::ClientPrivate::setWillMessage(const QByteArray& willMessage)
 void QMQTT::ClientPrivate::onNetworkError(QAbstractSocket::SocketError socketError)
 {
     Q_Q(Client);
-    emit q->error(_socketErrorHash.value(socketError, UnknownError));
+
+    switch (socketError)
+    {
+    case QAbstractSocket::ConnectionRefusedError:
+        emit q->error(SocketConnectionRefusedError);
+        break;
+    case QAbstractSocket::RemoteHostClosedError:
+        emit q->error(SocketRemoteHostClosedError);
+        break;
+    case QAbstractSocket::HostNotFoundError:
+        emit q->error(SocketHostNotFoundError);
+        break;
+    case QAbstractSocket::SocketAccessError:
+        emit q->error(SocketAccessError);
+        break;
+    case QAbstractSocket::SocketResourceError:
+        emit q->error(SocketResourceError);
+        break;
+    case QAbstractSocket::SocketTimeoutError:
+        emit q->error(SocketTimeoutError);
+        break;
+    case QAbstractSocket::DatagramTooLargeError:
+        emit q->error(SocketDatagramTooLargeError);
+        break;
+    case QAbstractSocket::NetworkError:
+        emit q->error(SocketNetworkError);
+        break;
+    case QAbstractSocket::AddressInUseError:
+        emit q->error(SocketAddressInUseError);
+        break;
+    case QAbstractSocket::SocketAddressNotAvailableError:
+        emit q->error(SocketAddressNotAvailableError);
+        break;
+    case QAbstractSocket::UnsupportedSocketOperationError:
+        emit q->error(SocketUnsupportedSocketOperationError);
+        break;
+    case QAbstractSocket::UnfinishedSocketOperationError:
+        emit q->error(SocketUnfinishedSocketOperationError);
+        break;
+    case QAbstractSocket::ProxyAuthenticationRequiredError:
+        emit q->error(SocketProxyAuthenticationRequiredError);
+        break;
+    case QAbstractSocket::SslHandshakeFailedError:
+        emit q->error(SocketSslHandshakeFailedError);
+        break;
+    case QAbstractSocket::ProxyConnectionRefusedError:
+        emit q->error(SocketProxyConnectionRefusedError);
+        break;
+    case QAbstractSocket::ProxyConnectionClosedError:
+        emit q->error(SocketProxyConnectionClosedError);
+        break;
+    case QAbstractSocket::ProxyConnectionTimeoutError:
+        emit q->error(SocketProxyConnectionTimeoutError);
+        break;
+    case QAbstractSocket::ProxyNotFoundError:
+        emit q->error(SocketProxyNotFoundError);
+        break;
+    case QAbstractSocket::ProxyProtocolError:
+        emit q->error(SocketProxyProtocolError);
+        break;
+    case QAbstractSocket::OperationError:
+        emit q->error(SocketOperationError);
+        break;
+    case QAbstractSocket::SslInternalError:
+        emit q->error(SocketSslInternalError);
+        break;
+    case QAbstractSocket::SslInvalidUserDataError:
+        emit q->error(SocketSslInvalidUserDataError);
+        break;
+    case QAbstractSocket::TemporaryError:
+        emit q->error(SocketTemporaryError);
+        break;
+    default:
+        emit q->error(UnknownError);
+        break;
+    }
 }
