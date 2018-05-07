@@ -93,7 +93,12 @@ enum ClientError
     SocketOperationError,
     SocketSslInternalError,
     SocketSslInvalidUserDataError,
-    SocketTemporaryError
+    SocketTemporaryError,
+    MqttUnacceptableProtocolVersionError=1<<16,
+    MqttIdentifierRejectedError,
+    MqttServerUnavailableError,
+    MqttBadUserNameOrPasswordError,
+    MqttNotAuthorizedError
 };
 
 class ClientPrivate;
