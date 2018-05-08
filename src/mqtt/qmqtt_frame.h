@@ -118,8 +118,8 @@ public:
     void writeRawData(const QByteArray &data);
 
     //TODO: FIXME LATER
-    void write(QDataStream &stream);
-    bool encodeLength(QByteArray &lenbuf, int length);
+    void write(QDataStream &stream) const;
+    bool encodeLength(QByteArray &lenbuf, int length) const;
 
 private:
     quint8 _header;

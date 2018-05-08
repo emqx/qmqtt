@@ -163,7 +163,7 @@ void QMQTT::Network::onSocketError(QAbstractSocket::SocketError socketError)
     }
 }
 
-void QMQTT::Network::sendFrame(Frame& frame)
+void QMQTT::Network::sendFrame(const Frame& frame)
 {
     if(_socket->state() == QAbstractSocket::ConnectedState)
     {

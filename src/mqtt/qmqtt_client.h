@@ -98,7 +98,8 @@ enum ClientError
     MqttIdentifierRejectedError,
     MqttServerUnavailableError,
     MqttBadUserNameOrPasswordError,
-    MqttNotAuthorizedError
+    MqttNotAuthorizedError,
+    MqttNoPingResponse
 };
 
 class ClientPrivate;
@@ -233,6 +234,7 @@ protected slots:
     void onNetworkDisconnected();
     void onNetworkReceived(const QMQTT::Frame& frame);
     void onTimerPingReq();
+    void onPingTimeout();
     void onNetworkError(QAbstractSocket::SocketError error);
 
 protected:
