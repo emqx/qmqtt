@@ -213,8 +213,9 @@ public slots:
     void disconnectFromHost();
 
     void subscribe(const QString& topic, const quint8 qos = 0);
+    void subscribes(const QMap<QString, quint8> map);
     void unsubscribe(const QString& topic);
-
+    void unsubscribes(const QStringList& topics);
     quint16 publish(const QMQTT::Message& message);
 
 signals:
@@ -222,8 +223,8 @@ signals:
     void disconnected();
     void error(const QMQTT::ClientError error);
 
-    void subscribed(const QString& topic, const quint8 qos = 0);
-    void unsubscribed(const QString& topic);
+    void subscribed(const QString& topic, const quint8 qos = 0 ,const QMap<QString,quint8>& topicMap = QMap<QString,quint8>());
+    void unsubscribed(const QString& topic, const QStringList & topics);
     void published(const QMQTT::Message& message, quint16 msgid = 0);
     void received(const QMQTT::Message& message);
     void pingresp();

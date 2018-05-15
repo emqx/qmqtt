@@ -88,7 +88,8 @@ public:
     quint8 _willQos;
     bool _willRetain;
     QByteArray _willMessage;
-    QHash<quint16, QString> _midToTopic;
+    QHash<quint16, QMap<QString,quint8>> _midToTopic;
+    QHash<quint16, QStringList> _midToTopicList;
     QHash<quint16, Message> _midToMessage;
 
     Client* const q_ptr;
@@ -98,7 +99,9 @@ public:
     void sendConnect();
     void onTimerPingReq();
     quint16 sendUnsubscribe(const QString &topic);
+    quint16 sendUnsubscribes(const QStringList &topic);
     quint16 sendSubscribe(const QString &topic, const quint8 qos);
+    quint16 sendSubscribes(const QMap<QString, quint8> map);
     quint16 sendPublish(const Message &message);
     void sendPuback(const quint8 type, const quint16 mid);
     void sendDisconnect();
@@ -110,13 +113,15 @@ public:
     quint16 publish(const Message& message);
     void puback(const quint8 type, const quint16 msgid);
     void subscribe(const QString& topic, const quint8 qos);
+    void subscribes(const QMap<QString, quint8> map);
     void unsubscribe(const QString& topic);
+    void unsubscribes(const QStringList& topics);
     void onNetworkReceived(const QMQTT::Frame& frame);
     void handleConnack(const quint8 ack);
     void handlePublish(const Message& message);
     void handlePuback(const quint8 type, const quint16 msgid);
-    void handleSuback(const QString& topic, const quint8 qos);
-    void handleUnsuback(const QString& topic);
+    void handleSuback(const QString& topic, const quint8 qos,const QMap<QString,quint8>& topicMap);
+    void handleUnsuback(const QStringList& topic);
     void handlePubcomp(const Message& message);
     void handlePingresp();
     bool autoReconnect() const;
