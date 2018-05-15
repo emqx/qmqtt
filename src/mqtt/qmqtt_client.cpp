@@ -325,13 +325,21 @@ void QMQTT::Client::subscribe(const QString& topic, const quint8 qos)
     Q_D(Client);
     d->subscribe(topic, qos);
 }
-
+void QMQTT::Client::subscribes(const QMap<QString, quint8> map)
+{
+    Q_D(Client);
+    d->subscribes(map);
+}
 void QMQTT::Client::unsubscribe(const QString& topic)
 {
     Q_D(Client);
     d->unsubscribe(topic);
 }
-
+void QMQTT::Client::unsubscribes(const QStringList& topics)
+{
+    Q_D(Client);
+    d->unsubscribes(topics);
+}
 void QMQTT::Client::onTimerPingReq()
 {
     Q_D(Client);

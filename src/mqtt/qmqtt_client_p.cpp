@@ -259,6 +259,20 @@ quint16 QMQTT::ClientPrivate::sendSubscribe(const QString & topic, const quint8 
     _network->sendFrame(frame);
     return mid;
 }
+quint16 QMQTT::ClientPrivate::sendSubscribes(const QMap<QString, quint8> map)
+{
+    quint16 mid = nextmid();
+    Frame frame(SETQOS(SUBSCRIBE, QOS1));
+    frame.writeInt(mid);
+    QMapIterator<QString, quint8> i(map);
+     while (i.hasNext()) {
+         i.next();
+         frame.writeString( i.key());
+         frame.writeChar(i.value());
+     }
+    _network->sendFrame(frame);
+    return mid;
+}
 
 quint16 QMQTT::ClientPrivate::sendUnsubscribe(const QString &topic)
 {
@@ -269,7 +283,17 @@ quint16 QMQTT::ClientPrivate::sendUnsubscribe(const QString &topic)
     _network->sendFrame(frame);
     return mid;
 }
-
+quint16 QMQTT::ClientPrivate::sendUnsubscribes(const QStringList &topic)
+{
+    quint16 mid = nextmid();
+    Frame frame(SETQOS(UNSUBSCRIBE, QOS1));
+    frame.writeInt(mid);
+    for (int i=0;i<topic.size();i++) {
+        frame.writeString(topic.at(i));
+    }
+    _network->sendFrame(frame);
+    return mid;
+}
 void QMQTT::ClientPrivate::onTimerPingReq()
 {
     Frame frame(PINGREQ);
@@ -326,21 +350,35 @@ void QMQTT::ClientPrivate::puback(const quint8 type, const quint16 msgid)
 void QMQTT::ClientPrivate::subscribe(const QString& topic, const quint8 qos)
 {
     quint16 msgid = sendSubscribe(topic, qos);
-    _midToTopic[msgid] = topic;
+    QMap<QString,quint8> map;
+    map[topic] = qos;
+    _midToTopic[msgid] = map;
 }
-
+void QMQTT::ClientPrivate::subscribes(const QMap<QString, quint8> map)
+{
+    quint16 msgid = sendSubscribes(map);
+    _midToTopic[msgid] = map;
+}
 void QMQTT::ClientPrivate::unsubscribe(const QString& topic)
 {
     quint16 msgid = sendUnsubscribe(topic);
-    _midToTopic[msgid] = topic;
+    QStringList tlist;
+    tlist << topic;
+    _midToTopicList[msgid] = tlist;
 }
 
+void QMQTT::ClientPrivate::unsubscribes(const QStringList& topics)
+{
+    quint16 msgid = sendUnsubscribes(topics);
+    _midToTopicList[msgid] = topics;
+}
 void QMQTT::ClientPrivate::onNetworkDisconnected()
 {
     Q_Q(Client);
 
     stopKeepAlive();
     _midToTopic.clear();
+    _midToTopicList.clear();
     _midToMessage.clear();
     emit q->disconnected();
 }
@@ -378,17 +416,29 @@ void QMQTT::ClientPrivate::onNetworkReceived(const QMQTT::Frame& frm)
         mid = frame.readInt();
         handlePuback(type, mid);
         break;
-    case SUBACK:
+    case SUBACK: {
         mid = frame.readInt();
-        topic = _midToTopic.take(mid);
-        qos = frame.readChar();
-        handleSuback(topic, qos);
+        QMap<QString,quint8> topicMap = _midToTopic.take(mid);
+        QMapIterator<QString, quint8> i(topicMap);
+        QMap<QString,quint8> resultMap;
+        quint8 tmpqos = 0;
+         while (i.hasNext()) {
+             i.next();
+             tmpqos=frame.readChar();
+             if (topic.isEmpty()) {
+                 topic=i.key();
+                 qos=tmpqos;
+             }
+             resultMap[i.key()] = frame.readChar();
+         }
+        handleSuback(topic, qos,topicMap);
         break;
-    case UNSUBACK:
-        mid = frame.readInt();
-        topic = _midToTopic.take(mid);
-        handleUnsuback(topic);
+    }
+    case UNSUBACK: {
+        QStringList topiclist = _midToTopicList.take(mid);
+        handleUnsuback( topiclist);
         break;
+    }
     case PINGRESP:
         handlePingresp();
         break;
@@ -467,14 +517,14 @@ void QMQTT::ClientPrivate::handlePingresp() {
     emit q->pingresp();
 }
 
-void QMQTT::ClientPrivate::handleSuback(const QString &topic, const quint8 qos) {
+void QMQTT::ClientPrivate::handleSuback(const QString &topic, const quint8 qos, const QMap<QString,quint8>& topicMap) {
     Q_Q(Client);
-    emit q->subscribed(topic, qos);
+    emit q->subscribed(topic, qos, topicMap);
 }
 
-void QMQTT::ClientPrivate::handleUnsuback(const QString &topic) {
+void QMQTT::ClientPrivate::handleUnsuback(const QStringList & topics) {
     Q_Q(Client);
-    emit q->unsubscribed(topic);
+    emit q->unsubscribed(topics.at(0),topics);
 }
 
 bool QMQTT::ClientPrivate::autoReconnect() const
