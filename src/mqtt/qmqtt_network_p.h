@@ -73,7 +73,7 @@ public:
             QObject* parent = NULL);
     ~Network();
 
-    void sendFrame(Frame& frame);
+    void sendFrame(const Frame &frame);
     bool isConnectedToHost() const;
     bool autoReconnect() const;
     void setAutoReconnect(const bool autoReconnect);

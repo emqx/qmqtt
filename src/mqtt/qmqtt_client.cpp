@@ -338,6 +338,12 @@ void QMQTT::Client::onTimerPingReq()
     d->onTimerPingReq();
 }
 
+void QMQTT::Client::onPingTimeout()
+{
+    Q_D(Client);
+    d->onPingTimeout();
+}
+
 void QMQTT::Client::disconnectFromHost()
 {
     Q_D(Client);

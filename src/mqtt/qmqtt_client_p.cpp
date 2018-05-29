@@ -53,12 +53,12 @@ QMQTT::ClientPrivate::ClientPrivate(Client* qq_ptr)
     , _version(MQTTVersion::V3_1_0)
     , _clientId(QUuid::createUuid().toString())
     , _cleanSession(false)
-    , _keepAlive(300)
     , _connectionState(STATE_INIT)
     , _willQos(0)
     , _willRetain(false)
     , q_ptr(qq_ptr)
 {
+    setKeepAlive(300);
 }
 
 QMQTT::ClientPrivate::~ClientPrivate()
@@ -136,8 +136,11 @@ void QMQTT::ClientPrivate::init(NetworkInterface* network)
     Q_Q(Client);
 
     _network.reset(network);
+    _timer.setSingleShot(true);
+    _pingResponseTimer.setSingleShot(true);
 
     QObject::connect(&_timer, &QTimer::timeout, q, &Client::onTimerPingReq);
+    QObject::connect(&_pingResponseTimer, &QTimer::timeout, q, &Client::onPingTimeout);
     QObject::connect(_network.data(), &Network::connected,
                      q, &Client::onNetworkConnected);
     QObject::connect(_network.data(), &Network::disconnected,
@@ -163,7 +166,6 @@ void QMQTT::ClientPrivate::connectToHost()
 void QMQTT::ClientPrivate::onNetworkConnected()
 {
     sendConnect();
-    startKeepAlive();
 }
 
 void QMQTT::ClientPrivate::sendConnect()
@@ -199,7 +201,7 @@ void QMQTT::ClientPrivate::sendConnect()
     }
     frame.writeChar(_version);
     frame.writeChar(flags);
-    frame.writeInt(_keepAlive);
+    frame.writeInt(keepAlive());
     frame.writeString(_clientId);
     if(!willTopic().isEmpty())
     {
@@ -217,7 +219,7 @@ void QMQTT::ClientPrivate::sendConnect()
             frame.writeByteArray(_password);
         }
     }
-    _network->sendFrame(frame);
+    sendFrame(frame);
 }
 
 quint16 QMQTT::ClientPrivate::sendPublish(const Message &message)
@@ -238,7 +240,7 @@ quint16 QMQTT::ClientPrivate::sendPublish(const Message &message)
     if(!message.payload().isEmpty()) {
         frame.writeRawData(message.payload());
     }
-    _network->sendFrame(frame);
+    sendFrame(frame);
     return msgid;
 }
 
@@ -246,7 +248,7 @@ void QMQTT::ClientPrivate::sendPuback(const quint8 type, const quint16 mid)
 {
     Frame frame(type);
     frame.writeInt(mid);
-    _network->sendFrame(frame);
+    sendFrame(frame);
 }
 
 quint16 QMQTT::ClientPrivate::sendSubscribe(const QString & topic, const quint8 qos)
@@ -256,7 +258,7 @@ quint16 QMQTT::ClientPrivate::sendSubscribe(const QString & topic, const quint8 
     frame.writeInt(mid);
     frame.writeString(topic);
     frame.writeChar(qos);
-    _network->sendFrame(frame);
+    sendFrame(frame);
     return mid;
 }
 
@@ -266,14 +268,22 @@ quint16 QMQTT::ClientPrivate::sendUnsubscribe(const QString &topic)
     Frame frame(SETQOS(UNSUBSCRIBE, QOS1));
     frame.writeInt(mid);
     frame.writeString(topic);
-    _network->sendFrame(frame);
+    sendFrame(frame);
     return mid;
 }
 
 void QMQTT::ClientPrivate::onTimerPingReq()
 {
     Frame frame(PINGREQ);
-    _network->sendFrame(frame);
+    sendFrame(frame);
+    _pingResponseTimer.start();
+}
+
+void QMQTT::ClientPrivate::onPingTimeout()
+{
+    Q_Q(Client);
+    emit q->error(MqttNoPingResponse);
+    disconnectFromHost();
 }
 
 void QMQTT::ClientPrivate::disconnectFromHost()
@@ -285,18 +295,19 @@ void QMQTT::ClientPrivate::disconnectFromHost()
 void QMQTT::ClientPrivate::sendDisconnect()
 {
     Frame frame(DISCONNECT);
-    _network->sendFrame(frame);
+    sendFrame(frame);
 }
 
-void QMQTT::ClientPrivate::startKeepAlive()
+void QMQTT::ClientPrivate::sendFrame(const Frame &frame)
 {
-    _timer.setInterval(_keepAlive*1000);
+    _network->sendFrame(frame);
     _timer.start();
 }
 
 void QMQTT::ClientPrivate::stopKeepAlive()
 {
     _timer.stop();
+    _pingResponseTimer.stop();
 }
 
 quint16 QMQTT::ClientPrivate::nextmid()
@@ -462,12 +473,17 @@ void QMQTT::ClientPrivate::handlePuback(const quint8 type, const quint16 msgid)
     }
 }
 
-void QMQTT::ClientPrivate::handlePingresp() {
+void QMQTT::ClientPrivate::handlePingresp()
+{
+    // Stop the ping response timer to prevent disconnection. It will be restarted when the next
+    // ping request has been sent.
+    _pingResponseTimer.stop();
     Q_Q(Client);
     emit q->pingresp();
 }
 
-void QMQTT::ClientPrivate::handleSuback(const QString &topic, const quint8 qos) {
+void QMQTT::ClientPrivate::handleSuback(const QString &topic, const quint8 qos)
+{
     Q_Q(Client);
     emit q->subscribed(topic, qos);
 }
@@ -519,12 +535,16 @@ bool QMQTT::ClientPrivate::cleanSession() const
 
 void QMQTT::ClientPrivate::setKeepAlive(const quint16 keepAlive)
 {
-    _keepAlive = keepAlive;
+    // _timer will be started when a message is sent.
+    _timer.setInterval(keepAlive*1000);
+    // The MQTT specification does not mention a timeout value in this case, so we use 10% of the
+    // keep alive interval.
+    _pingResponseTimer.setInterval(qBound(keepAlive * 100, 10000, keepAlive * 1000));
 }
 
 quint16 QMQTT::ClientPrivate::keepAlive() const
 {
-    return _keepAlive;
+    return _timer.interval() / 1000;
 }
 
 void QMQTT::ClientPrivate::setPassword(const QByteArray& password)

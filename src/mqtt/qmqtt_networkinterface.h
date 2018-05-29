@@ -46,7 +46,7 @@ public:
     explicit NetworkInterface(QObject* parent = NULL) : QObject(parent) {}
     virtual ~NetworkInterface() {}
 
-    virtual void sendFrame(Frame& frame) = 0;
+    virtual void sendFrame(const Frame& frame) = 0;
     virtual bool isConnectedToHost() const = 0;
     virtual bool autoReconnect() const = 0;
     virtual void setAutoReconnect(const bool autoReconnect) = 0;

@@ -80,10 +80,10 @@ public:
     QString _username;
     QByteArray _password;
     bool _cleanSession;
-    quint16 _keepAlive;
     ConnectionState _connectionState;
     QScopedPointer<NetworkInterface> _network;
     QTimer _timer;
+    QTimer _pingResponseTimer;
     QString _willTopic;
     quint8 _willQos;
     bool _willRetain;
@@ -97,13 +97,14 @@ public:
     void connectToHost();
     void sendConnect();
     void onTimerPingReq();
+    void onPingTimeout();
     quint16 sendUnsubscribe(const QString &topic);
     quint16 sendSubscribe(const QString &topic, const quint8 qos);
     quint16 sendPublish(const Message &message);
     void sendPuback(const quint8 type, const quint16 mid);
     void sendDisconnect();
+    void sendFrame(const Frame &frame);
     void disconnectFromHost();
-    void startKeepAlive();
     void stopKeepAlive();
     void onNetworkConnected();
     void onNetworkDisconnected();
