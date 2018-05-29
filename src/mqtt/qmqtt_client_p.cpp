@@ -473,7 +473,8 @@ void QMQTT::ClientPrivate::handlePuback(const quint8 type, const quint16 msgid)
     }
 }
 
-void QMQTT::ClientPrivate::handlePingresp() {
+void QMQTT::ClientPrivate::handlePingresp()
+{
     // Stop the ping response timer to prevent disconnection. It will be restarted when the next
     // ping request has been sent.
     _pingResponseTimer.stop();
@@ -481,7 +482,8 @@ void QMQTT::ClientPrivate::handlePingresp() {
     emit q->pingresp();
 }
 
-void QMQTT::ClientPrivate::handleSuback(const QString &topic, const quint8 qos) {
+void QMQTT::ClientPrivate::handleSuback(const QString &topic, const quint8 qos)
+{
     Q_Q(Client);
     emit q->subscribed(topic, qos);
 }
