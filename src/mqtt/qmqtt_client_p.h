@@ -122,7 +122,7 @@ public:
     void handlePingresp();
     bool autoReconnect() const;
     void setAutoReconnect(const bool autoReconnect);
-    bool autoReconnectInterval() const;
+    int autoReconnectInterval() const;
     void setAutoReconnectInterval(const int autoReconnectInterval);
     bool isConnectedToHost() const;
     QMQTT::ConnectionState connectionState() const;
