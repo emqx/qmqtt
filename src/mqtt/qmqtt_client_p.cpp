@@ -503,7 +503,7 @@ void QMQTT::ClientPrivate::setAutoReconnect(const bool autoReconnect)
     _network->setAutoReconnect(autoReconnect);
 }
 
-bool QMQTT::ClientPrivate::autoReconnectInterval() const
+int QMQTT::ClientPrivate::autoReconnectInterval() const
 {
     return _network->autoReconnectInterval();
 }
