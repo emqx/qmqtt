@@ -206,10 +206,9 @@ void QMQTT::ClientPrivate::sendConnect()
     if(!willTopic().isEmpty())
     {
         frame.writeString(willTopic());
-        if(!willMessage().isEmpty())
-        {
-            frame.writeByteArray(_willMessage);
-        }
+        // Transmit last will message even if it is empty, otherwise an invalid connect frame is send (user name is 
+        // interpreted as will message and password as user name)
+        frame.writeByteArray(_willMessage); 
     }
     if (!_username.isEmpty())
     {
