@@ -206,8 +206,8 @@ void QMQTT::ClientPrivate::sendConnect()
     if(!willTopic().isEmpty())
     {
         frame.writeString(willTopic());
-        // Transmit last will message even if it is empty, otherwise an invalid connect frame is sent (user name is 
-        // interpreted as will message and password as user name)
+        // According to the specs (http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc398718031)
+        // the will message gets always sent together with the topic, also when it is empty which is perfectly valid.
         frame.writeByteArray(_willMessage); 
     }
     if (!_username.isEmpty())
