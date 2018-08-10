@@ -58,5 +58,10 @@ RouteSubscription *Router::subscribe(const QString &route)
     return subscription;
 }
 
+Client *Router::client() const
+{
+    return _client;
+}
+
 } // namespace QMQTT
 

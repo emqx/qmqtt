@@ -49,6 +49,7 @@ public:
     explicit Router(Client *parent = 0);
 
     RouteSubscription *subscribe(const QString &route);
+    Client *client() const;
 
 private:
     Client *_client;

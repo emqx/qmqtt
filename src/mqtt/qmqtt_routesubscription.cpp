@@ -32,6 +32,7 @@
  */
 #include "qmqtt_routesubscription.h"
 
+#include "qmqtt_client.h"
 #include "qmqtt_message.h"
 #include "qmqtt_router.h"
 #include "qmqtt_routedmessage.h"
@@ -41,8 +42,17 @@ namespace QMQTT {
 
 Q_LOGGING_CATEGORY(routerSubscription, "qmqtt.routersubscription")
 
-RouteSubscription::RouteSubscription(Router *parent) : QObject(parent)
+RouteSubscription::RouteSubscription(Router *parent)
+    : QObject(parent),
+      _client(parent->client())
 {
+    Q_ASSERT(!_client.isNull());
+}
+
+RouteSubscription::~RouteSubscription()
+{
+    if (Q_LIKELY(!_client.isNull() && _client->isConnectedToHost()))
+        _client->unsubscribe(_topic);
 }
 
 QString RouteSubscription::route() const
