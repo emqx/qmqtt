@@ -49,7 +49,11 @@ RouteSubscription *Router::subscribe(const QString &route)
 {
     RouteSubscription *subscription = new RouteSubscription(this);
     subscription->setRoute(route);
-    _client->subscribe(subscription->_topic, 0);
+    connect(_client, &Client::connected, subscription, [this, subscription]() {
+        _client->subscribe(subscription->_topic, 0);
+    });
+    if (_client->isConnectedToHost())
+        _client->subscribe(subscription->_topic, 0);
     connect(_client, &Client::received, subscription, &RouteSubscription::routeMessage);
     return subscription;
 }
