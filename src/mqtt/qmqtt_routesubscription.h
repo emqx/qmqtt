@@ -36,10 +36,12 @@
 #include <qmqtt_global.h>
 
 #include <QObject>
+#include <QPointer>
 #include <QRegularExpression>
 
 namespace QMQTT {
 
+class Client;
 class Message;
 class RoutedMessage;
 class Router;
@@ -48,6 +50,8 @@ class Q_MQTT_EXPORT RouteSubscription : public QObject
 {
     Q_OBJECT
 public:
+    ~RouteSubscription();
+
     QString route() const;
 
 signals:
@@ -61,6 +65,7 @@ private:
     explicit RouteSubscription(Router *parent = 0);
     void setRoute(const QString &route);
 
+    QPointer<Client> _client;
     QString _topic;
     QRegularExpression _regularExpression;
     QStringList _parameterNames;
