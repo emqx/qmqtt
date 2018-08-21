@@ -4,6 +4,6 @@ Project {
     name: "Sources"
 
     references: [
-        "mqtt/mqtt.qbs"
+        "mqtt/qmqtt.qbs"
     ]
 }

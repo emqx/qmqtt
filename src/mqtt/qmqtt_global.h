@@ -35,7 +35,7 @@
 #include <QtCore/qglobal.h>
 
 #ifndef QT_STATIC
-#  if defined(QT_BUILD_MQTT_LIB)
+#  if defined(QT_BUILD_QMQTT_LIB)
 #    define Q_MQTT_EXPORT Q_DECL_EXPORT
 #  else
 #    define Q_MQTT_EXPORT Q_DECL_IMPORT

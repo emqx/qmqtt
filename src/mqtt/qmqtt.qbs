@@ -5,14 +5,14 @@ Product {
     name: "qmqtt"
     type: [
         libraryType,
-        "mqttmodule",
+        "qmqttmodule",
     ]
     property bool webSocketSupport: false
     property string libraryType: "dynamiclibrary"
     targetName: "qmqtt"
 
     cpp.defines: [
-        "QT_BUILD_MQTT_LIB",
+        "QT_BUILD_QMQTT_LIB",
         "QT_NO_CAST_TO_ASCII",
         "QT_NO_CAST_FROM_ASCII",
     ]
@@ -37,11 +37,11 @@ Product {
     }
 
     Group {
-        name: "mqtt Module Template"
+        name: "QMqtt Module Template"
         fileTags: [
-            "mqttmoduletemplate"
+            "qmqttmoduletemplate"
         ]
-        files: "mqttModule.qbs"
+        files: "qmqttModule.qbs"
     }
 
     Group {
@@ -57,15 +57,15 @@ Product {
     }
 
     Rule {
-        /* TODO: copy mqtt-module in module directory */
-        inputs: "mqttmoduletemplate"
+        /* TODO: copy qmqtt-module in module directory */
+        inputs: "qmqttmoduletemplate"
         Artifact {
             filePath: "mqtt/"+input.fileName
-            fileTags: "mqttmodule"
+            fileTags: "qmqttmodule"
         }
         prepare: {
             var cmd = new JavaScriptCommand();
-            cmd.description = "Create Mqtt Module";
+            cmd.description = "Create QMqtt Module";
             cmd.highlight = "codegen";
             cmd.sourceCode = function() {
                 var file = new TextFile(input.filePath);

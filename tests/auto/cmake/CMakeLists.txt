@@ -10,5 +10,5 @@ find_package(Qt5Network REQUIRED)
 include("${_Qt5CTestMacros}")
 
 test_module_includes(
-  MQTT qmqtt_message.h
+  QMQTT qmqtt_message.h
 )

@@ -10,6 +10,12 @@ To add websocket support, compile the library with Qt >= 5.7, and specify 'CONFI
 Usage
 =====
 
+In your QMake project, add:
+
+    QT += qmqtt
+
+Connect using TCP:
+
     #include "qmqtt.h"
 
     QMQTT::Client *client = new QMQTT::Client(QHostAddress::LocalHost, 1883);
@@ -18,7 +24,7 @@ Usage
     client->setPassword("password");
     client->connectToHost();
 
-Connect using ssl:
+Connect using SSL:
 
     QSslConfiguration sslConfig = QSslConfiguration::defaultConfiguration();
     // Add custom SSL options here (for example extra certificates)
@@ -28,7 +34,7 @@ Connect using ssl:
     client->setPassword("password");
     client->connectToHost();
 
-Connect using websockets:
+Connect using WebSockets:
 
     QMQTT::Client *client = new QMQTT::Client("ws://www.example.com/mqtt", "<origin>", QWebSocketProtocol::VersionLatest);
     client->setClientId("clientId");
