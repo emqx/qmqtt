@@ -1,3 +1,3 @@
 TEMPLATE = subdirs
 SUBDIRS += \
-    mqtt
+    mqtt/qmqtt.pro

@@ -15,5 +15,5 @@ Module {
 
     cpp.includePaths: dummyIncludePath
     cpp.libraryPaths: dummyLibraryPath
-    cpp.dummyLibrary: "mqtt"
+    cpp.dummyLibrary: "qmqtt"
 }

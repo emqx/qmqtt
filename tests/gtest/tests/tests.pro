@@ -1,5 +1,5 @@
 TARGET = qmqtt_tests
-QT = core network mqtt mqtt-private testlib
+QT = core network qmqtt qmqtt-private testlib
 
 DEFINES += QMQTT_LIBRARY_TESTS
 

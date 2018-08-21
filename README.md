@@ -12,7 +12,7 @@ Usage
 
 In your QMake project, add:
 
-    QT += mqtt
+    QT += qmqtt
 
 Connect using TCP:
 

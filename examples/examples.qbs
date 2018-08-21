@@ -4,6 +4,6 @@ Project {
     name: "Examples"
 
     references: [
-        "mqtt"
+        "qmqtt"
     ]
 }

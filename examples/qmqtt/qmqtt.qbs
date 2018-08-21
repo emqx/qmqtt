@@ -1,7 +1,7 @@
 import qbs
 
 Project {
-    name: "mqtt"
+    name: "qmqtt"
 
     references: [
         "client"

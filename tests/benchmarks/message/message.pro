@@ -1,6 +1,6 @@
 TARGET = tst_bench_message
 QT += testlib
-QT += mqtt
+QT += qmqtt
 QT -= gui
 
 CONFIG += release
