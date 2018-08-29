@@ -456,19 +456,19 @@ void QMQTT::ClientPrivate::handlePuback(const quint8 type, const quint16 msgid)
 {
     Q_Q(Client);
 
-    if(type == PUBREC)
+    switch (type)
     {
-        sendPuback(PUBREL, msgid);
-    }
-    else if (type == PUBREL)
-    {
+    case PUBREC:
+        sendPuback(SETQOS(PUBREL, QOS1), msgid);
+        break;
+    case PUBREL:
         sendPuback(PUBCOMP, msgid);
-    }
-    else if (type == PUBACK || type == PUBCOMP)
-    {
+        break;
+    case PUBACK:
+    case PUBCOMP:
         // Emit published on PUBACK at QOS1 and on PUBCOMP at QOS2
-        const Message &message = _midToMessage.take(msgid);
-        emit q->published(message, msgid);
+        emit q->published(_midToMessage.take(msgid), msgid);
+        break;
     }
 }
 
