@@ -34,6 +34,8 @@
 
 #include <QtCore/qshareddata.h>
 
+#include <QString>
+
 namespace QMQTT {
 
 class MessagePrivate : public QSharedData
