@@ -32,13 +32,12 @@
 #ifndef QMQTT_NETWORK_P_H
 #define QMQTT_NETWORK_P_H
 
-#include "qmqtt_networkinterface.h"
-#include "qmqtt_frame.h"
-#include <QByteArray>
+#include <qmqtt_networkinterface.h>
+
 #include <QObject>
-#include <QTcpSocket>
-#include <QByteArray>
 #include <QHostAddress>
+#include <QString>
+#include <QByteArray>
 
 #ifdef QT_WEBSOCKETS_LIB
 #include <QWebSocket>
@@ -52,6 +51,7 @@ namespace QMQTT {
 
 class SocketInterface;
 class TimerInterface;
+class Frame;
 
 class Network : public NetworkInterface
 {

@@ -33,13 +33,16 @@
 #ifndef QMQTT_ROUTEDMESSAGE_H
 #define QMQTT_ROUTEDMESSAGE_H
 
+#include <qmqtt_message.h>
+
 #include <QHash>
 #include <QString>
-#include "qmqtt_message.h"
 
 namespace QMQTT {
 
-class RoutedMessage
+class RouteSubscription;
+
+class Q_MQTT_EXPORT RoutedMessage
 {
 public:
     inline RoutedMessage(const Message &message)

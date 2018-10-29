@@ -32,10 +32,14 @@
 #ifndef QMQTT_CLIENT_P_H
 #define QMQTT_CLIENT_P_H
 
-#include "qmqtt_client.h"
-#include "qmqtt_client_p.h"
-#include "qmqtt_network_p.h"
+#include <qmqtt_client.h>
+
+#include <QHostAddress>
+#include <QString>
+#include <QByteArray>
+#include <QHash>
 #include <QTimer>
+#include <QAbstractSocket>
 
 #ifdef QT_WEBSOCKETS_LIB
 #include <QWebSocket>
@@ -46,6 +50,8 @@ QT_FORWARD_DECLARE_CLASS(QSslConfiguration)
 #endif // QT_NO_SSL
 
 namespace QMQTT {
+
+class NetworkInterface;
 
 class ClientPrivate
 {

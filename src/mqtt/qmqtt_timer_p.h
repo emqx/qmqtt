@@ -32,7 +32,9 @@
 #ifndef QMQTT_TIMER_P_H
 #define QMQTT_TIMER_P_H
 
-#include "qmqtt_timerinterface.h"
+#include <qmqtt_timerinterface.h>
+
+#include <QObject>
 #include <QTimer>
 
 namespace QMQTT {

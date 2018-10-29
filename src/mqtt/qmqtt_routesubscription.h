@@ -37,7 +37,9 @@
 
 #include <QObject>
 #include <QPointer>
+#include <QString>
 #include <QRegularExpression>
+#include <QStringList>
 
 namespace QMQTT {
 
@@ -62,6 +64,7 @@ private slots:
 
 private:
     friend class Router;
+
     explicit RouteSubscription(Router *parent = 0);
     void setRoute(const QString &route);
 

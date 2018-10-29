@@ -33,11 +33,15 @@
 #ifndef QMQTT_SSL_SOCKET_P_H
 #define QMQTT_SSL_SOCKET_P_H
 
-#include "qmqtt_socketinterface.h"
-#include <QObject>
-#include <QScopedPointer>
-
 #ifndef QT_NO_SSL
+
+#include <qmqtt_socketinterface.h>
+
+#include <QObject>
+#include <QHostAddress>
+#include <QString>
+#include <QList>
+#include <QScopedPointer>
 
 QT_FORWARD_DECLARE_CLASS(QSslSocket)
 QT_FORWARD_DECLARE_CLASS(QSslError)

@@ -37,7 +37,12 @@
 
 #include <QByteArray>
 #include <QIODevice>
-#include <QWebSocket>
+#include <QList>
+#include <QAbstractSocket>
+
+QT_FORWARD_DECLARE_CLASS(QWebSocket)
+QT_FORWARD_DECLARE_CLASS(QNetworkRequest)
+QT_FORWARD_DECLARE_CLASS(QSslError)
 
 namespace QMQTT
 {

@@ -32,7 +32,7 @@
 #ifndef QMQTT_GLOBAL_H
 #define QMQTT_GLOBAL_H
 
-#include <QtCore/qglobal.h>
+#include <QtGlobal>
 
 #ifndef QT_STATIC
 #  if defined(QT_BUILD_QMQTT_LIB)

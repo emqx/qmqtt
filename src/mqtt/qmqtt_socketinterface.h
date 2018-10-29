@@ -34,8 +34,12 @@
 
 #include <qmqtt_global.h>
 
+#include <QObject>
 #include <QHostAddress>
-#include <QIODevice>
+#include <QString>
+#include <QAbstractSocket>
+
+QT_FORWARD_DECLARE_CLASS(QIODevice)
 
 namespace QMQTT
 {
