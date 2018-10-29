@@ -1,5 +1,6 @@
 #include "socketmock.h"
 #include "timermock.h"
+#include <qmqtt_frame.h>
 #include <qmqtt_network_p.h>
 #include <QSignalSpy>
 #include <QBuffer>
