@@ -152,6 +152,8 @@ TEST_F(NetworkTest, networkEmitsDisconnectedSignalWhenSocketEmitsDisconnectedSig
 
 TEST_F(NetworkTest, networkEmitsReceivedSignalOnceAFrameIsReceived_Test)
 {
+    qRegisterMetaType<QMQTT::Frame>("QMQTT::Frame&");
+
     QByteArray payload(129, 'a');
 
     QBuffer buffer(&_byteArray);
