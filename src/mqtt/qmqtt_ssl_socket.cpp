@@ -30,13 +30,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#include "qmqtt_ssl_socket_p.h"
-#include <QSslSocket>
-#include <QSslConfiguration>
-#include <QSslCertificate>
-#include <QSslKey>
 
 #ifndef QT_NO_SSL
+
+#include "qmqtt_ssl_socket_p.h"
+
+#include <QSslSocket>
+#include <QSslError>
 
 QMQTT::SslSocket::SslSocket(const QSslConfiguration &config, bool ignoreSelfSigned, QObject* parent)
     : SocketInterface(parent)

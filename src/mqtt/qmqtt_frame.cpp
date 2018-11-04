@@ -29,9 +29,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#include <QDataStream>
-#include <QLoggingCategory>
+
 #include "qmqtt_frame.h"
+
+#include <QLoggingCategory>
+#include <QDataStream>
 
 namespace QMQTT {
 

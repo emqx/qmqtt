@@ -2,6 +2,8 @@
 
 #include "qmqtt_websocketiodevice_p.h"
 
+#include <QWebSocket>
+
 QMQTT::WebSocketIODevice::WebSocketIODevice(QWebSocket *socket, QObject *parent)
     : QIODevice(parent)
     , _webSocket(socket)

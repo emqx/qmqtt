@@ -29,12 +29,15 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#include <QDataStream>
+
 #include "qmqtt_network_p.h"
 #include "qmqtt_socket_p.h"
 #include "qmqtt_ssl_socket_p.h"
 #include "qmqtt_timer_p.h"
 #include "qmqtt_websocket_p.h"
+#include "qmqtt_frame.h"
+
+#include <QDataStream>
 
 const quint16 DEFAULT_PORT = 1883;
 const quint16 DEFAULT_SSL_PORT = 8883;

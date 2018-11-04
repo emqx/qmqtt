@@ -32,10 +32,15 @@
 #ifndef QMQTT_SOCKET_P_H
 #define QMQTT_SOCKET_P_H
 
-#include "qmqtt_socketinterface.h"
+#include <qmqtt_socketinterface.h>
+
 #include <QObject>
+#include <QHostAddress>
+#include <QString>
+#include <QAbstractSocket>
 #include <QScopedPointer>
 
+QT_FORWARD_DECLARE_CLASS(QIODevice)
 QT_FORWARD_DECLARE_CLASS(QTcpSocket)
 
 namespace QMQTT

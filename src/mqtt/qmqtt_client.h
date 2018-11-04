@@ -35,9 +35,11 @@
 #include <qmqtt_global.h>
 
 #include <QObject>
+#include <QString>
+#include <QHostAddress>
+#include <QByteArray>
 #include <QAbstractSocket>
 #include <QScopedPointer>
-#include <QHostAddress>
 
 #ifdef QT_WEBSOCKETS_LIB
 #include <QWebSocket>

@@ -32,7 +32,9 @@
 #ifndef QMQTT_MESSAGE_P_H
 #define QMQTT_MESSAGE_P_H
 
-#include <QtCore/qshareddata.h>
+#include <QSharedData>
+#include <QString>
+#include <QByteArray>
 
 namespace QMQTT {
 

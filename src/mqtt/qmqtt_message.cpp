@@ -29,6 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
+
 #include "qmqtt_message.h"
 #include "qmqtt_message_p.h"
 

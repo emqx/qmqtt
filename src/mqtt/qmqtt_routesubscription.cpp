@@ -30,13 +30,17 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#include "qmqtt_routesubscription.h"
 
-#include "qmqtt_client.h"
-#include "qmqtt_message.h"
+#include "qmqtt_routesubscription.h"
 #include "qmqtt_router.h"
+#include "qmqtt_client.h"
 #include "qmqtt_routedmessage.h"
+
 #include <QLoggingCategory>
+#include <QLatin1String>
+#include <QLatin1Char>
+#include <QRegularExpressionMatch>
+#include <QStringList>
 
 namespace QMQTT {
 

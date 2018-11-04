@@ -31,7 +31,10 @@
  */
 
 #include "qmqtt_client_p.h"
+#include "qmqtt_network_p.h"
+#include "qmqtt_frame.h"
 #include "qmqtt_message.h"
+
 #include <QLoggingCategory>
 #include <QUuid>
 #ifndef QT_NO_SSL

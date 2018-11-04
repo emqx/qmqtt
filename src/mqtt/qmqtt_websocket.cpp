@@ -1,8 +1,10 @@
 #ifdef QT_WEBSOCKETS_LIB
 
+#include "qmqtt_websocket_p.h"
+
 #include <QNetworkRequest>
 #include <QUrl>
-#include "qmqtt_websocket_p.h"
+#include <QSslError>
 
 QMQTT::WebSocket::WebSocket(const QString& origin,
                             QWebSocketProtocol::Version version,

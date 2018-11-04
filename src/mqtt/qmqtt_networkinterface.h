@@ -32,12 +32,16 @@
 #ifndef QMQTT_NETWORK_INTERFACE_H
 #define QMQTT_NETWORK_INTERFACE_H
 
-#include "qmqtt_frame.h"
+#include <qmqtt_global.h>
+
 #include <QObject>
 #include <QAbstractSocket>
+#include <QHostAddress>
 #include <QString>
 
 namespace QMQTT {
+
+class Frame;
 
 class Q_MQTT_EXPORT NetworkInterface : public QObject
 {
