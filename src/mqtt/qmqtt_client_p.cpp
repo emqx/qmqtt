@@ -276,6 +276,8 @@ quint16 QMQTT::ClientPrivate::sendUnsubscribe(const QString &topic)
 
 void QMQTT::ClientPrivate::onTimerPingReq()
 {
+    if (!isConnectedToHost())
+        return;
     Frame frame(PINGREQ);
     sendFrame(frame);
     _pingResponseTimer.start();
