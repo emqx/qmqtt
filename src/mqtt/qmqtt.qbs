@@ -1,15 +1,14 @@
 import qbs
 import qbs.TextFile
+import qbs.FileInfo
 
 Product {
     name: "qmqtt"
-    type: [
-        libraryType,
-        "qmqttmodule",
-    ]
+    type: [libraryType]
     property bool webSocketSupport: false
     property string libraryType: "dynamiclibrary"
     targetName: "qmqtt"
+    version: "1.0.0"
 
     cpp.defines: [
         "QT_BUILD_QMQTT_LIB",
@@ -20,8 +19,7 @@ Product {
     cpp.includePaths: sourceDirectory
 
     files: [
-        "*.cpp",
-        "*_p.h",
+        "*.cpp"
     ]
 
     Group {
@@ -33,15 +31,19 @@ Product {
         files: [
             "*.h"
         ]
-        excludeFiles: parent.files
+        excludeFiles: privateHeaders.files
     }
 
     Group {
-        name: "QMqtt Module Template"
+        id: privateHeaders
+        name: "Private Headers"
         fileTags: [
-            "qmqttmoduletemplate"
+            "hpp",
+            "private_headers",
         ]
-        files: "qmqttModule.qbs"
+        files: [
+            "*_p.h"
+        ]
     }
 
     Group {
@@ -53,33 +55,25 @@ Product {
     Group {
         fileTagsFilter: "public_headers"
         qbs.install: true
-        qbs.installDir: "include/"+product.name
+        qbs.installDir: FileInfo.joinPaths("include", product.name)
     }
 
-    Rule {
-        /* TODO: copy qmqtt-module in module directory */
-        inputs: "qmqttmoduletemplate"
-        Artifact {
-            filePath: "mqtt/"+input.fileName
-            fileTags: "qmqttmodule"
-        }
-        prepare: {
-            var cmd = new JavaScriptCommand();
-            cmd.description = "Create QMqtt Module";
-            cmd.highlight = "codegen";
-            cmd.sourceCode = function() {
-                var file = new TextFile(input.filePath);
-                var content = file.readAll();
-                file.close()
-                content = content.replace(/dummyIncludePath/g, '"'+input.moduleProperty("qbs", "installRoot")+'/include/'+product.targetName+'"');
-                content = content.replace(/dummyLibraryPath/g, '"'+input.moduleProperty("qbs", "installRoot")+'/lib"');
-                content = content.replace(/dummyLibrary/g, product.libraryType === "dynamiclibrary" ? "dynamicLibraries" : "staticLibraries");
-                file = new TextFile(output.filePath, TextFile.WriteOnly);
-                file.write(content);
-                file.close();
-            }
-            return cmd;
-        }
+    Group {
+        fileTagsFilter: "private_headers"
+        qbs.install: true
+        qbs.installDir: FileInfo.joinPaths("include", product.name, version, product.name)
+    }
+
+    Group {
+        fileTagsFilter: "Exporter.qbs.module"
+        qbs.installDir: FileInfo.joinPaths("qbs", "modules", product.name, "private")
+        qbs.install: true
+    }
+
+    Group {
+        fileTagsFilter: "Exporter.pkgconfig.pc"
+        qbs.installDir: FileInfo.joinPaths("lib" ,"pkgconfig")
+        qbs.install: true
     }
 
     Depends {
@@ -100,6 +94,13 @@ Product {
         }
     }
 
+    Depends {
+        name: "Exporter.qbs"
+    }
+    Depends {
+        name: "Exporter.pkgconfig"
+    }
+
     Export {
         Depends {
             name: "cpp"
@@ -118,6 +119,16 @@ Product {
             }
         }
 
-        cpp.includePaths: product.sourceDirectory
+        cpp.includePaths: [
+            product.sourceDirectory,
+            FileInfo.joinPaths(qbs.installRoot, qbs.installPrefix, "include"),
+        ]
+        prefixMapping: [
+            {
+                prefix: product.sourceDirectory,
+                replacement: FileInfo.joinPaths(qbs.installRoot, qbs.installPrefix, "include",
+                                                product.name)
+            }
+        ]
     }
 }

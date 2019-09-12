@@ -70,11 +70,12 @@ QMQTT::ClientPrivate::~ClientPrivate()
 
 void QMQTT::ClientPrivate::init(const QHostAddress& host, const quint16 port, NetworkInterface* network)
 {
+    Q_Q(Client);
     _host = host;
     _port = port;
     if(network == NULL)
     {
-        init(new Network);
+        init(new Network(q));
     }
     else
     {
@@ -86,15 +87,17 @@ void QMQTT::ClientPrivate::init(const QHostAddress& host, const quint16 port, Ne
 void QMQTT::ClientPrivate::init(const QString& hostName, const quint16 port,
                                 const QSslConfiguration &config, const bool ignoreSelfSigned)
 {
+    Q_Q(Client);
     _hostName = hostName;
     _port = port;
-    init(new Network(config, ignoreSelfSigned));
+    init(new Network(config, ignoreSelfSigned, q));
 }
 #endif // QT_NO_SSL
 
 void QMQTT::ClientPrivate::init(const QString& hostName, const quint16 port, const bool ssl,
                                 const bool ignoreSelfSigned)
 {
+    Q_Q(Client);
     _hostName = hostName;
     _port = port;
     if (ssl)
@@ -117,7 +120,7 @@ void QMQTT::ClientPrivate::init(const QString& hostName, const quint16 port, con
     }
     else
     {
-        init(new Network);
+        init(new Network(q));
     }
 }
 
@@ -128,8 +131,9 @@ void QMQTT::ClientPrivate::init(const QString& url,
                                 const QSslConfiguration* sslConfig,
                                 bool ignoreSelfSigned)
 {
+    Q_Q(Client);
     _hostName = url;
-    init(new Network(origin, version, sslConfig, ignoreSelfSigned));
+    init(new Network(origin, version, sslConfig, ignoreSelfSigned, q));
 }
 
 #endif // QT_WEBSOCKETS_LIB

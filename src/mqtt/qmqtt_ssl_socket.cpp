@@ -40,7 +40,7 @@
 
 QMQTT::SslSocket::SslSocket(const QSslConfiguration &config, bool ignoreSelfSigned, QObject* parent)
     : SocketInterface(parent)
-    , _socket(new QSslSocket)
+    , _socket(new QSslSocket(this))
     , _ignoreSelfSigned(ignoreSelfSigned)
 {
     _socket->setSslConfiguration(config);
