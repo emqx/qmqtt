@@ -36,7 +36,7 @@
 
 QMQTT::Socket::Socket(QObject* parent)
     : SocketInterface(parent)
-    , _socket(new QTcpSocket)
+    , _socket(new QTcpSocket(this))
 {
     connect(_socket.data(), &QTcpSocket::connected,    this, &SocketInterface::connected);
     connect(_socket.data(), &QTcpSocket::disconnected, this, &SocketInterface::disconnected);
