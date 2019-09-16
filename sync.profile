@@ -1,5 +1,5 @@
 %modules = ( # path to module name map
-    "qmqtt" => "$basedir/src/mqtt",
+    "QtQmqtt" => "$basedir/src/mqtt",
 );
 %moduleheaders = ( # restrict the module headers to those found in relative path
 );

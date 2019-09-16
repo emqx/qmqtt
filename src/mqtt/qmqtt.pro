@@ -1,4 +1,4 @@
-TARGET = qmqtt
+TARGET = QtQmqtt
 QT = core network
 QMQTT_WEBSOCKETS: QT += websockets
 
