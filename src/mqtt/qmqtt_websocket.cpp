@@ -6,6 +6,7 @@
 #include <QUrl>
 #include <QSslError>
 
+#ifndef QT_NO_SSL
 QMQTT::WebSocket::WebSocket(const QString& origin,
                             QWebSocketProtocol::Version version,
                             const QSslConfiguration* sslConfig,
@@ -16,15 +17,31 @@ QMQTT::WebSocket::WebSocket(const QString& origin,
     , _ioDevice(new WebSocketIODevice(_socket, this))
     , _ignoreSelfSigned(ignoreSelfSigned)
 {
+    initialize();
     if (sslConfig != NULL)
         _socket->setSslConfiguration(*sslConfig);
+    connect(_socket, &QWebSocket::sslErrors, this, &WebSocket::sslErrors);
+}
+#endif // QT_NO_SSL
+
+QMQTT::WebSocket::WebSocket(const QString& origin,
+                            QWebSocketProtocol::Version version,
+                            QObject* parent)
+    : SocketInterface(parent)
+    , _socket(new QWebSocket(origin, version, this))
+    , _ioDevice(new WebSocketIODevice(_socket, this))
+{
+    initialize();
+}
+
+void QMQTT::WebSocket::initialize()
+{
     connect(_socket, &QWebSocket::connected, this, &WebSocket::connected);
     connect(_socket, &QWebSocket::disconnected, this, &WebSocket::disconnected);
     connect(_socket,
             static_cast<void (QWebSocket::*)(QAbstractSocket::SocketError)>(&QWebSocket::error),
             this,
             static_cast<void (SocketInterface::*)(QAbstractSocket::SocketError)>(&SocketInterface::error));
-    connect(_socket, &QWebSocket::sslErrors, this, &WebSocket::sslErrors);
 }
 
 QMQTT::WebSocket::~WebSocket()
@@ -54,7 +71,7 @@ void QMQTT::WebSocket::disconnectFromHost()
 
 QAbstractSocket::SocketState QMQTT::WebSocket::state() const
 {
-    return  _socket->state();
+    return _socket->state();
 }
 
 QAbstractSocket::SocketError QMQTT::WebSocket::error() const
@@ -62,6 +79,7 @@ QAbstractSocket::SocketError QMQTT::WebSocket::error() const
     return _socket->error();
 }
 
+#ifndef QT_NO_SSL
 void QMQTT::WebSocket::sslErrors(const QList<QSslError> &errors)
 {
     if (!_ignoreSelfSigned)
@@ -76,5 +94,6 @@ void QMQTT::WebSocket::sslErrors(const QList<QSslError> &errors)
     }
     _socket->ignoreSslErrors();
 }
+#endif // QT_NO_SSL
 
 #endif // QT_WEBSOCKETS_LIB

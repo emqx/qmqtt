@@ -125,6 +125,7 @@ void QMQTT::ClientPrivate::init(const QString& hostName, const quint16 port, con
 }
 
 #ifdef QT_WEBSOCKETS_LIB
+#ifndef QT_NO_SSL
 void QMQTT::ClientPrivate::init(const QString& url,
                                 const QString& origin,
                                 QWebSocketProtocol::Version version,
@@ -135,7 +136,16 @@ void QMQTT::ClientPrivate::init(const QString& url,
     _hostName = url;
     init(new Network(origin, version, sslConfig, ignoreSelfSigned, q));
 }
+#endif // QT_NO_SSL
 
+void QMQTT::ClientPrivate::init(const QString& url,
+                                const QString& origin,
+                                QWebSocketProtocol::Version version)
+{
+    Q_Q(Client);
+    _hostName = url;
+    init(new Network(origin, version, q));
+}
 #endif // QT_WEBSOCKETS_LIB
 
 void QMQTT::ClientPrivate::init(NetworkInterface* network)
