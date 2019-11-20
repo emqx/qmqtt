@@ -45,8 +45,10 @@
 #include <QAbstractSocket>
 
 QT_FORWARD_DECLARE_CLASS(QIODevice)
+#ifndef QT_NO_SSL
 QT_FORWARD_DECLARE_CLASS(QSslConfiguration)
 QT_FORWARD_DECLARE_CLASS(QSslError)
+#endif // QT_NO_SSL
 
 namespace QMQTT
 {
@@ -55,11 +57,18 @@ class WebSocket : public SocketInterface
 {
     Q_OBJECT
 public:
+#ifndef QT_NO_SSL
     WebSocket(const QString& origin,
               QWebSocketProtocol::Version version,
               const QSslConfiguration* sslConfig,
               bool ignoreSelfSigned,
               QObject* parent = NULL);
+#endif // QT_NO_SSL
+
+    WebSocket(const QString& origin,
+              QWebSocketProtocol::Version version,
+              QObject* parent = NULL);
+
     virtual ~WebSocket();
 
     QIODevice *ioDevice()
@@ -74,12 +83,18 @@ public:
     QAbstractSocket::SocketError error() const;
 
 private slots:
+#ifndef QT_NO_SSL
     void sslErrors(const QList<QSslError> &errors);
+#endif // QT_NO_SSL
 
 private:
+    void initialize();
+
     QWebSocket *_socket;
     WebSocketIODevice *_ioDevice;
+#ifndef QT_NO_SSL
     bool _ignoreSelfSigned;
+#endif // QT_NO_SSL
 };
 
 }

@@ -6,6 +6,7 @@ mqtt client for Qt
 **Please compile the library with Qt >= 5.3 version. On Windows you need to specify `CONFIG += NO_UNIT_TESTS`, since gtest is not supported.**
 
 To add websocket support, compile the library with Qt >= 5.7, and specify 'CONFIG += QMQTT_WEBSOCKETS'.
+This also works when compiling qmqtt for WebAssembly.
 
 Usage
 =====

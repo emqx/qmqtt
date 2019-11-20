@@ -31,9 +31,9 @@
  *
  */
 
-#ifndef QT_NO_SSL
-
 #include "qmqtt_ssl_socket_p.h"
+
+#ifndef QT_NO_SSL
 
 #include <QSslSocket>
 #include <QSslError>

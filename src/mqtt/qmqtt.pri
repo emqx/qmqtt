@@ -16,7 +16,6 @@ PRIVATE_HEADERS += \
     $$PWD/qmqtt_message_p.h \
     $$PWD/qmqtt_network_p.h \
     $$PWD/qmqtt_socket_p.h \
-    $$PWD/qmqtt_ssl_socket_p.h \
     $$PWD/qmqtt_timer_p.h
 
 SOURCES += \
@@ -28,7 +27,6 @@ SOURCES += \
     $$PWD/qmqtt_routesubscription.cpp \
     $$PWD/qmqtt_router.cpp \
     $$PWD/qmqtt_socket.cpp \
-    $$PWD/qmqtt_ssl_socket.cpp \
     $$PWD/qmqtt_timer.cpp
 
 QMQTT_WEBSOCKETS {
@@ -39,4 +37,12 @@ QMQTT_WEBSOCKETS {
     SOURCES += \
         $$PWD/qmqtt_websocket.cpp \
         $$PWD/qmqtt_websocketiodevice.cpp
+}
+
+!contains(CONFIG, QMQTT_NO_SSL) {
+    PRIVATE_HEADERS += \
+        $$PWD/qmqtt_ssl_socket_p.h
+
+    SOURCES += \
+        $$PWD/qmqtt_ssl_socket.cpp
 }

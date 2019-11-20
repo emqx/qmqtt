@@ -10,6 +10,7 @@ include( GNUInstallDirs ) # needed to define vars used in install() directives.
 
 option( ${PROJECT_NAME}_SHARED "Build a shared library.  Turn off for static." ON )
 option( ${PROJECT_NAME}_WEBSOCKETS "Enable WebSockets for MQTT" OFF )
+option( ${PROJECT_NAME}_SSL "Enable SSL support for MQTT" ON )
 
 
 if ( ${PROJECT_NAME}_SHARED )
@@ -31,6 +32,9 @@ if ( ${PROJECT_NAME}_WEBSOCKETS )
     set( qt5_min_version "5.7.0" )
 endif()
 
+if ( NOT ${PROJECT_NAME}_SSL)
+    set( ssl_defs QT_NO_SSL )
+endif()
 
 
 find_package( Qt5 ${qt5_min_version} COMPONENTS Core Network ${ws_component} CONFIG REQUIRED )
@@ -60,7 +64,6 @@ set( PRIVATE_HEADERS
     src/mqtt/qmqtt_message_p.h
     src/mqtt/qmqtt_network_p.h
     src/mqtt/qmqtt_socket_p.h
-    src/mqtt/qmqtt_ssl_socket_p.h
     src/mqtt/qmqtt_timer_p.h
 )
 
@@ -73,7 +76,6 @@ set( SOURCES
     src/mqtt/qmqtt_routesubscription.cpp
     src/mqtt/qmqtt_router.cpp
     src/mqtt/qmqtt_socket.cpp
-    src/mqtt/qmqtt_ssl_socket.cpp
     src/mqtt/qmqtt_timer.cpp
 )
 
@@ -85,6 +87,15 @@ if ( ${PROJECT_NAME}_WEBSOCKETS )
     list( APPEND SOURCES
         src/mqtt/qmqtt_websocket.cpp
         src/mqtt/qmqtt_websocketiodevice.cpp
+    )
+endif()
+
+if ( ${PROJECT_NAME}_SSL)
+    list( APPEND PRIVATE_HEADERS
+        src/mqtt/qmqtt_ssl_socket_p.h
+    )
+    list( APPEND SOURCES
+        src/mqtt/qmqtt_ssl_socket.cpp
     )
 endif()
 
@@ -104,6 +115,7 @@ target_compile_definitions( ${PROJECT_NAME}
         QT_NO_CAST_FROM_ASCII
         QT_NO_CAST_TO_ASCII
         QT_BUILD_QMQTT_LIB
+        ${ssl_defs}
 )
 
 # Where to look for headers while compiling the target or when compiling against
