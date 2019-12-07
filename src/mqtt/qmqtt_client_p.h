@@ -85,6 +85,9 @@ public:
 #ifdef QT_WEBSOCKETS_LIB
     QWebSocketProtocol::Version _webSocketVersion;
 #endif // QT_WEBSOCKETS_LIB
+#ifndef QT_NO_SSL
+    bool _ignoreSelfSigned;
+#endif // QT_NO_SSL
     quint16 _gmid;
     MQTTVersion _version;
     QString _clientId;
@@ -163,6 +166,11 @@ public:
     bool willRetain() const;
     QByteArray willMessage() const;
     void onNetworkError(QAbstractSocket::SocketError error);
+#ifndef QT_NO_SSL
+    void ignoreSslErrors();
+    void ignoreSslErrors(const QList<QSslError>& errors);
+    void onSslErrors(const QList<QSslError>& errors);
+#endif // QT_NO_SSL
 
     Q_DECLARE_PUBLIC(Client)
 };

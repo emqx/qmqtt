@@ -38,6 +38,11 @@
 #include <QAbstractSocket>
 #include <QHostAddress>
 #include <QString>
+#include <QList>
+
+#ifndef QT_NO_SSL
+QT_FORWARD_DECLARE_CLASS(QSslError)
+#endif // QT_NO_SSL
 
 namespace QMQTT {
 
@@ -57,17 +62,26 @@ public:
     virtual int autoReconnectInterval() const = 0;
     virtual void setAutoReconnectInterval(const int autoReconnectInterval) = 0;
     virtual QAbstractSocket::SocketState state() const = 0;
+#ifndef QT_NO_SSL
+    virtual void ignoreSslErrors(const QList<QSslError>& errors) = 0;
+#endif // QT_NO_SSL
 
 public slots:
     virtual void connectToHost(const QHostAddress& host, const quint16 port) = 0;
     virtual void connectToHost(const QString& hostName, const quint16 port) = 0;
     virtual void disconnectFromHost() = 0;
+#ifndef QT_NO_SSL
+    virtual void ignoreSslErrors() = 0;
+#endif // QT_NO_SSL
 
 signals:
     void connected();
     void disconnected();
     void received(const QMQTT::Frame& frame);
     void error(QAbstractSocket::SocketError error);
+#ifndef QT_NO_SSL
+    void sslErrors(const QList<QSslError>& errors);
+#endif // QT_NO_SSL
 };
 
 } // namespace QMQTT

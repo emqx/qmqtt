@@ -57,16 +57,17 @@ QMQTT::Network::Network(QObject* parent)
 }
 
 #ifndef QT_NO_SSL
-QMQTT::Network::Network(const QSslConfiguration &config, bool ignoreSelfSigned, QObject *parent)
+QMQTT::Network::Network(const QSslConfiguration& config, QObject *parent)
     : NetworkInterface(parent)
     , _port(DEFAULT_SSL_PORT)
     , _autoReconnect(DEFAULT_AUTORECONNECT)
     , _autoReconnectInterval(DEFAULT_AUTORECONNECT_INTERVAL_MS)
-    , _socket(new QMQTT::SslSocket(config, ignoreSelfSigned))
+    , _socket(new QMQTT::SslSocket(config))
     , _autoReconnectTimer(new QMQTT::Timer)
     , _readState(Header)
 {
     initialize();
+    connect(_socket, &QMQTT::SslSocket::sslErrors, this, &QMQTT::Network::sslErrors);
 }
 #endif // QT_NO_SSL
 
@@ -75,13 +76,12 @@ QMQTT::Network::Network(const QSslConfiguration &config, bool ignoreSelfSigned, 
 QMQTT::Network::Network(const QString& origin,
                         QWebSocketProtocol::Version version,
                         const QSslConfiguration* sslConfig,
-                        bool ignoreSelfSigned,
                         QObject* parent)
     : NetworkInterface(parent)
     , _port(DEFAULT_SSL_PORT)
     , _autoReconnect(DEFAULT_AUTORECONNECT)
     , _autoReconnectInterval(DEFAULT_AUTORECONNECT_INTERVAL_MS)
-    , _socket(new QMQTT::WebSocket(origin, version, sslConfig, ignoreSelfSigned))
+    , _socket(new QMQTT::WebSocket(origin, version, sslConfig))
     , _autoReconnectTimer(new QMQTT::Timer)
     , _readState(Header)
 {
@@ -271,3 +271,15 @@ void QMQTT::Network::onDisconnected()
         _autoReconnectTimer->start();
     }
 }
+
+#ifndef QT_NO_SSL
+void QMQTT::Network::ignoreSslErrors(const QList<QSslError>& errors)
+{
+    _socket->ignoreSslErrors(errors);
+}
+
+void QMQTT::Network::ignoreSslErrors()
+{
+    _socket->ignoreSslErrors();
+}
+#endif // QT_NO_SSL

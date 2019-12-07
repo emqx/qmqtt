@@ -33,7 +33,16 @@ Connect using SSL:
     client->setClientId("clientId");
     client->setUsername("user");
     client->setPassword("password");
+    // Optionally, set ssl errors you want to ignore. Be careful, because this may weaken security.
+    // See QSslSocket::ignoreSslErrors(const QList<QSslError> &) for more information.
+    client->ignoreSslErrors(<list of expected ssl errors>)
     client->connectToHost();
+    // Here's another option to suppress SSL errors (again, be careful)
+    QObject::connect(client, &QMQTT::Client::sslErrors, [&](const QList<QSslError> &errors) {
+        // Investigate the errors here, if you find no serious problems, call ignoreSslErrors()
+        // to continue connecting.
+        client->ignoreSslErrors();
+    });
 
 Connect using WebSockets:
 

@@ -60,14 +60,13 @@ class Network : public NetworkInterface
 public:
     Network(QObject* parent = NULL);
 #ifndef QT_NO_SSL
-    Network(const QSslConfiguration& config, bool ignoreSelfSigned, QObject* parent = NULL);
+    Network(const QSslConfiguration& config, QObject* parent = NULL);
 #endif // QT_NO_SSL
 #ifdef QT_WEBSOCKETS_LIB
 #ifndef QT_NO_SSL
     Network(const QString& origin,
             QWebSocketProtocol::Version version,
             const QSslConfiguration* sslConfig,
-            bool ignoreSelfSigned,
             QObject* parent = NULL);
 #endif // QT_NO_SSL
     Network(const QString& origin,
@@ -85,11 +84,17 @@ public:
     QAbstractSocket::SocketState state() const;
     int autoReconnectInterval() const;
     void setAutoReconnectInterval(const int autoReconnectInterval);
+#ifndef QT_NO_SSL
+    void ignoreSslErrors(const QList<QSslError>& errors);
+#endif // QT_NO_SSL
 
 public slots:
     void connectToHost(const QHostAddress& host, const quint16 port);
     void connectToHost(const QString& hostName, const quint16 port);
     void disconnectFromHost();
+#ifndef QT_NO_SSL
+    void ignoreSslErrors();
+#endif // QT_NO_SSL
 
 protected slots:
     void onSocketError(QAbstractSocket::SocketError socketError);

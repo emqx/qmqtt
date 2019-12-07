@@ -10,12 +10,10 @@
 QMQTT::WebSocket::WebSocket(const QString& origin,
                             QWebSocketProtocol::Version version,
                             const QSslConfiguration* sslConfig,
-                            bool ignoreSelfSigned,
                             QObject* parent)
     : SocketInterface(parent)
     , _socket(new QWebSocket(origin, version, this))
     , _ioDevice(new WebSocketIODevice(_socket, this))
-    , _ignoreSelfSigned(ignoreSelfSigned)
 {
     initialize();
     if (sslConfig != NULL)
@@ -80,18 +78,13 @@ QAbstractSocket::SocketError QMQTT::WebSocket::error() const
 }
 
 #ifndef QT_NO_SSL
-void QMQTT::WebSocket::sslErrors(const QList<QSslError> &errors)
+void QMQTT::WebSocket::ignoreSslErrors(const QList<QSslError>& errors)
 {
-    if (!_ignoreSelfSigned)
-        return;
-    foreach (QSslError error, errors)
-    {
-        if (error.error() != QSslError::SelfSignedCertificate &&
-            error.error() != QSslError::SelfSignedCertificateInChain)
-        {
-            return;
-        }
-    }
+    _socket->ignoreSslErrors(errors);
+}
+
+void QMQTT::WebSocket::ignoreSslErrors()
+{
     _socket->ignoreSslErrors();
 }
 #endif // QT_NO_SSL

@@ -38,6 +38,11 @@
 #include <QHostAddress>
 #include <QString>
 #include <QAbstractSocket>
+#include <QList>
+
+#ifndef QT_NO_SSL
+QT_FORWARD_DECLARE_CLASS(QSslError)
+#endif // QT_NO_SSL
 
 QT_FORWARD_DECLARE_CLASS(QIODevice)
 
@@ -49,19 +54,26 @@ class Q_MQTT_EXPORT SocketInterface : public QObject
     Q_OBJECT
 public:
     explicit SocketInterface(QObject* parent = NULL) : QObject(parent) {}
-    virtual	~SocketInterface() {}
+    virtual ~SocketInterface() {}
 
-    virtual QIODevice *ioDevice() = 0;
+    virtual QIODevice* ioDevice() = 0;
     virtual void connectToHost(const QHostAddress& address, quint16 port) = 0;
     virtual void connectToHost(const QString& hostName, quint16 port) = 0;
     virtual void disconnectFromHost() = 0;
     virtual QAbstractSocket::SocketState state() const = 0;
     virtual QAbstractSocket::SocketError error() const = 0;
+#ifndef QT_NO_SSL
+    virtual void ignoreSslErrors(const QList<QSslError>& errors) {}
+    virtual void ignoreSslErrors() {}
+#endif // QT_NO_SSL
 
 signals:
     void connected();
     void disconnected();
     void error(QAbstractSocket::SocketError socketError);
+#ifndef QT_NO_SSL
+    void sslErrors(const QList<QSslError>& errors);
+#endif // QT_NO_SSL
 };
 
 }

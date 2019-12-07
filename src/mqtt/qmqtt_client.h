@@ -40,6 +40,7 @@
 #include <QByteArray>
 #include <QAbstractSocket>
 #include <QScopedPointer>
+#include <QList>
 
 #ifdef QT_WEBSOCKETS_LIB
 #include <QWebSocket>
@@ -47,6 +48,7 @@
 
 #ifndef QT_NO_SSL
 QT_FORWARD_DECLARE_CLASS(QSslConfiguration)
+QT_FORWARD_DECLARE_CLASS(QSslError)
 #endif // QT_NO_SSL
 
 namespace QMQTT {
@@ -145,7 +147,7 @@ public:
     // This function is provided for backward compatibility with older versions of QMQTT.
     // If the ssl parameter is true, this function will load a private key ('cert.key') and a local
     // certificate ('cert.crt') from the current working directory. It will also set PeerVerifyMode
-    // to None. This may not be the safest way to set up a SSL connection.
+    // to None. This may not be the safest way to set up an SSL connection.
     Client(const QString& hostName,
            const quint16 port,
            const bool ssl,
@@ -222,6 +224,11 @@ public slots:
 
     quint16 publish(const QMQTT::Message& message);
 
+#ifndef QT_NO_SSL
+    void ignoreSslErrors();
+    void ignoreSslErrors(const QList<QSslError>& errors);
+#endif // QT_NO_SSL
+
 signals:
     void connected();
     void disconnected();
@@ -232,6 +239,9 @@ signals:
     void published(const QMQTT::Message& message, quint16 msgid = 0);
     void received(const QMQTT::Message& message);
     void pingresp();
+#ifndef QT_NO_SSL
+    void sslErrors(const QList<QSslError>& errors);
+#endif // QT_NO_SSL
 
 protected slots:
     void onNetworkConnected();
@@ -240,6 +250,9 @@ protected slots:
     void onTimerPingReq();
     void onPingTimeout();
     void onNetworkError(QAbstractSocket::SocketError error);
+#ifndef QT_NO_SSL
+    void onSslErrors(const QList<QSslError>& errors);
+#endif // QT_NO_SSL
 
 protected:
     QScopedPointer<ClientPrivate> d_ptr;
