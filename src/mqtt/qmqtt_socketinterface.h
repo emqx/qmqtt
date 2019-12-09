@@ -64,7 +64,7 @@ public:
     virtual QAbstractSocket::SocketState state() const = 0;
     virtual QAbstractSocket::SocketError error() const = 0;
 #ifndef QT_NO_SSL
-    virtual void ignoreSslErrors(const QList<QSslError>& errors) {}
+    virtual void ignoreSslErrors(const QList<QSslError>& errors) { Q_UNUSED(errors); }
     virtual void ignoreSslErrors() {}
     virtual QSslConfiguration sslConfiguration() const { return QSslConfiguration(); }
     virtual void setSslConfiguration(const QSslConfiguration& config) { Q_UNUSED(config); }
