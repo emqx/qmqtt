@@ -42,7 +42,6 @@
 
 #ifndef QT_NO_SSL
 #include <QSslConfiguration>
-
 QT_FORWARD_DECLARE_CLASS(QSslError)
 #endif // QT_NO_SSL
 
