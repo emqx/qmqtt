@@ -45,7 +45,7 @@
 
 QT_FORWARD_DECLARE_CLASS(QSslSocket)
 QT_FORWARD_DECLARE_CLASS(QSslError)
-QT_FORWARD_DECLARE_CLASS(QSslConfiguration)
+#include <QSslConfiguration>
 
 namespace QMQTT
 {
