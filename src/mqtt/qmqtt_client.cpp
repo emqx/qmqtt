@@ -309,6 +309,20 @@ bool QMQTT::Client::isConnectedToHost() const
     return d->isConnectedToHost();
 }
 
+#ifndef QT_NO_SSL
+QSslConfiguration QMQTT::Client::sslConfiguration() const
+{
+    Q_D(const Client);
+    return d->sslConfiguration();
+}
+
+void QMQTT::Client::setSslConfiguration(const QSslConfiguration& config)
+{
+    Q_D(Client);
+    d->setSslConfiguration(config);
+}
+#endif // QT_NO_SSL
+
 void QMQTT::Client::connectToHost()
 {
     Q_D(Client);

@@ -21,8 +21,10 @@ public:
     MOCK_METHOD2(connectToHost, void(const QString&, const quint16));
     MOCK_METHOD0(disconnectFromHost, void());
 #ifndef QT_NO_SSL
-    MOCK_METHOD1(ignoreSslErrors, void(const QList<QSslError>& errors));
+    MOCK_METHOD1(ignoreSslErrors, void(const QList<QSslError>&));
     MOCK_METHOD0(ignoreSslErrors, void());
+    MOCK_CONST_METHOD0(sslConfiguration, QSslConfiguration());
+    MOCK_METHOD1(setSslConfiguration, void(const QSslConfiguration&));
 #endif // QT_NO_SSL
 };
 

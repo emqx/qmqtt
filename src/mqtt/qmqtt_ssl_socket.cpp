@@ -99,4 +99,14 @@ void QMQTT::SslSocket::ignoreSslErrors()
     _socket->ignoreSslErrors();
 }
 
+QSslConfiguration QMQTT::SslSocket::sslConfiguration() const
+{
+    return _socket->sslConfiguration();
+}
+
+void QMQTT::SslSocket::setSslConfiguration(const QSslConfiguration& config)
+{
+    _socket->setSslConfiguration(config);
+}
+
 #endif // QT_NO_SSL

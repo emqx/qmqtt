@@ -65,6 +65,8 @@ public:
     QAbstractSocket::SocketError error() const;
     void ignoreSslErrors(const QList<QSslError>& errors);
     void ignoreSslErrors();
+    QSslConfiguration sslConfiguration() const;
+    void setSslConfiguration(const QSslConfiguration& config);
 
 protected:
     QScopedPointer<QSslSocket> _socket;

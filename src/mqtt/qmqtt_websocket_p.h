@@ -83,6 +83,8 @@ public:
 #ifndef QT_NO_SSL
     void ignoreSslErrors(const QList<QSslError>& errors);
     void ignoreSslErrors();
+    QSslConfiguration sslConfiguration() const;
+    void setSslConfiguration(const QSslConfiguration& config);
 #endif // QT_NO_SSL
 
 private:
