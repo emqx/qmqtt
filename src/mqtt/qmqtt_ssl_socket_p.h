@@ -45,7 +45,7 @@
 
 QT_FORWARD_DECLARE_CLASS(QSslSocket)
 QT_FORWARD_DECLARE_CLASS(QSslError)
-QT_FORWARD_DECLARE_CLASS(QSslConfiguration)
+#include <QSslConfiguration>
 
 namespace QMQTT
 {
@@ -65,6 +65,8 @@ public:
     QAbstractSocket::SocketError error() const;
     void ignoreSslErrors(const QList<QSslError>& errors);
     void ignoreSslErrors();
+    QSslConfiguration sslConfiguration() const;
+    void setSslConfiguration(const QSslConfiguration& config);
 
 protected:
     QScopedPointer<QSslSocket> _socket;

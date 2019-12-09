@@ -46,7 +46,8 @@
 #endif // QT_WEBSOCKETS_LIB
 
 #ifndef QT_NO_SSL
-QT_FORWARD_DECLARE_CLASS(QSslConfiguration)
+#include <QSslConfiguration>
+QT_FORWARD_DECLARE_CLASS(QSslError)
 #endif // QT_NO_SSL
 
 namespace QMQTT {
@@ -169,6 +170,8 @@ public:
 #ifndef QT_NO_SSL
     void ignoreSslErrors();
     void ignoreSslErrors(const QList<QSslError>& errors);
+    QSslConfiguration sslConfiguration() const;
+    void setSslConfiguration(const QSslConfiguration& config);
     void onSslErrors(const QList<QSslError>& errors);
 #endif // QT_NO_SSL
 

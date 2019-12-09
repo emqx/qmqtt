@@ -41,6 +41,7 @@
 #include <QList>
 
 #ifndef QT_NO_SSL
+#include <QSslConfiguration>
 QT_FORWARD_DECLARE_CLASS(QSslError)
 #endif // QT_NO_SSL
 
@@ -64,6 +65,8 @@ public:
     virtual QAbstractSocket::SocketState state() const = 0;
 #ifndef QT_NO_SSL
     virtual void ignoreSslErrors(const QList<QSslError>& errors) = 0;
+    virtual QSslConfiguration sslConfiguration() const = 0;
+    virtual void setSslConfiguration(const QSslConfiguration& config) = 0;
 #endif // QT_NO_SSL
 
 public slots:

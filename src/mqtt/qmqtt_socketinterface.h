@@ -41,6 +41,7 @@
 #include <QList>
 
 #ifndef QT_NO_SSL
+#include <QSslConfiguration>
 QT_FORWARD_DECLARE_CLASS(QSslError)
 #endif // QT_NO_SSL
 
@@ -65,6 +66,8 @@ public:
 #ifndef QT_NO_SSL
     virtual void ignoreSslErrors(const QList<QSslError>& errors) {}
     virtual void ignoreSslErrors() {}
+    virtual QSslConfiguration sslConfiguration() const { return QSslConfiguration(); }
+    virtual void setSslConfiguration(const QSslConfiguration& config) { Q_UNUSED(config); }
 #endif // QT_NO_SSL
 
 signals:

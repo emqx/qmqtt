@@ -47,7 +47,7 @@
 #endif // QT_WEBSOCKETS_LIB
 
 #ifndef QT_NO_SSL
-QT_FORWARD_DECLARE_CLASS(QSslConfiguration)
+#include <QSslConfiguration>
 QT_FORWARD_DECLARE_CLASS(QSslError)
 #endif // QT_NO_SSL
 
@@ -130,6 +130,9 @@ class Q_MQTT_EXPORT Client : public QObject
     Q_PROPERTY(bool _willRetain READ willRetain WRITE setWillRetain)
     Q_PROPERTY(QByteArray _willMessage READ willMessage WRITE setWillMessage)
     Q_PROPERTY(QString _connectionState READ connectionState)
+#ifndef QT_NO_SSL
+    Q_PROPERTY(QSslConfiguration _sslConfiguration READ sslConfiguration WRITE setSslConfiguration)
+#endif // QT_NO_SSL
 
 public:
     Client(const QHostAddress& host = QHostAddress::LocalHost,
@@ -198,6 +201,10 @@ public:
     QByteArray willMessage() const;
 
     bool isConnectedToHost() const;
+#ifndef QT_NO_SSL
+    QSslConfiguration sslConfiguration() const;
+    void setSslConfiguration(const QSslConfiguration& config);
+#endif // QT_NO_SSL
 
 public slots:
     void setHost(const QHostAddress& host);

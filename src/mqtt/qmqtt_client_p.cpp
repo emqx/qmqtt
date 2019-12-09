@@ -777,6 +777,16 @@ void QMQTT::ClientPrivate::ignoreSslErrors(const QList<QSslError>& errors)
     _network->ignoreSslErrors(errors);
 }
 
+QSslConfiguration QMQTT::ClientPrivate::sslConfiguration() const
+{
+    return _network->sslConfiguration();
+}
+
+void QMQTT::ClientPrivate::setSslConfiguration(const QSslConfiguration& config)
+{
+    _network->setSslConfiguration(config);
+}
+
 void QMQTT::ClientPrivate::onSslErrors(const QList<QSslError>& errors)
 {
     Q_Q(Client);

@@ -87,6 +87,17 @@ void QMQTT::WebSocket::ignoreSslErrors()
 {
     _socket->ignoreSslErrors();
 }
+
+QSslConfiguration QMQTT::WebSocket::sslConfiguration() const
+{
+    return _socket->sslConfiguration();
+}
+
+void QMQTT::WebSocket::setSslConfiguration(const QSslConfiguration& config)
+{
+    _socket->setSslConfiguration(config);
+}
+
 #endif // QT_NO_SSL
 
 #endif // QT_WEBSOCKETS_LIB
