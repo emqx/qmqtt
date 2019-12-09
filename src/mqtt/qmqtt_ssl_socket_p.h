@@ -54,7 +54,7 @@ class SslSocket : public SocketInterface
 {
     Q_OBJECT
 public:
-    explicit SslSocket(const QSslConfiguration &config, bool ignoreSelfSigned, QObject* parent = NULL);
+    explicit SslSocket(const QSslConfiguration& config, QObject* parent = NULL);
     virtual ~SslSocket();
 
     virtual QIODevice *ioDevice();
@@ -63,13 +63,11 @@ public:
     void disconnectFromHost();
     QAbstractSocket::SocketState state() const;
     QAbstractSocket::SocketError error() const;
-
-protected slots:
-    void sslErrors(const QList<QSslError> &errors);
+    void ignoreSslErrors(const QList<QSslError>& errors);
+    void ignoreSslErrors();
 
 protected:
     QScopedPointer<QSslSocket> _socket;
-    bool _ignoreSelfSigned;
 };
 
 }

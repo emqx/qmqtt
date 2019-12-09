@@ -374,3 +374,25 @@ void QMQTT::Client::onNetworkError(QAbstractSocket::SocketError error)
     Q_D(Client);
     d->onNetworkError(error);
 }
+
+#ifndef QT_NO_SSL
+void QMQTT::Client::onSslErrors(const QList<QSslError>& errors)
+{
+    Q_D(Client);
+    d->onSslErrors(errors);
+}
+#endif // QT_NO_SSL
+
+#ifndef QT_NO_SSL
+void QMQTT::Client::ignoreSslErrors()
+{
+    Q_D(Client);
+    d->ignoreSslErrors();
+}
+
+void QMQTT::Client::ignoreSslErrors(const QList<QSslError>& errors)
+{
+    Q_D(Client);
+    d->ignoreSslErrors(errors);
+}
+#endif // QT_NO_SSL

@@ -90,7 +90,9 @@ void QMQTT::ClientPrivate::init(const QString& hostName, const quint16 port,
     Q_Q(Client);
     _hostName = hostName;
     _port = port;
-    init(new Network(config, ignoreSelfSigned, q));
+    _ignoreSelfSigned = ignoreSelfSigned;
+    init(new Network(config, q));
+    QObject::connect(_network.data(), &QMQTT::Network::sslErrors, q, &QMQTT::Client::onSslErrors);
 }
 #endif // QT_NO_SSL
 
@@ -134,7 +136,8 @@ void QMQTT::ClientPrivate::init(const QString& url,
 {
     Q_Q(Client);
     _hostName = url;
-    init(new Network(origin, version, sslConfig, ignoreSelfSigned, q));
+    _ignoreSelfSigned = ignoreSelfSigned;
+    init(new Network(origin, version, sslConfig, q));
 }
 #endif // QT_NO_SSL
 
@@ -762,3 +765,34 @@ void QMQTT::ClientPrivate::onNetworkError(QAbstractSocket::SocketError socketErr
         break;
     }
 }
+
+#ifndef QT_NO_SSL
+void QMQTT::ClientPrivate::ignoreSslErrors()
+{
+    _network->ignoreSslErrors();
+}
+
+void QMQTT::ClientPrivate::ignoreSslErrors(const QList<QSslError>& errors)
+{
+    _network->ignoreSslErrors(errors);
+}
+
+void QMQTT::ClientPrivate::onSslErrors(const QList<QSslError>& errors)
+{
+    Q_Q(Client);
+
+    emit q->sslErrors(errors);
+
+    if (!_ignoreSelfSigned)
+        return;
+    foreach (QSslError error, errors)
+    {
+        if (error.error() != QSslError::SelfSignedCertificate &&
+            error.error() != QSslError::SelfSignedCertificateInChain)
+        {
+            return;
+        }
+    }
+    ignoreSslErrors();
+}
+#endif // QT_NO_SSL

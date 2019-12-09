@@ -61,7 +61,6 @@ public:
     WebSocket(const QString& origin,
               QWebSocketProtocol::Version version,
               const QSslConfiguration* sslConfig,
-              bool ignoreSelfSigned,
               QObject* parent = NULL);
 #endif // QT_NO_SSL
 
@@ -81,10 +80,9 @@ public:
     void disconnectFromHost();
     QAbstractSocket::SocketState state() const;
     QAbstractSocket::SocketError error() const;
-
-private slots:
 #ifndef QT_NO_SSL
-    void sslErrors(const QList<QSslError> &errors);
+    void ignoreSslErrors(const QList<QSslError>& errors);
+    void ignoreSslErrors();
 #endif // QT_NO_SSL
 
 private:
@@ -92,9 +90,6 @@ private:
 
     QWebSocket *_socket;
     WebSocketIODevice *_ioDevice;
-#ifndef QT_NO_SSL
-    bool _ignoreSelfSigned;
-#endif // QT_NO_SSL
 };
 
 }

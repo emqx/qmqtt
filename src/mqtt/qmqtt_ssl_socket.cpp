@@ -38,10 +38,9 @@
 #include <QSslSocket>
 #include <QSslError>
 
-QMQTT::SslSocket::SslSocket(const QSslConfiguration &config, bool ignoreSelfSigned, QObject* parent)
+QMQTT::SslSocket::SslSocket(const QSslConfiguration& config, QObject* parent)
     : SocketInterface(parent)
     , _socket(new QSslSocket(this))
-    , _ignoreSelfSigned(ignoreSelfSigned)
 {
     _socket->setSslConfiguration(config);
     connect(_socket.data(), &QSslSocket::encrypted,    this, &SocketInterface::connected);
@@ -90,18 +89,13 @@ QAbstractSocket::SocketError QMQTT::SslSocket::error() const
     return _socket->error();
 }
 
-void QMQTT::SslSocket::sslErrors(const QList<QSslError> &errors)
+void QMQTT::SslSocket::ignoreSslErrors(const QList<QSslError>& errors)
 {
-    if (!_ignoreSelfSigned)
-        return;
-    foreach (QSslError error, errors)
-    {
-        if (error.error() != QSslError::SelfSignedCertificate &&
-            error.error() != QSslError::SelfSignedCertificateInChain)
-        {
-            return;
-        }
-    }
+    _socket->ignoreSslErrors(errors);
+}
+
+void QMQTT::SslSocket::ignoreSslErrors()
+{
     _socket->ignoreSslErrors();
 }
 
