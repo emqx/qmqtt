@@ -173,6 +173,7 @@ void QMQTT::ClientPrivate::init(NetworkInterface* network)
 
 void QMQTT::ClientPrivate::connectToHost()
 {
+    _connectionState = ConnectionState::STATE_CONNECTING;
     if (_hostName.isEmpty())
     {
         _network->connectToHost(_host, _port);
@@ -309,6 +310,7 @@ void QMQTT::ClientPrivate::onPingTimeout()
 
 void QMQTT::ClientPrivate::disconnectFromHost()
 {
+    _connectionState = ConnectionState::STATE_DISCONNECTED;
     sendDisconnect();
     _network->disconnectFromHost();
 }
@@ -436,6 +438,7 @@ void QMQTT::ClientPrivate::handleConnack(const quint8 ack)
     switch (ack)
     {
     case 0:
+        _connectionState = ConnectionState::STATE_CONNECTED;
         emit q->connected();
         break;
     case 1:
