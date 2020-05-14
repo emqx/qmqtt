@@ -1,6 +1,6 @@
 TARGET = QtQmqtt
 QT = core network
-QMQTT_WEBSOCKETS: QT += websockets
+qtHaveModule(websockets): QMQTT_WEBSOCKETS: QT += websockets
 
 DEFINES += QT_NO_CAST_TO_ASCII QT_NO_CAST_FROM_ASCII
 
