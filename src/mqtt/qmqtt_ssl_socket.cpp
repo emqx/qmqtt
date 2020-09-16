@@ -46,7 +46,11 @@ QMQTT::SslSocket::SslSocket(const QSslConfiguration& config, QObject* parent)
     connect(_socket.data(), &QSslSocket::encrypted,    this, &SocketInterface::connected);
     connect(_socket.data(), &QSslSocket::disconnected, this, &SocketInterface::disconnected);
     connect(_socket.data(),
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+            static_cast<void (QSslSocket::*)(QAbstractSocket::SocketError)>(&QSslSocket::errorOccurred),
+#else
             static_cast<void (QSslSocket::*)(QAbstractSocket::SocketError)>(&QSslSocket::error),
+#endif
             this,
             static_cast<void (SocketInterface::*)(QAbstractSocket::SocketError)>(&SocketInterface::error));
     connect(_socket.data(),
