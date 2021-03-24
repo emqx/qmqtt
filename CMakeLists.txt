@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.9)
 
-project( qmqtt VERSION 0.3.1 ) # version from src/mqtt/qmqtt_client.h
+project( qmqtt VERSION 1.0.0 )
 
 include( GNUInstallDirs ) # needed to define vars used in install() directives.
 
