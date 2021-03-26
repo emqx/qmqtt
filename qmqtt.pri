@@ -1,5 +1,19 @@
+#
+# Add the source folder to the include directories to be searched while
+# compiling a project, this allows developers to write "#include <qmqtt.h>" in
+# their respective projects.
+#
 INCLUDEPATH += $$PWD/src/mqtt
 
+#
+# Do not add DLL import/export symbols as we are compiling QMQTT source code
+# directly with the source code of the project that includes this file.
+#
+DEFINES += MQTT_PROJECT_INCLUDE_SRC
+
+#
+# Add header files
+#
 HEADERS += \
     $$PWD/src/mqtt/qmqtt.h \
     $$PWD/src/mqtt/qmqtt_client.h \
@@ -19,6 +33,9 @@ HEADERS += \
     $$PWD/src/mqtt/qmqtt_timerinterface.h \
     $$PWD/src/mqtt/qmqtt_ssl_socket_p.h
 
+#
+# Add source files
+#
 SOURCES += \
     $$PWD/src/mqtt/qmqtt_client.cpp \
     $$PWD/src/mqtt/qmqtt_client_p.cpp \
@@ -31,6 +48,9 @@ SOURCES += \
     $$PWD/src/mqtt/qmqtt_timer.cpp \
     $$PWD/src/mqtt/qmqtt_ssl_socket.cpp
 
+#
+# Add support for websockets
+#
 QMQTT_WEBSOCKETS {
     PRIVATE_HEADERS += \
         $$PWD/src/mqtt/qmqtt_websocket_p.h \

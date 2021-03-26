@@ -34,12 +34,14 @@
 
 #include <QtGlobal>
 
-#if defined(QT_BUILD_QMQTT_LIB)
-#  define Q_MQTT_EXPORT Q_DECL_EXPORT
-#elif defined(QT_BUILD_QMQTT_SRC)
-#  define Q_MQTT_EXPORT
+#if !defined(QT_STATIC) || !defined(MQTT_PROJECT_INCLUDE_SRC)
+#  if defined(QT_BUILD_QMQTT_LIB)
+#    define Q_MQTT_EXPORT Q_DECL_EXPORT
+#  else
+#    define Q_MQTT_EXPORT Q_DECL_IMPORT
+#  endif
 #else
-#  define Q_MQTT_EXPORT Q_DECL_IMPORT
+#  define Q_MQTT_EXPORT
 #endif
 
 #endif // QMQTT_GLOBAL_H
