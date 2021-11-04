@@ -410,3 +410,7 @@ void QMQTT::Client::ignoreSslErrors(const QList<QSslError>& errors)
     d->ignoreSslErrors(errors);
 }
 #endif // QT_NO_SSL
+
+#if MQTT_INCLUDE_MOC
+#include "moc_qmqtt_client.cpp"
+#endif

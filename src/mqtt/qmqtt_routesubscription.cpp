@@ -113,5 +113,4 @@ void RouteSubscription::routeMessage(const Message &message)
 
     emit received(routedMessage);
 }
-
 } // namespace QMQTT

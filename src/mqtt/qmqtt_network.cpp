@@ -293,3 +293,4 @@ void QMQTT::Network::setSslConfiguration(const QSslConfiguration& config)
     _socket->setSslConfiguration(config);
 }
 #endif // QT_NO_SSL
+
