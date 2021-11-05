@@ -71,3 +71,7 @@ void QMQTT::Timer::stop()
 {
     _timer.stop();
 }
+
+#if MQTT_INCLUDE_MOC
+#include "moc_qmqtt_timer_p.cpp"
+#endif
