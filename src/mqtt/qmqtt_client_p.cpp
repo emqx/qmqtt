@@ -335,7 +335,12 @@ void QMQTT::ClientPrivate::stopKeepAlive()
 
 quint16 QMQTT::ClientPrivate::nextmid()
 {
-    return _gmid++;
+    const quint16 result = _gmid;
+    _gmid++;
+    if (_gmid == 0)
+      _gmid++;
+
+    return result;
 }
 
 quint16 QMQTT::ClientPrivate::publish(const Message& message)
