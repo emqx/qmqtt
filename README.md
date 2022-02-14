@@ -110,23 +110,36 @@ New BSD License
 Contributors
 =============
 
-[@Kampfgnom](https://github.com/Kampfgnom)
-
-[@rafaeldelucena](https://github.com/rafaeldelucena)
-
-[@Vortex375](https://github.com/Vortex375)
-
-[@mwallnoefer](https://github.com/mwallnoefer)
-
-[@KonstantinRitt](https://github.com/KonstantinRitt)
-
-[@cncap](https://github.com/cncap)
-
-[@Psy-Kai](https://github.com/Psy-Kai)
-
-[@ejvr](https://github.com/ejvr)
-
-[@keytee](https://github.com/keytee)
+[@avsdev-cw](https://github.com/avsdev-cw),
+[@alex-spataru](https://github.com/alex-spataru),
+Benjamin Schmitz,
+[@bf-bryants](https://github.com/bf-bryants),
+[@bog-dan-ro](https://github.com/bog-dan-ro),
+[@chsterz](https://github.com/chsterz),
+[@cncap](https://github.com/cncap),
+[@ejvr](https://github.com/ejvr),
+[@ehntoo](https://github.com/ehntoo),
+Erik Botö,
+Guillaume Bour,
+[@halfgaar](https://github.com/halfgaar),
+[@hxcan](https://github.com/hxcan),
+[@jpnurmi](https://github.com/jpnurmi),
+Kai Dohmen,
+[@Kampfgnom](https://github.com/Kampfgnom),
+[@keytee](https://github.com/keytee),
+[@kollix](https://github.com/kollix),
+[@KonstantinRitt](https://github.com/KonstantinRitt),
+[@maggu2810](https://github.com/maggu2810),
+[@mwallnoefer](https://github.com/mwallnoefer),
+[@NicoWallmeier](https://github.com/NicoWallmeier),
+Niklas Wulf,
+Niraj Desai,
+[@Psy-Kai](https://github.com/Psy-Kai),
+[@rafaeldelucena](https://github.com/rafaeldelucena),
+[@rokm](https://github.com/rokm),
+sgaoemq,
+[@Vortex375](https://github.com/Vortex375),
+ybq
 
 
 Authors
