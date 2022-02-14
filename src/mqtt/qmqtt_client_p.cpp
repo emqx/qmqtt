@@ -376,6 +376,7 @@ void QMQTT::ClientPrivate::onNetworkDisconnected()
     stopKeepAlive();
     _midToTopic.clear();
     _midToMessage.clear();
+    _connectionState = ConnectionState::STATE_DISCONNECTED;
     emit q->disconnected();
 }
 
@@ -539,7 +540,7 @@ void QMQTT::ClientPrivate::setAutoReconnectInterval(const int autoReconnectInter
 
 bool QMQTT::ClientPrivate::isConnectedToHost() const
 {
-    return _network->isConnectedToHost();
+    return _connectionState == ConnectionState::STATE_CONNECTED;
 }
 
 QMQTT::ConnectionState QMQTT::ClientPrivate::connectionState() const
