@@ -83,7 +83,3 @@ QAbstractSocket::SocketError QMQTT::Socket::error() const
 {
     return _socket->error();
 }
-
-#if MQTT_INCLUDE_MOC
-#include "moc_qmqtt_socket_p.cpp"
-#endif

@@ -65,6 +65,3 @@ Client *Router::client() const
 
 } // namespace QMQTT
 
-#if MQTT_INCLUDE_MOC
-#include "moc_qmqtt_router.cpp"
-#endif
