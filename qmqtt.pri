@@ -12,6 +12,11 @@ INCLUDEPATH += $$PWD/src/mqtt
 DEFINES += MQTT_PROJECT_INCLUDE_SRC
 
 #
+# Optimize compilation times by including MOC C++ code
+#
+DEFINES += MQTT_INCLUDE_MOC=1
+
+#
 # Add header files
 #
 HEADERS += \
