@@ -113,8 +113,5 @@ void RouteSubscription::routeMessage(const Message &message)
 
     emit received(routedMessage);
 }
-} // namespace QMQTT
 
-#if MQTT_INCLUDE_MOC
-#include "moc_qmqtt_routesubscription.cpp"
-#endif
+} // namespace QMQTT
