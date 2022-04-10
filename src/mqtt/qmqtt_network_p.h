@@ -91,7 +91,7 @@ public:
     void setSslConfiguration(const QSslConfiguration& config);
 #endif // QT_NO_SSL
 
-public slots:
+public Q_SLOTS:
     void connectToHost(const QHostAddress& host, const quint16 port);
     void connectToHost(const QString& hostName, const quint16 port);
     void disconnectFromHost();
@@ -99,7 +99,7 @@ public slots:
     void ignoreSslErrors();
 #endif // QT_NO_SSL
 
-protected slots:
+protected Q_SLOTS:
     void onSocketError(QAbstractSocket::SocketError socketError);
 
 protected:
@@ -125,7 +125,7 @@ protected:
     int _shift;
     QByteArray _data;
 
-protected slots:
+protected Q_SLOTS:
     void onSocketReadReady();
     void onDisconnected();
     void connectToHost();

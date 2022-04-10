@@ -57,7 +57,7 @@ public:
 
     virtual qint64 bytesAvailable() const;
 
-signals:
+Q_SIGNALS:
     void connected();
 
     void disconnected();
@@ -71,7 +71,7 @@ protected:
 
     virtual qint64 writeData(const char *data, qint64 maxSize);
 
-private slots:
+private Q_SLOTS:
     void binaryMessageReceived(const QByteArray &frame);
 
 private:

@@ -56,10 +56,10 @@ public:
 
     QString route() const;
 
-signals:
+Q_SIGNALS:
     void received(const RoutedMessage &message);
 
-private slots:
+private Q_SLOTS:
     void routeMessage(const Message &message);
 
 private:

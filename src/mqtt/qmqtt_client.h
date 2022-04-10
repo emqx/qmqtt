@@ -216,7 +216,7 @@ public:
     void setSslConfiguration(const QSslConfiguration& config);
 #endif // QT_NO_SSL
 
-public slots:
+public Q_SLOTS:
     void setHost(const QHostAddress& host);
     void setHostName(const QString& hostName);
     void setPort(const quint16 port);
@@ -246,7 +246,7 @@ public slots:
     void ignoreSslErrors(const QList<QSslError>& errors);
 #endif // QT_NO_SSL
 
-signals:
+Q_SIGNALS:
     void connected();
     void disconnected();
     void error(const QMQTT::ClientError error);
@@ -260,7 +260,7 @@ signals:
     void sslErrors(const QList<QSslError>& errors);
 #endif // QT_NO_SSL
 
-protected slots:
+protected Q_SLOTS:
     void onNetworkConnected();
     void onNetworkDisconnected();
     void onNetworkReceived(const QMQTT::Frame& frame);

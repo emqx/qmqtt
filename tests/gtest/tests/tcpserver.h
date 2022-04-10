@@ -21,7 +21,7 @@ protected:
     QTcpSocket* _socket;
     QByteArray _data;
 
-protected slots:
+protected Q_SLOTS:
     void on_newConnection();
     void on_readyRead();
 };

@@ -70,7 +70,7 @@ public:
     virtual void setSslConfiguration(const QSslConfiguration& config) { Q_UNUSED(config); }
 #endif // QT_NO_SSL
 
-signals:
+Q_SIGNALS:
     void connected();
     void disconnected();
     void error(QAbstractSocket::SocketError socketError);

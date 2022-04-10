@@ -52,7 +52,7 @@ public:
     virtual void start() = 0;
     virtual void stop() = 0;
 
-signals:
+Q_SIGNALS:
     void timeout();
 };
 
