@@ -3,7 +3,7 @@
 #include <QTcpSocket>
 
 TcpServer::TcpServer(const QHostAddress host, const quint16 port)
-    : _socket(NULL)
+    : _socket(nullptr)
 {
     connect(this, &QTcpServer::newConnection, this, &TcpServer::on_newConnection);
     listen(host, port);
@@ -15,16 +15,16 @@ TcpServer::~TcpServer()
 
 void TcpServer::on_newConnection()
 {
-    if(NULL != _socket)
+    if(nullptr != _socket)
     {
         disconnect(_socket, &QTcpSocket::readyRead, this, &TcpServer::on_readyRead);
         _socket->disconnectFromHost();
         _socket->deleteLater();
-        _socket = NULL;
+        _socket = nullptr;
         _data.clear();
     }
     _socket = nextPendingConnection();
-    if(NULL != _socket)
+    if(nullptr != _socket)
     {
         connect(_socket, &QTcpSocket::readyRead, this, &TcpServer::on_readyRead);
     }

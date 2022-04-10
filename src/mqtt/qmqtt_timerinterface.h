@@ -42,7 +42,7 @@ class Q_MQTT_EXPORT TimerInterface : public QObject
 {
     Q_OBJECT
 public:
-    explicit TimerInterface(QObject* parent = NULL) : QObject(parent) {}
+    explicit TimerInterface(QObject* parent = nullptr) : QObject(parent) {}
     virtual ~TimerInterface() {}
 
     virtual bool isSingleShot() const = 0;

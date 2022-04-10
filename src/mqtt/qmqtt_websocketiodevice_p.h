@@ -51,7 +51,7 @@ class WebSocketIODevice : public QIODevice
 {
     Q_OBJECT
 public:
-    explicit WebSocketIODevice(QWebSocket *socket, QObject *parent = NULL);
+    explicit WebSocketIODevice(QWebSocket *socket, QObject *parent = nullptr);
 
     bool connectToHost(const QNetworkRequest &request);
 

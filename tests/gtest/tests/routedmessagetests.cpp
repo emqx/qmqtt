@@ -19,7 +19,7 @@ private slots:
 };
 
 RoutedMessageTests::RoutedMessageTests()
-    : _uut(NULL)
+    : _uut(nullptr)
 {
 }
 

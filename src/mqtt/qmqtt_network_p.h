@@ -59,23 +59,23 @@ class Network : public NetworkInterface
     Q_OBJECT
 
 public:
-    Network(QObject* parent = NULL);
+    Network(QObject* parent = nullptr);
 #ifndef QT_NO_SSL
-    Network(const QSslConfiguration& config, QObject* parent = NULL);
+    Network(const QSslConfiguration& config, QObject* parent = nullptr);
 #endif // QT_NO_SSL
 #ifdef QT_WEBSOCKETS_LIB
 #ifndef QT_NO_SSL
     Network(const QString& origin,
             QWebSocketProtocol::Version version,
             const QSslConfiguration* sslConfig,
-            QObject* parent = NULL);
+            QObject* parent = nullptr);
 #endif // QT_NO_SSL
     Network(const QString& origin,
             QWebSocketProtocol::Version version,
-            QObject* parent = NULL);
+            QObject* parent = nullptr);
 #endif // QT_WEBSOCKETS_LIB
     Network(SocketInterface* socketInterface, TimerInterface* timerInterface,
-            QObject* parent = NULL);
+            QObject* parent = nullptr);
     ~Network();
 
     void sendFrame(const Frame &frame);

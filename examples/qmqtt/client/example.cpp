@@ -43,7 +43,7 @@ class Publisher : public QMQTT::Client
 public:
     explicit Publisher(const QHostAddress& host = EXAMPLE_HOST,
                        const quint16 port = EXAMPLE_PORT,
-                       QObject* parent = NULL)
+                       QObject* parent = nullptr)
         : QMQTT::Client(host, port, parent)
         , _number(0)
     {
@@ -88,7 +88,7 @@ class Subscriber : public QMQTT::Client
 public:
     explicit Subscriber(const QHostAddress& host = EXAMPLE_HOST,
                         const quint16 port = EXAMPLE_PORT,
-                        QObject* parent = NULL)
+                        QObject* parent = nullptr)
         : QMQTT::Client(host, port, parent)
         , _qout(stdout)
     {

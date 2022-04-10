@@ -53,7 +53,7 @@ class Q_MQTT_EXPORT NetworkInterface : public QObject
 {
     Q_OBJECT
 public:
-    explicit NetworkInterface(QObject* parent = NULL) : QObject(parent) {}
+    explicit NetworkInterface(QObject* parent = nullptr) : QObject(parent) {}
     virtual ~NetworkInterface() {}
 
     virtual void sendFrame(const Frame& frame) = 0;

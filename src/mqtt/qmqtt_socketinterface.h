@@ -54,7 +54,7 @@ class Q_MQTT_EXPORT SocketInterface : public QObject
 {
     Q_OBJECT
 public:
-    explicit SocketInterface(QObject* parent = NULL) : QObject(parent) {}
+    explicit SocketInterface(QObject* parent = nullptr) : QObject(parent) {}
     virtual ~SocketInterface() {}
 
     virtual QIODevice* ioDevice() = 0;

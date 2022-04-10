@@ -23,7 +23,7 @@ private slots:
 };
 
 RouterTests::RouterTests()
-    : _uut(NULL)
+    : _uut(nullptr)
 {
 }
 
@@ -46,7 +46,7 @@ void RouterTests::cleanup()
 void RouterTests::subscribe_Test()
 {
 //    QMQTT::RouteSubscription* subscription = _uut->subscribe("route");
-//    QVERIFY(NULL != subscription);
+//    QVERIFY(nullptr != subscription);
 //    QCOMPARE(subscription->route(), QString("route"));
 }
 

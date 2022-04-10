@@ -73,7 +73,7 @@ void QMQTT::ClientPrivate::init(const QHostAddress& host, const quint16 port, Ne
     Q_Q(Client);
     _host = host;
     _port = port;
-    if(network == NULL)
+    if(network == nullptr)
     {
         init(new Network(q));
     }

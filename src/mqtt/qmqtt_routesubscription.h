@@ -65,7 +65,7 @@ private Q_SLOTS:
 private:
     friend class Router;
 
-    explicit RouteSubscription(Router *parent = 0);
+    explicit RouteSubscription(Router *parent = nullptr);
     void setRoute(const QString &route);
 
     QPointer<Client> _client;
