@@ -147,14 +147,14 @@ class Q_MQTT_EXPORT Client : public QObject
 public:
     Client(const QHostAddress& host = QHostAddress::LocalHost,
            const quint16 port = 1883,
-           QObject* parent = NULL);
+           QObject* parent = nullptr);
 
 #ifndef QT_NO_SSL
     Client(const QString& hostName,
            const quint16 port,
            const QSslConfiguration& config,
            const bool ignoreSelfSigned=false,
-           QObject* parent = NULL);
+           QObject* parent = nullptr);
 #endif // QT_NO_SSL
 
     // This function is provided for backward compatibility with older versions of QMQTT.
@@ -165,7 +165,7 @@ public:
            const quint16 port,
            const bool ssl,
            const bool ignoreSelfSigned,
-           QObject* parent = NULL);
+           QObject* parent = nullptr);
 
 #ifdef QT_WEBSOCKETS_LIB
     // Create a connection over websockets
@@ -173,7 +173,7 @@ public:
            const QString& origin,
            QWebSocketProtocol::Version version,
            bool ignoreSelfSigned = false,
-           QObject* parent = NULL);
+           QObject* parent = nullptr);
 
 #ifndef QT_NO_SSL
     Client(const QString& url,
@@ -181,7 +181,7 @@ public:
            QWebSocketProtocol::Version version,
            const QSslConfiguration& config,
            const bool ignoreSelfSigned = false,
-           QObject* parent = NULL);
+           QObject* parent = nullptr);
 #endif // QT_NO_SSL
 #endif // QT_WEBSOCKETS_LIB
 
@@ -189,7 +189,7 @@ public:
     Client(NetworkInterface* network,
            const QHostAddress& host = QHostAddress::LocalHost,
            const quint16 port = 1883,
-           QObject* parent = NULL);
+           QObject* parent = nullptr);
 
     virtual ~Client();
 
@@ -216,7 +216,7 @@ public:
     void setSslConfiguration(const QSslConfiguration& config);
 #endif // QT_NO_SSL
 
-public slots:
+public Q_SLOTS:
     void setHost(const QHostAddress& host);
     void setHostName(const QString& hostName);
     void setPort(const quint16 port);
@@ -246,7 +246,7 @@ public slots:
     void ignoreSslErrors(const QList<QSslError>& errors);
 #endif // QT_NO_SSL
 
-signals:
+Q_SIGNALS:
     void connected();
     void disconnected();
     void error(const QMQTT::ClientError error);
@@ -260,7 +260,7 @@ signals:
     void sslErrors(const QList<QSslError>& errors);
 #endif // QT_NO_SSL
 
-protected slots:
+protected Q_SLOTS:
     void onNetworkConnected();
     void onNetworkDisconnected();
     void onNetworkReceived(const QMQTT::Frame& frame);

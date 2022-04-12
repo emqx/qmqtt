@@ -19,7 +19,7 @@ private slots:
 };
 
 RouteSubscriptionTests::RouteSubscriptionTests()
-    : _uut(NULL)
+    : _uut(nullptr)
 {
 }
 

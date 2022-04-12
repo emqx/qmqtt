@@ -40,7 +40,7 @@ void CustomPrinter::OnTestCaseStart(const TestCase& test_case)
     qout << "[----------] "
          << (test_case.test_to_run_count() == 1 ? "test" : "tests")
          << " from " << test_case.name();
-    if(NULL == test_case.type_param())
+    if(nullptr == test_case.type_param())
     {
         qout << endl;
     }
@@ -88,18 +88,18 @@ void CustomPrinter::OnTestEnd(const TestInfo& test_info)
     PrintTestName(test_info.test_case_name(), test_info.name());
     if (test_info.result()->Failed())
     {
-        if (NULL != test_info.type_param() || NULL != test_info.value_param())
+        if (nullptr != test_info.type_param() || nullptr != test_info.value_param())
         {
             qout << ", where ";
-            if (NULL != test_info.type_param())
+            if (nullptr != test_info.type_param())
             {
                 qout << "TypeParam = " << test_info.type_param();
-                if (NULL != test_info.value_param())
+                if (nullptr != test_info.value_param())
                 {
                     qout << " and ";
                 }
             }
-            if (NULL != test_info.value_param())
+            if (nullptr != test_info.value_param())
             {
                 qout << "GetParam() = " << test_info.value_param();
             }

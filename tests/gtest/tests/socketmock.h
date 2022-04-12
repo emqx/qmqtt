@@ -9,7 +9,7 @@
 class SocketMock : public QMQTT::SocketInterface
 {
 public:
-    SocketMock(QObject* parent = NULL)
+    SocketMock(QObject* parent = nullptr)
         : QMQTT::SocketInterface (parent)
         , mockIoDevice(new IODeviceMock)
     {

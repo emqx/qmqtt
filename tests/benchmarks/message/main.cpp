@@ -6,7 +6,7 @@ class tst_message: public QObject
 {
     Q_OBJECT
 
-private slots:
+private Q_SLOTS:
     void emptyMessage();
     void message();
     void equality_data();
