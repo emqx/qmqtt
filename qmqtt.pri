@@ -52,7 +52,7 @@ SOURCES += \
 # Add support for websockets
 #
 QMQTT_WEBSOCKETS {
-    PRIVATE_HEADERS += \
+    HEADERS += \
         $$PWD/src/mqtt/qmqtt_websocket_p.h \
         $$PWD/src/mqtt/qmqtt_websocketiodevice_p.h
 

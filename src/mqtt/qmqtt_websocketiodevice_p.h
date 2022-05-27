@@ -37,12 +37,9 @@
 
 #include <QByteArray>
 #include <QIODevice>
-#include <QList>
-#include <QAbstractSocket>
 
 QT_FORWARD_DECLARE_CLASS(QWebSocket)
 QT_FORWARD_DECLARE_CLASS(QNetworkRequest)
-QT_FORWARD_DECLARE_CLASS(QSslError)
 
 namespace QMQTT
 {
@@ -56,15 +53,6 @@ public:
     bool connectToHost(const QNetworkRequest &request);
 
     virtual qint64 bytesAvailable() const;
-
-Q_SIGNALS:
-    void connected();
-
-    void disconnected();
-
-    void error(QAbstractSocket::SocketError error);
-
-    void sslErrors(const QList<QSslError> &errors);
 
 protected:
     virtual qint64 readData(char *data, qint64 maxSize);
