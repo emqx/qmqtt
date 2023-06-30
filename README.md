@@ -1,11 +1,11 @@
 QMQTT
 =====
 
-mqtt client for Qt
+mqtt client for Qt 5 in maintenance status
 
 **Please compile the library with Qt >= 5.3 version. On Windows you need to specify `CONFIG += NO_UNIT_TESTS`, since gtest is not supported.**
 
-SSL is enabled by default, if the version of OpenSSL < 1.0.2, SSL may not be supported. 
+SSL is enabled by default, if the version of OpenSSL < 1.0.2, SSL may not be supported.
 
 Disable the SSL in CMakeLists.txt (cmake):
 
@@ -13,7 +13,7 @@ Disable the SSL in CMakeLists.txt (cmake):
 
 Disable the SSL with src/mqtt/qmqtt.pro (qmake):
 
-    CONFIG+=QMQTT_NO_SSL
+    CONFIG += QMQTT_NO_SSL
 
 To add websocket support, compile the library with Qt >= 5.7, and specify 'CONFIG += QMQTT_WEBSOCKETS'.
 This also works when compiling qmqtt for WebAssembly.
@@ -100,12 +100,32 @@ Signals
     void pingresp();
     void received(const QMQTT::Message& message);
 
+Qt 6 support
+============
+
+This library has been developed and tested against Qt 5. Active work on it has stopped since Qt released its own _mqtt_ module several years ago. There are currently no plans for further extensions except for smaller rectifications and bug fixing.
+
+At your own risk you may enable experimental Qt 6 support. This may be achieved by changing the following two lines in CMakeLists.txt:
+
+    find_package( Qt5 ${qt5_min_version} COMPONENTS Core Network ${ws_component} CONFIG REQUIRED )
+
+replace `Qt5` by `Qt6`:
+
+    find_package( Qt6 ${qt5_min_version} COMPONENTS Core Network ${ws_component} CONFIG REQUIRED )
+
+and
+
+    target_link_libraries( ${PROJECT_NAME} PUBLIC Qt5::Core Qt5::Network ${ws_libname} )
+
+replace `Qt5` by `Qt6`:
+
+    target_link_libraries( ${PROJECT_NAME} PUBLIC Qt6::Core Qt6::Network ${ws_libname} )
+
 
 License
 =======
 
 New BSD License
-
 
 Contributors
 =============
@@ -137,10 +157,10 @@ Niraj Desai,
 [@Psy-Kai](https://github.com/Psy-Kai),
 [@rafaeldelucena](https://github.com/rafaeldelucena),
 [@rokm](https://github.com/rokm),
+[@RoachLin](https://github.com/RoachLin),
 sgaoemq,
 [@Vortex375](https://github.com/Vortex375),
 ybq
-
 
 Authors
 =======
