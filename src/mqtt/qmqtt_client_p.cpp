@@ -52,6 +52,9 @@ static const quint8 QOS2 = 0x02;
 QMQTT::ClientPrivate::ClientPrivate(Client* qq_ptr)
     : _host(QHostAddress::LocalHost)
     , _port(1883)
+#ifndef QT_NO_SSL
+    , _ignoreSelfSigned(false)
+#endif // QT_NO_SSL
     , _gmid(1)
     , _version(MQTTVersion::V3_1_0)
     , _clientId(QUuid::createUuid().toString())
