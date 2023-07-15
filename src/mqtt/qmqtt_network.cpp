@@ -49,8 +49,8 @@ QMQTT::Network::Network(QObject* parent)
     , _port(DEFAULT_PORT)
     , _autoReconnect(DEFAULT_AUTORECONNECT)
     , _autoReconnectInterval(DEFAULT_AUTORECONNECT_INTERVAL_MS)
-    , _socket(new QMQTT::Socket(this))
-    , _autoReconnectTimer(new QMQTT::Timer(this))
+    , _socket(new QMQTT::Socket)
+    , _autoReconnectTimer(new QMQTT::Timer)
     , _readState(Header)
 {
     initialize();
@@ -62,8 +62,8 @@ QMQTT::Network::Network(const QSslConfiguration& config, QObject *parent)
     , _port(DEFAULT_SSL_PORT)
     , _autoReconnect(DEFAULT_AUTORECONNECT)
     , _autoReconnectInterval(DEFAULT_AUTORECONNECT_INTERVAL_MS)
-    , _socket(new QMQTT::SslSocket(config, this))
-    , _autoReconnectTimer(new QMQTT::Timer(this))
+    , _socket(new QMQTT::SslSocket(config))
+    , _autoReconnectTimer(new QMQTT::Timer)
     , _readState(Header)
 {
     initialize();
