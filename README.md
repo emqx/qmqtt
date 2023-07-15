@@ -158,6 +158,7 @@ Niraj Desai,
 [@rafaeldelucena](https://github.com/rafaeldelucena),
 [@rokm](https://github.com/rokm),
 [@RoachLin](https://github.com/RoachLin),
+[@sergey-kuzminov](https://github.com/sergey-kuzminov),
 sgaoemq,
 [@Vortex375](https://github.com/Vortex375),
 ybq
