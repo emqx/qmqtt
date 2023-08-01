@@ -25,10 +25,10 @@ endif()
 set( ws_component )
 set( ws_libname )
 set( qt5_min_version "5.3.0" )
+set( qt6_min_version "6.5.0" )
 
 if ( ${PROJECT_NAME}_WEBSOCKETS )
     set( ws_component WebSockets )
-    set( ws_libname   Qt5::WebSockets )
     set( qt5_min_version "5.7.0" )
 endif()
 
@@ -36,8 +36,16 @@ if ( NOT ${PROJECT_NAME}_SSL)
     set( ssl_defs QT_NO_SSL )
 endif()
 
+find_package(Qt6 ${qt6_min_version} COMPONENTS Core Network ${ws_component} CONFIG)
+if(NOT Qt6_FOUND)
+    find_package(Qt5 ${qt5_min_version} COMPONENTS Core Network ${ws_component} REQUIRED)
+endif()
 
-find_package( Qt5 ${qt5_min_version} COMPONENTS Core Network ${ws_component} CONFIG REQUIRED )
+if(${PROJECT_NAME}_WEBSOCKETS)
+    set( ws_libname "Qt${QT_VERSION_MAJOR}::WebSockets" )
+    find_package(Qt${QT_VERSION_MAJOR} COMPONENTS WebSockets REQUIRED)
+endif()
+
 set( CMAKE_AUTOMOC ON )
 cmake_policy( SET CMP0020 NEW ) # Automatically link Qt executables to qtmain target on Windows.
 
@@ -109,7 +117,7 @@ set_source_files_properties( ${PUBLIC_HEADERS} PROPERTIES PUBLIC_HEADER 1 )
 
 # Library has the same name as the project
 add_library( ${PROJECT_NAME} ${library_build_type} ${SOURCES} ${PUBLIC_HEADERS} ${PRIVATE_HEADERS} )
-target_link_libraries( ${PROJECT_NAME} PUBLIC Qt5::Core Qt5::Network ${ws_libname} )
+target_link_libraries( ${PROJECT_NAME} PUBLIC Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Network ${ws_libname} )
 target_compile_definitions( ${PROJECT_NAME}
     PRIVATE
         QT_NO_CAST_FROM_ASCII

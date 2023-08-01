@@ -103,23 +103,7 @@ Signals
 Qt 6 support
 ============
 
-This library has been developed and tested against Qt 5. Active work on it has stopped since Qt released its own _mqtt_ module several years ago. There are currently no plans for further extensions except for smaller rectifications and bug fixing.
-
-At your own risk you may enable experimental Qt 6 support. This may be achieved by changing the following two lines in CMakeLists.txt:
-
-    find_package( Qt5 ${qt5_min_version} COMPONENTS Core Network ${ws_component} CONFIG REQUIRED )
-
-replace `Qt5` by `Qt6`:
-
-    find_package( Qt6 ${qt5_min_version} COMPONENTS Core Network ${ws_component} CONFIG REQUIRED )
-
-and
-
-    target_link_libraries( ${PROJECT_NAME} PUBLIC Qt5::Core Qt5::Network ${ws_libname} )
-
-replace `Qt5` by `Qt6`:
-
-    target_link_libraries( ${PROJECT_NAME} PUBLIC Qt6::Core Qt6::Network ${ws_libname} )
+This library has been developed and tested against Qt 5. Active work on it has stopped since Qt released its own _mqtt_ module several years ago. There are currently no plans for further extensions except for smaller rectifications and bug fixing. At your own risk you may use it in Qt6 projects using cmake.
 
 
 License
