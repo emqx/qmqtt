@@ -166,7 +166,7 @@ ybq
 Authors
 =======
 
-[@emqplus](https://github.com/emqplus) Feng Lee <feng@emqtt.io>
+[@emqplus](https://github.com/emqplus) Feng Lee <feng@emqx.io>
 
 [@wguynes](https://github.com/wguynes) William Guynes <wguynes@gmail.com>
 
