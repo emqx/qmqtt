@@ -25,7 +25,7 @@ endif()
 set( ws_component )
 set( ws_libname )
 set( qt5_min_version "5.3.0" )
-set( qt6_min_version "6.5.0" )
+set( qt6_min_version "6.2.4" )
 
 if ( ${PROJECT_NAME}_WEBSOCKETS )
     set( ws_component WebSockets )
