@@ -759,7 +759,7 @@ class SubversionVCS(VersionControlSystem):
         username, netloc = urllib.splituser(netloc)
         if username:
           logging.info("Removed username from base URL")
-        if netloc.endswith("svn.python.org"):
+        if netloc in ("svn.python.org", "pythondev@svn.python.org"):
           if netloc == "svn.python.org":
             if path.startswith("/projects/"):
               path = path[9:]
@@ -767,7 +767,7 @@ class SubversionVCS(VersionControlSystem):
             ErrorExit("Unrecognized Python URL: %s" % url)
           base = "http://svn.python.org/view/*checkout*%s/" % path
           logging.info("Guessed Python base = %s", base)
-        elif netloc.endswith("svn.collab.net"):
+        elif netloc == "svn.collab.net":
           if path.startswith("/repos/"):
             path = path[6:]
           base = "http://svn.collab.net/viewvc/*checkout*%s/" % path
