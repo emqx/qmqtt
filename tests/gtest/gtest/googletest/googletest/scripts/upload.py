@@ -759,7 +759,7 @@ class SubversionVCS(VersionControlSystem):
         username, netloc = urllib.splituser(netloc)
         if username:
           logging.info("Removed username from base URL")
-        if netloc.endswith("svn.python.org"):
+        if netloc in ("svn.python.org", "pythondev@svn.python.org"):
           if netloc == "svn.python.org":
             if path.startswith("/projects/"):
               path = path[9:]
