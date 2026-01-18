@@ -4689,8 +4689,23 @@ bool UnitTestImpl::RunAllTests() {
 // function will write over it. If the variable is present, but the file cannot
 // be created, prints an error and exits.
 void WriteToShardStatusFileIfNeeded() {
-  const char* const test_shard_file = posix::GetEnv(kTestShardStatusFile);
-  if (test_shard_file != NULL) {
+  const char* const test_shard_file_env = posix::GetEnv(kTestShardStatusFile);
+  if (test_shard_file_env != NULL) {
+    // Validate that the shard status file is a simple file name without
+    // directory separators or path traversal sequences.
+    if (strstr(test_shard_file_env, "..") != NULL ||
+        strchr(test_shard_file_env, '/') != NULL ||
+        strchr(test_shard_file_env, '\\') != NULL) {
+      ColoredPrintf(
+          COLOR_RED,
+          "Invalid value for %s: \"%s\". The shard status file name must not "
+          "contain path separators or \"..\" sequences.\n",
+          kTestShardStatusFile, test_shard_file_env);
+      fflush(stdout);
+      exit(EXIT_FAILURE);
+    }
+
+    const char* const test_shard_file = test_shard_file_env;
     FILE* const file = posix::FOpen(test_shard_file, "w");
     if (file == NULL) {
       ColoredPrintf(COLOR_RED,
