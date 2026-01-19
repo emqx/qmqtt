@@ -302,5 +302,26 @@ elseif( ${CMAKE_HOST_WIN32} )
     set( CPACK_NSIS_URL_INFO_ABOUT ${CPACK_PACKAGE_HOMEPAGE_URL} )
 endif()
 
+# ===================================================================
+# Examples (optional)
+
+option( ${PROJECT_NAME}_BUILD_EXAMPLES "Build examples" OFF )
+
+if ( ${PROJECT_NAME}_BUILD_EXAMPLES )
+    add_subdirectory( examples )
+endif()
+
+
+# ===================================================================
+# Tests (optional)
+
+option( ${PROJECT_NAME}_BUILD_TESTS "Build tests" OFF )
+
+if ( ${PROJECT_NAME}_BUILD_TESTS )
+    enable_testing()
+    add_subdirectory( tests )
+endif()
+
+
 # This must always be last!
 include(CPack)
