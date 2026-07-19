@@ -44,14 +44,14 @@ class Timer : public TimerInterface
     Q_OBJECT
 public:
     explicit Timer(QObject *parent = nullptr);
-    virtual ~Timer();
+    ~Timer() override;
 
-    bool isSingleShot() const;
-    void setSingleShot(bool singleShot);
-    int interval() const;
-    void setInterval(int msec);
-    void start();
-    void stop();
+    bool isSingleShot() const override;
+    void setSingleShot(bool singleShot) override;
+    int interval() const override;
+    void setInterval(int msec) override;
+    void start() override;
+    void stop() override;
 
 protected:
     QTimer _timer;

@@ -63,7 +63,7 @@ public:
     { return !operator==(other); }
 
     inline void swap(Message &other) Q_DECL_NOTHROW
-    { qSwap(d, other.d); }
+    { d.swap(other.d); }
 
     quint16 id() const;
     void setId(const quint16 id);

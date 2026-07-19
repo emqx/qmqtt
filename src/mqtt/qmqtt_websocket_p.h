@@ -69,23 +69,23 @@ public:
               QWebSocketProtocol::Version version,
               QObject* parent = nullptr);
 
-    virtual ~WebSocket();
+    ~WebSocket() override;
 
-    QIODevice *ioDevice()
+    QIODevice *ioDevice() override
     {
         return _ioDevice;
     }
 
-    void connectToHost(const QHostAddress& address, quint16 port);
-    void connectToHost(const QString& hostName, quint16 port);
-    void disconnectFromHost();
-    QAbstractSocket::SocketState state() const;
-    QAbstractSocket::SocketError error() const;
+    void connectToHost(const QHostAddress& address, quint16 port) override;
+    void connectToHost(const QString& hostName, quint16 port) override;
+    void disconnectFromHost() override;
+    QAbstractSocket::SocketState state() const override;
+    QAbstractSocket::SocketError error() const override;
 #ifndef QT_NO_SSL
-    void ignoreSslErrors(const QList<QSslError>& errors);
-    void ignoreSslErrors();
-    QSslConfiguration sslConfiguration() const;
-    void setSslConfiguration(const QSslConfiguration& config);
+    void ignoreSslErrors(const QList<QSslError>& errors) override;
+    void ignoreSslErrors() override;
+    QSslConfiguration sslConfiguration() const override;
+    void setSslConfiguration(const QSslConfiguration& config) override;
 #endif // QT_NO_SSL
 
 private:

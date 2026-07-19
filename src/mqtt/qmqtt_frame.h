@@ -40,25 +40,25 @@
 
 QT_FORWARD_DECLARE_CLASS(QDataStream)
 
-#define PROTOCOL_MAGIC_3_1_0 "MQIsdp"
-#define PROTOCOL_MAGIC_3_1_1 "MQTT"
+constexpr char PROTOCOL_MAGIC_3_1_0[] = "MQIsdp";
+constexpr char PROTOCOL_MAGIC_3_1_1[] = "MQTT";
 
-#define RANDOM_CLIENT_PREFIX "QMQTT-"
+constexpr char RANDOM_CLIENT_PREFIX[] = "QMQTT-";
 
-#define CONNECT 0x10
-#define CONNACK 0x20
-#define PUBLISH 0x30
-#define PUBACK 0x40
-#define PUBREC 0x50
-#define PUBREL 0x60
-#define PUBCOMP 0x70
-#define SUBSCRIBE 0x80
-#define SUBACK 0x90
-#define UNSUBSCRIBE 0xA0
-#define UNSUBACK 0xB0
-#define PINGREQ 0xC0
-#define PINGRESP 0xD0
-#define DISCONNECT 0xE0
+constexpr quint8 CONNECT     = 0x10;
+constexpr quint8 CONNACK     = 0x20;
+constexpr quint8 PUBLISH     = 0x30;
+constexpr quint8 PUBACK      = 0x40;
+constexpr quint8 PUBREC      = 0x50;
+constexpr quint8 PUBREL      = 0x60;
+constexpr quint8 PUBCOMP     = 0x70;
+constexpr quint8 SUBSCRIBE   = 0x80;
+constexpr quint8 SUBACK      = 0x90;
+constexpr quint8 UNSUBSCRIBE = 0xA0;
+constexpr quint8 UNSUBACK    = 0xB0;
+constexpr quint8 PINGREQ     = 0xC0;
+constexpr quint8 PINGRESP    = 0xD0;
+constexpr quint8 DISCONNECT  = 0xE0;
 
 constexpr inline quint8 LSB(quint16 A) { return quint8(A & 0x00FF); }
 constexpr inline quint8 MSB(quint16 A) { return quint8((A & 0xFF00) >> 8); }

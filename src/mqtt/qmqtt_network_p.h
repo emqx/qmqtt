@@ -59,9 +59,9 @@ class Network : public NetworkInterface
     Q_OBJECT
 
 public:
-    Network(QObject* parent = nullptr);
+    explicit Network(QObject* parent = nullptr);
 #ifndef QT_NO_SSL
-    Network(const QSslConfiguration& config, QObject* parent = nullptr);
+    explicit Network(const QSslConfiguration& config, QObject* parent = nullptr);
 #endif // QT_NO_SSL
 #ifdef QT_WEBSOCKETS_LIB
 #ifndef QT_NO_SSL
@@ -78,25 +78,25 @@ public:
             QObject* parent = nullptr);
     ~Network();
 
-    void sendFrame(const Frame &frame);
-    bool isConnectedToHost() const;
-    bool autoReconnect() const;
-    void setAutoReconnect(const bool autoReconnect);
-    QAbstractSocket::SocketState state() const;
-    int autoReconnectInterval() const;
-    void setAutoReconnectInterval(const int autoReconnectInterval);
+    void sendFrame(const Frame &frame) override;
+    bool isConnectedToHost() const override;
+    bool autoReconnect() const override;
+    void setAutoReconnect(const bool autoReconnect) override;
+    QAbstractSocket::SocketState state() const override;
+    int autoReconnectInterval() const override;
+    void setAutoReconnectInterval(const int autoReconnectInterval) override;
 #ifndef QT_NO_SSL
-    void ignoreSslErrors(const QList<QSslError>& errors);
-    QSslConfiguration sslConfiguration() const;
-    void setSslConfiguration(const QSslConfiguration& config);
+    void ignoreSslErrors(const QList<QSslError>& errors) override;
+    QSslConfiguration sslConfiguration() const override;
+    void setSslConfiguration(const QSslConfiguration& config) override;
 #endif // QT_NO_SSL
 
 public Q_SLOTS:
-    void connectToHost(const QHostAddress& host, const quint16 port);
-    void connectToHost(const QString& hostName, const quint16 port);
-    void disconnectFromHost();
+    void connectToHost(const QHostAddress& host, const quint16 port) override;
+    void connectToHost(const QString& hostName, const quint16 port) override;
+    void disconnectFromHost() override;
 #ifndef QT_NO_SSL
-    void ignoreSslErrors();
+    void ignoreSslErrors() override;
 #endif // QT_NO_SSL
 
 protected Q_SLOTS:

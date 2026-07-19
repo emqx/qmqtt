@@ -34,8 +34,11 @@
 #include "qmqtt_socket_p.h"
 #include "qmqtt_ssl_socket_p.h"
 #include "qmqtt_timer_p.h"
-#include "qmqtt_websocket_p.h"
 #include "qmqtt_frame.h"
+
+#ifdef QT_WEBSOCKETS_LIB
+#include "qmqtt_websocket_p.h"
+#endif
 
 #include <QDataStream>
 

@@ -48,7 +48,7 @@ class Q_MQTT_EXPORT RoutedMessage
 public:
     inline RoutedMessage()
     {}
-    inline RoutedMessage(const Message &message)
+    inline explicit RoutedMessage(const Message &message)
         : _message(message)
     {}
 

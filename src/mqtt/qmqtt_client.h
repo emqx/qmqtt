@@ -39,8 +39,8 @@
 #include <QHostAddress>
 #include <QByteArray>
 #include <QAbstractSocket>
-#include <QScopedPointer>
 #include <QList>
+#include <memory>
 
 #ifdef QT_WEBSOCKETS_LIB
 #include <QWebSocket>
@@ -146,9 +146,9 @@ class Q_MQTT_EXPORT Client : public QObject
 #endif // QT_NO_SSL
 
 public:
-    Client(const QHostAddress& host = QHostAddress::LocalHost,
-           const quint16 port = 1883,
-           QObject* parent = nullptr);
+    explicit Client(const QHostAddress& host = QHostAddress::LocalHost,
+                    const quint16 port = 1883,
+                    QObject* parent = nullptr);
 
 #ifndef QT_NO_SSL
     Client(const QString& hostName,
@@ -187,10 +187,10 @@ public:
 #endif // QT_WEBSOCKETS_LIB
 
     // for testing purposes only
-    Client(NetworkInterface* network,
-           const QHostAddress& host = QHostAddress::LocalHost,
-           const quint16 port = 1883,
-           QObject* parent = nullptr);
+    explicit Client(NetworkInterface* network,
+                    const QHostAddress& host = QHostAddress::LocalHost,
+                    const quint16 port = 1883,
+                    QObject* parent = nullptr);
 
     virtual ~Client();
 
@@ -273,7 +273,7 @@ protected Q_SLOTS:
 #endif // QT_NO_SSL
 
 protected:
-    QScopedPointer<ClientPrivate> d_ptr;
+    std::unique_ptr<ClientPrivate> d_ptr;
 
 private:
     Q_DISABLE_COPY(Client)

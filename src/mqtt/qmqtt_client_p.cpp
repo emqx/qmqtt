@@ -95,7 +95,7 @@ void QMQTT::ClientPrivate::init(const QString& hostName, const quint16 port,
     _port = port;
     _ignoreSelfSigned = ignoreSelfSigned;
     init(new Network(config, q));
-    QObject::connect(_network.data(), &QMQTT::Network::sslErrors, q, &QMQTT::Client::onSslErrors);
+    QObject::connect(_network.get(), &QMQTT::Network::sslErrors, q, &QMQTT::Client::onSslErrors);
 }
 #endif // QT_NO_SSL
 
@@ -164,13 +164,13 @@ void QMQTT::ClientPrivate::init(NetworkInterface* network)
 
     QObject::connect(&_timer, &QTimer::timeout, q, &Client::onTimerPingReq);
     QObject::connect(&_pingResponseTimer, &QTimer::timeout, q, &Client::onPingTimeout);
-    QObject::connect(_network.data(), &Network::connected,
+    QObject::connect(_network.get(), &Network::connected,
                      q, &Client::onNetworkConnected);
-    QObject::connect(_network.data(), &Network::disconnected,
+    QObject::connect(_network.get(), &Network::disconnected,
                      q, &Client::onNetworkDisconnected);
-    QObject::connect(_network.data(), &Network::received,
+    QObject::connect(_network.get(), &Network::received,
                      q, &Client::onNetworkReceived);
-    QObject::connect(_network.data(), &Network::error,
+    QObject::connect(_network.get(), &Network::error,
                      q, &Client::onNetworkError);
 }
 
@@ -223,11 +223,11 @@ void QMQTT::ClientPrivate::sendConnect()
     //payload
     if(_version == V3_1_1)
     {
-        frame.writeString(QStringLiteral(PROTOCOL_MAGIC_3_1_1));
+        frame.writeString(QString::fromUtf8(PROTOCOL_MAGIC_3_1_1));
     }
     else
     {
-        frame.writeString(QStringLiteral(PROTOCOL_MAGIC_3_1_0));
+        frame.writeString(QString::fromUtf8(PROTOCOL_MAGIC_3_1_0));
     }
     frame.writeChar(_version);
     frame.writeChar(flags);
@@ -864,7 +864,7 @@ void QMQTT::ClientPrivate::onSslErrors(const QList<QSslError>& errors)
 
     if (!_ignoreSelfSigned)
         return;
-    foreach (QSslError error, errors)
+    for (const QSslError& error : errors)
     {
         if (error.error() != QSslError::SelfSignedCertificate &&
             error.error() != QSslError::SelfSignedCertificateInChain)

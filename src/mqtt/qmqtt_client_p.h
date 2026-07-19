@@ -57,7 +57,7 @@ class NetworkInterface;
 class ClientPrivate
 {
 public:
-    ClientPrivate(Client* qq_ptr);
+    explicit ClientPrivate(Client* qq_ptr);
     ~ClientPrivate();
 
     void init(const QHostAddress& host, const quint16 port, NetworkInterface* network = nullptr);
@@ -96,7 +96,7 @@ public:
     QByteArray _password;
     bool _cleanSession;
     ConnectionState _connectionState;
-    QScopedPointer<NetworkInterface> _network;
+    std::unique_ptr<NetworkInterface> _network;
     QTimer _timer;
     QTimer _pingResponseTimer;
     QString _willTopic;

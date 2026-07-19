@@ -52,12 +52,12 @@ public:
 
     bool connectToHost(const QNetworkRequest &request);
 
-    virtual qint64 bytesAvailable() const;
+    qint64 bytesAvailable() const override;
 
 protected:
-    virtual qint64 readData(char *data, qint64 maxSize);
+    qint64 readData(char *data, qint64 maxSize) override;
 
-    virtual qint64 writeData(const char *data, qint64 maxSize);
+    qint64 writeData(const char *data, qint64 maxSize) override;
 
 private Q_SLOTS:
     void binaryMessageReceived(const QByteArray &frame);

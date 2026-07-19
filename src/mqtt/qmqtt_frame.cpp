@@ -61,10 +61,10 @@ Frame::Frame(const quint8 header, const QByteArray &data)
 }
 
 Frame::Frame(const Frame& other)
+    : _header(other._header)
+    , _data(other._data)
+    , _readOffset(other._readOffset)
 {
-    _header = other._header;
-    _data = other._data;
-    _readOffset = other._readOffset;
 }
 
 Frame& Frame::operator=(const Frame& other)
@@ -125,9 +125,9 @@ QByteArray Frame::readByteArray()
     if (len > _data.size() - _readOffset) {
         len = _data.size() - _readOffset;
     }
-    QByteArray data = _data.mid(_readOffset, len);
+    QByteArray ba = _data.mid(_readOffset, len);
     _readOffset += len;
-    return data;
+    return ba;
 }
 
 QString Frame::readString()
@@ -147,30 +147,30 @@ void Frame::writeInt(const quint16 i)
     _data.append(LSB(i));
 }
 
-void Frame::writeByteArray(const QByteArray &data)
+void Frame::writeByteArray(const QByteArray &ba)
 {
-    if (data.size() > (int)USHRT_MAX)
+    if (ba.size() > (int)USHRT_MAX)
     {
         qCritical("qmqtt: Binary data size bigger than %u bytes, truncate it!", USHRT_MAX);
         writeInt(USHRT_MAX);
-        _data.append(data.left(USHRT_MAX));
+        _data.append(ba.left(USHRT_MAX));
         return;
     }
 
-    writeInt(data.size());
-    _data.append(data);
+    writeInt(ba.size());
+    _data.append(ba);
 }
 
 void Frame::writeString(const QString &string)
 {
-    QByteArray data = string.toUtf8();
-    if (data.size() > (int)USHRT_MAX)
+    QByteArray ba = string.toUtf8();
+    if (ba.size() > (int)USHRT_MAX)
     {
         qCritical("qmqtt: String size bigger than %u bytes, truncate it!", USHRT_MAX);
-        data.resize(USHRT_MAX);
+        ba.resize(USHRT_MAX);
     }
-    writeInt(data.size());
-    _data.append(data);
+    writeInt(ba.size());
+    _data.append(ba);
 }
 
 void Frame::writeChar(const quint8 c)
@@ -212,9 +212,8 @@ void Frame::write(QDataStream &stream) const
 bool Frame::encodeLength(QByteArray &lenbuf, int length) const
 {
     lenbuf.clear();
-    quint8 d;
     do {
-        d = length % 128;
+        quint8 d = length % 128;
         length /= 128;
         if (length > 0) {
             d |= 0x80;

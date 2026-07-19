@@ -38,7 +38,7 @@
 #include <QHostAddress>
 #include <QString>
 #include <QAbstractSocket>
-#include <QScopedPointer>
+#include <memory>
 
 QT_FORWARD_DECLARE_CLASS(QIODevice)
 QT_FORWARD_DECLARE_CLASS(QTcpSocket)
@@ -51,17 +51,17 @@ class Socket : public SocketInterface
     Q_OBJECT
 public:
     explicit Socket(QObject* parent = nullptr);
-    virtual	~Socket();
+    ~Socket() override;
 
-    virtual QIODevice *ioDevice();
-    void connectToHost(const QHostAddress& address, quint16 port);
-    void connectToHost(const QString& hostName, quint16 port);
-    void disconnectFromHost();
-    QAbstractSocket::SocketState state() const;
-    QAbstractSocket::SocketError error() const;
+    QIODevice *ioDevice() override;
+    void connectToHost(const QHostAddress& address, quint16 port) override;
+    void connectToHost(const QString& hostName, quint16 port) override;
+    void disconnectFromHost() override;
+    QAbstractSocket::SocketState state() const override;
+    QAbstractSocket::SocketError error() const override;
 
 protected:
-    QScopedPointer<QTcpSocket> _socket;
+    std::unique_ptr<QTcpSocket> _socket;
 };
 
 }

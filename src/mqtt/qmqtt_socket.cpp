@@ -38,9 +38,9 @@ QMQTT::Socket::Socket(QObject* parent)
     : SocketInterface(parent)
     , _socket(new QTcpSocket(this))
 {
-    connect(_socket.data(), &QTcpSocket::connected,    this, &SocketInterface::connected);
-    connect(_socket.data(), &QTcpSocket::disconnected, this, &SocketInterface::disconnected);
-    connect(_socket.data(),
+    connect(_socket.get(), &QTcpSocket::connected,    this, &SocketInterface::connected);
+    connect(_socket.get(), &QTcpSocket::disconnected, this, &SocketInterface::disconnected);
+    connect(_socket.get(),
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
             static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::errorOccurred),
 #else
@@ -56,7 +56,7 @@ QMQTT::Socket::~Socket()
 
 QIODevice *QMQTT::Socket::ioDevice()
 {
-    return _socket.data();
+    return _socket.get();
 }
 
 void QMQTT::Socket::connectToHost(const QHostAddress& address, quint16 port)

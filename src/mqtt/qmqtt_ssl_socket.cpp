@@ -43,9 +43,9 @@ QMQTT::SslSocket::SslSocket(const QSslConfiguration& config, QObject* parent)
     , _socket(new QSslSocket(this))
 {
     _socket->setSslConfiguration(config);
-    connect(_socket.data(), &QSslSocket::encrypted,    this, &SocketInterface::connected);
-    connect(_socket.data(), &QSslSocket::disconnected, this, &SocketInterface::disconnected);
-    connect(_socket.data(),
+    connect(_socket.get(), &QSslSocket::encrypted,    this, &SocketInterface::connected);
+    connect(_socket.get(), &QSslSocket::disconnected, this, &SocketInterface::disconnected);
+    connect(_socket.get(),
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
             static_cast<void (QSslSocket::*)(QAbstractSocket::SocketError)>(&QSslSocket::errorOccurred),
 #else
@@ -53,7 +53,7 @@ QMQTT::SslSocket::SslSocket(const QSslConfiguration& config, QObject* parent)
 #endif
             this,
             static_cast<void (SocketInterface::*)(QAbstractSocket::SocketError)>(&SocketInterface::error));
-    connect(_socket.data(),
+    connect(_socket.get(),
             static_cast<void (QSslSocket::*)(const QList<QSslError>&)>(&QSslSocket::sslErrors),
             this,
             &SslSocket::sslErrors);
@@ -65,7 +65,7 @@ QMQTT::SslSocket::~SslSocket()
 
 QIODevice *QMQTT::SslSocket::ioDevice()
 {
-    return _socket.data();
+    return _socket.get();
 }
 
 void QMQTT::SslSocket::connectToHost(const QHostAddress& address, quint16 port)

@@ -21,7 +21,7 @@ bool QMQTT::WebSocketIODevice::connectToHost(const QNetworkRequest &request)
 
 qint64 QMQTT::WebSocketIODevice::bytesAvailable() const
 {
-    return _buffer.count();
+    return _buffer.size();
 }
 
 void QMQTT::WebSocketIODevice::binaryMessageReceived(const QByteArray &frame)
