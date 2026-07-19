@@ -223,11 +223,11 @@ void QMQTT::ClientPrivate::sendConnect()
     //payload
     if(_version == V3_1_1)
     {
-        frame.writeString(QString::fromUtf8(PROTOCOL_MAGIC_3_1_1));
+        frame.writeString(QStringLiteral(PROTOCOL_MAGIC_3_1_1));
     }
     else
     {
-        frame.writeString(QString::fromUtf8(PROTOCOL_MAGIC_3_1_0));
+        frame.writeString(QStringLiteral(PROTOCOL_MAGIC_3_1_0));
     }
     frame.writeChar(_version);
     frame.writeChar(flags);

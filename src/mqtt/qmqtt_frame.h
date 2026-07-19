@@ -40,10 +40,8 @@
 
 QT_FORWARD_DECLARE_CLASS(QDataStream)
 
-constexpr char PROTOCOL_MAGIC_3_1_0[] = "MQIsdp";
-constexpr char PROTOCOL_MAGIC_3_1_1[] = "MQTT";
-
-constexpr char RANDOM_CLIENT_PREFIX[] = "QMQTT-";
+#define PROTOCOL_MAGIC_3_1_0 "MQIsdp"
+#define PROTOCOL_MAGIC_3_1_1 "MQTT"
 
 constexpr quint8 CONNECT     = 0x10;
 constexpr quint8 CONNACK     = 0x20;
