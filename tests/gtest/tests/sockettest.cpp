@@ -1,6 +1,7 @@
 #include <qmqtt_socket_p.h>
 #include "tcpserver.h"
 #include <QCoreApplication>
+#include <QEventLoop>
 #include <QSignalSpy>
 #include <QSharedPointer>
 #include <QDataStream>
@@ -27,10 +28,10 @@ public:
 
     void flushEvents()
     {
-        while (QCoreApplication::hasPendingEvents())
+        QEventLoop eventLoop;
+        while (eventLoop.processEvents(QEventLoop::AllEvents))
         {
-            QCoreApplication::processEvents(QEventLoop::AllEvents);
-            QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+            QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
         }
     }
 
