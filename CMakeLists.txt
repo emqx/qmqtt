@@ -181,16 +181,6 @@ install(
     OPTIONAL
 )
 
-# Generate a CMake file into the installation, to easily use the library
-install(
-    EXPORT      ${PROJECT_NAME}
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
-    COMPONENT   Devel
-    OPTIONAL
-)
-
-
-
 include( CMakePackageConfigHelpers )
 
 file( WRITE "${CMAKE_CURRENT_BINARY_DIR}/qmqttConfig.cmake.in"
