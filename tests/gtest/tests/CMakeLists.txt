@@ -47,7 +47,7 @@ target_include_directories(qmqtt_tests
 target_compile_definitions(qmqtt_tests
     PRIVATE
         QMQTT_LIBRARY_TESTS
-        QT_NO_SSL
+        ${ssl_defs}
 )
 
 # Set C++ standard
