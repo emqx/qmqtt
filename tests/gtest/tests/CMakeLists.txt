@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.9)
 
 # Find Qt Test component
-find_package(Qt5 COMPONENTS Test REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Test REQUIRED)
 
 # Create the test executable
 add_executable(qmqtt_tests
@@ -27,9 +27,9 @@ add_executable(qmqtt_tests
 target_link_libraries(qmqtt_tests
     PRIVATE
         qmqtt
-        Qt5::Core
-        Qt5::Network
-        Qt5::Test
+        Qt${QT_VERSION_MAJOR}::Core
+        Qt${QT_VERSION_MAJOR}::Network
+        Qt${QT_VERSION_MAJOR}::Test
         gtest
         gmock
 )

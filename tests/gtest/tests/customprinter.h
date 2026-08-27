@@ -1,8 +1,16 @@
 #ifndef CUSTOM_PRINTER_H
 #define CUSTOM_PRINTER_H
 
+#include <QString>
 #include <QTextStream>
 #include <gtest/gtest.h>
+
+// Qt 6 removed the global QTextStream manipulators, which had moved into the
+// Qt namespace in 5.14.  Pull endl back into scope there and only there: Qt 5
+// still declares the global one, and having both makes the name ambiguous.
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+using Qt::endl;
+#endif
 
 class CustomPrinter : public testing::EmptyTestEventListener
 {
